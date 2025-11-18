@@ -23,7 +23,11 @@ public class PersonBiography {
     private String personId;  // 人物ID
     
     private String title;     // 章节标题
+    
+    @TableField(value = "content", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
     private String content;   // 内容（支持HTML）
+    
+    @TableField(value = "tags", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
     private String tags;      // 标签（JSON字符串）
     
     @TableField("media_type")

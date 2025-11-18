@@ -29,7 +29,7 @@ public class Person {
     @TableField("image_url")
     private String imageUrl;  // 头像图片路径
     
-    @TableField("key_tags")
+    @TableField(value = "key_tags", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
     private String keyTags;   // 关键词标签（JSON字符串，前端解析为数组）
     
     @TableField("data_status")

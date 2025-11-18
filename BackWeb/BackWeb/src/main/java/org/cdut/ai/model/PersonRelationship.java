@@ -31,6 +31,8 @@ public class PersonRelationship {
     private String relationType; // 关系类型：mentor/student/colleague/family等
     
     private String relation; // 关系描述（如：导师、学生、同事）
+    
+    @TableField(value = "description", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
     private String description; // 关系详细描述
     
     @TableField("needs_verification")
