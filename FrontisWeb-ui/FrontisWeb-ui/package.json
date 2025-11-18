@@ -1,0 +1,29 @@
+{
+  "name": "Javaweb",
+  "private": true,
+  "version": "1.0.0",
+  "description": "张倬元教授人物介绍界面 - 成都理工大学数字记忆平台",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "3d-force-graph": "^1.79.0",
+    "aos": "^2.3.4",
+    "axios": "^1.7.7",
+    "d3": "^7.9.0",
+    "element-plus": "^2.8.4",
+    "gsap": "^3.13.0",
+    "three": "^0.180.0",
+    "uuid": "^10.0.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.4.8"
+  }
+}

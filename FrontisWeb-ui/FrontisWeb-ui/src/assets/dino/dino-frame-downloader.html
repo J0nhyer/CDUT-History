@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恐龙行走动画帧下载器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .preview-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .frame-preview {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .frame-preview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .frame-preview h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .frame-preview canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            max-width: 100%;
+        }
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .animation-demo {
+            text-align: center;
+            padding: 40px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .animation-demo h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .animated-dino {
+            display: inline-block;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-box h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+        .info-box p {
+            color: #666;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦖 恐龙行走动画帧生成器</h1>
+            <p>生成一组可下载的恐龙侧面行走动画帧</p>
+        </div>
+        
+        <div class="content">
+            <!-- 动画演示 -->
+            <div class="animation-demo">
+                <h2>动画预览</h2>
+                <div class="animated-dino" id="animationContainer"></div>
+            </div>
+            
+            <!-- 控制按钮 -->
+            <div class="controls">
+                <button class="btn" onclick="generateFrames()">生成所有帧</button>
+                <button class="btn" onclick="downloadAll()">下载所有帧</button>
+                <button class="btn" onclick="previewAnimation()">预览动画</button>
+            </div>
+            
+            <!-- 信息框 -->
+            <div class="info-box">
+                <h3>📝 使用说明</h3>
+                <p>1. 点击"生成所有帧"创建8帧恐龙行走动画</p>
+                <p>2. 点击"预览动画"查看动画效果</p>
+                <p>3. 点击"下载所有帧"批量下载所有图片</p>
+                <p>4. 下载的图片会以 dino-walk-1.png 到 dino-walk-8.png 命名</p>
+            </div>
+            
+            <!-- 帧预览区域 -->
+            <div class="preview-area" id="framesArea">
+                <!-- 生成的帧会显示在这里 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allFrames = [];
+        let currentFrameIndex = 0;
+        let animationInterval = null;
+        
+        function drawDino(ctx, frame, width, height) {
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 计算每一帧的腿部和尾巴角度
+            const frames = 8;
+            const legAngle1 = Math.sin((frame / frames) * Math.PI * 2) * 25;
+            const legAngle2 = Math.sin((frame / frames) * Math.PI * 2 + Math.PI) * 25;
+            const tailAngle = Math.sin((frame / frames) * Math.PI * 2) * 15;
+            
+            // 绘制恐龙身体
+            ctx.fillStyle = '#8B4513';
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(width/2 + 5, height/2, 30, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 绘制恐龙头
+            ctx.fillStyle = '#A0522D';
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(width/2 - 20, height/2 - 5, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 绘制眼睛
+            ctx.fillStyle = '#000';
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(width/2 - 25, height/2 - 7, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 绘制嘴巴
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(width/2 - 23, height/2 - 3, 5, 0.3, Math.PI);
+            ctx.stroke();
+            ctx.restore();
+            
+            // 绘制腿1
+            ctx.save();
+            ctx.translate(width/2 - 10, height/2 + 20);
+            ctx.rotate(legAngle1 * Math.PI / 180);
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(-8, 0, 16, 15);
+            ctx.fillRect(-5, 15, 10, 8);
+            ctx.restore();
+            
+            // 绘制腿2
+            ctx.save();
+            ctx.translate(width/2 + 10, height/2 + 20);
+            ctx.rotate(legAngle2 * Math.PI / 180);
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(-8, 0, 16, 15);
+            ctx.fillRect(-5, 15, 10, 8);
+            ctx.restore();
+            
+            // 绘制尾巴
+            ctx.save();
+            ctx.translate(width/2 + 30, height/2 - 5);
+            ctx.rotate(tailAngle * Math.PI / 180);
+            ctx.fillStyle = '#A0522D';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 20, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function generateFrames() {
+            const framesArea = document.getElementById('framesArea');
+            framesArea.innerHTML = '';
+            allFrames = [];
+            
+            const frames = 8;
+            for (let i = 0; i < frames; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                
+                drawDino(ctx, i, canvas.width, canvas.height);
+                
+                const frameData = canvas.toDataURL('image/png');
+                allFrames.push({
+                    frame: i,
+                    data: frameData,
+                    filename: `dino-walk-${i + 1}.png`,
+                    canvas: canvas
+                });
+                
+                // 添加到预览区
+                const preview = document.createElement('div');
+                preview.className = 'frame-preview';
+                preview.innerHTML = `
+                    <h3>帧 ${i + 1}</h3>
+                    <canvas width="100" height="100"></canvas>
+                `;
+                
+                const previewCanvas = preview.querySelector('canvas');
+                const previewCtx = previewCanvas.getContext('2d');
+                drawDino(previewCtx, i, previewCanvas.width, previewCanvas.height);
+                
+                framesArea.appendChild(preview);
+            }
+            
+            alert(`成功生成 ${frames} 帧动画！`);
+        }
+        
+        function previewAnimation() {
+            if (allFrames.length === 0) {
+                alert('请先生成帧！');
+                return;
+            }
+            
+            const container = document.getElementById('animationContainer');
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            canvas.style.border = '2px solid #333';
+            canvas.style.borderRadius = '5px';
+            const ctx = canvas.getContext('2d');
+            container.innerHTML = '';
+            container.appendChild(canvas);
+            
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            
+            currentFrameIndex = 0;
+            animationInterval = setInterval(() => {
+                drawDino(ctx, currentFrameIndex, canvas.width, canvas.height);
+                currentFrameIndex = (currentFrameIndex + 1) % allFrames.length;
+            }, 150);
+        }
+        
+        function downloadAll() {
+            if (allFrames.length === 0) {
+                alert('请先生成帧！');
+                return;
+            }
+            
+            allFrames.forEach((frame, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = frame.data;
+                    link.download = frame.filename;
+                    link.click();
+                }, index * 100);
+            });
+            
+            alert('开始下载所有帧...');
+        }
+        
+        // 页面加载时自动生成
+        window.onload = function() {
+            setTimeout(generateFrames, 500);
+        };
+    </script>
+</body>
+</html>
+

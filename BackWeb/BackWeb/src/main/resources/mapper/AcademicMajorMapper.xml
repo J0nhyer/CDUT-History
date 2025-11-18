@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cdut.ai.mapper.AcademicMajorMapper">
+
+    <select id="findByNodeId" parameterType="string" resultType="org.cdut.ai.model.AcademicMajor">
+        SELECT * FROM academic_major WHERE node_id = #{nodeId} ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByMajorId" parameterType="string" resultType="org.cdut.ai.model.AcademicMajor">
+        SELECT * FROM academic_major WHERE major_id = #{majorId}
+    </select>
+
+</mapper>
+

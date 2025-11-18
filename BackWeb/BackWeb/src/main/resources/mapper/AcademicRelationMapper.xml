@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cdut.ai.mapper.AcademicRelationMapper">
+
+    <select id="findBySourceNodeId" parameterType="string" resultType="org.cdut.ai.model.AcademicRelation">
+        SELECT * FROM academic_relation WHERE source_node_id = #{sourceNodeId} ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByTargetNodeId" parameterType="string" resultType="org.cdut.ai.model.AcademicRelation">
+        SELECT * FROM academic_relation WHERE target_node_id = #{targetNodeId} ORDER BY sort_order ASC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恐龙行走动画生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .animation-container {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border: 2px solid #333;
+            background: #87CEEB;
+            position: relative;
+            overflow: hidden;
+        }
+        .dino {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .download-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>恐龙行走动画生成器</h1>
+        <p>这是一个简单的恐龙行走动画示例。您可以在此基础上下载或使用代码生成图片。</p>
+        
+        <div class="animation-container">
+            <svg class="dino" width="100" height="100" viewBox="0 0 100 100" id="dinoSVG">
+                <!-- 恐龙身体 -->
+                <ellipse cx="45" cy="50" rx="30" ry="20" fill="#8B4513" id="body"/>
+                <!-- 恐龙头 -->
+                <circle cx="25" cy="45" r="12" fill="#A0522D" id="head"/>
+                <!-- 恐龙眼睛 -->
+                <circle cx="20" cy="43" r="3" fill="#000" id="eye"/>
+                <!-- 恐龙腿1 -->
+                <ellipse cx="35" cy="70" rx="8" ry="15" fill="#654321" id="leg1"/>
+                <ellipse cx="35" cy="85" rx="5" ry="8" fill="#654321" id="foot1"/>
+                <!-- 恐龙腿2 -->
+                <ellipse cx="55" cy="70" rx="8" ry="15" fill="#654321" id="leg2"/>
+                <ellipse cx="55" cy="85" rx="5" ry="8" fill="#654321" id="foot2"/>
+                <!-- 恐龙尾巴 -->
+                <ellipse cx="75" cy="45" rx="20" ry="8" fill="#A0522D" id="tail"/>
+            </svg>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startAnimation()">播放动画</button>
+            <button onclick="stopAnimation()">停止动画</button>
+            <button onclick="downloadAsPNG()">下载PNG</button>
+        </div>
+        
+        <div class="download-info">
+            <h3>使用说明：</h3>
+            <p>1. 点击"播放动画"查看恐龙行走效果</p>
+            <p>2. 点击"下载PNG"可以将当前帧保存为图片</p>
+            <p>3. 您可以修改 SVG 代码来自定义恐龙的外观</p>
+            <p>4. 建议从专业的素材网站下载更精美的恐龙动画</p>
+        </div>
+    </div>
+
+    <script>
+        let animationId = null;
+        let frame = 0;
+        
+        function animateDino() {
+            const dino = document.getElementById('dinoSVG');
+            frame++;
+            
+            // 简单的行走动画：腿部摆动
+            const leg1 = document.getElementById('leg1');
+            const leg2 = document.getElementById('leg2');
+            const foot1 = document.getElementById('foot1');
+            const foot2 = document.getElementById('foot2');
+            
+            const angle1 = Math.sin(frame * 0.2) * 20;
+            const angle2 = Math.sin(frame * 0.2 + Math.PI) * 20;
+            
+            leg1.setAttribute('transform', `rotate(${angle1} 35 70)`);
+            leg2.setAttribute('transform', `rotate(${angle2} 55 70)`);
+            foot1.setAttribute('transform', `rotate(${angle1} 35 85)`);
+            foot2.setAttribute('transform', `rotate(${angle2} 55 85)`);
+            
+            // 尾巴摆动
+            const tail = document.getElementById('tail');
+            const tailAngle = Math.sin(frame * 0.15) * 10;
+            tail.setAttribute('transform', `rotate(${tailAngle} 75 45)`);
+            
+            animationId = requestAnimationFrame(animateDino);
+        }
+        
+        function startAnimation() {
+            if (!animationId) {
+                animateDino();
+            }
+        }
+        
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        
+        function downloadAsPNG() {
+            const dino = document.getElementById('dinoSVG');
+            const svgData = new XMLSerializer().serializeToString(dino);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `dino-walk-${Date.now()}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        }
+        
+        // 自动开始动画
+        setTimeout(startAnimation, 500);
+    </script>
+</body>
+</html>
+
