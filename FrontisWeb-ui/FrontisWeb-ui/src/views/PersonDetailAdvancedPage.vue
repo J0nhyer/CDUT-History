@@ -83,9 +83,28 @@ export default {
           hasRelationships: !!rawData?.relationships,
           relationshipsLength: rawData?.relationships?.length,
           hasImage: !!rawData?.image,
-          imagePath: rawData?.image,
-          fullData: rawData
+          imagePath: rawData?.image
         })
+        
+        // 详细检查biography数据
+        if (rawData?.biography && rawData.biography.length > 0) {
+          console.log('📝 [PersonDetailAdvancedPage] Biography详细信息:')
+          rawData.biography.forEach((bio, index) => {
+            console.log(`  [${index}]`, {
+              title: bio.title,
+              hasContent: !!bio.content,
+              contentLength: bio.content?.length,
+              contentPreview: bio.content?.substring(0, 50),
+              mediaType: bio.mediaType,
+              mediaUrl: bio.mediaUrl,
+              tags: bio.tags || bio.tagsList
+            })
+          })
+        } else {
+          console.warn('⚠️ [PersonDetailAdvancedPage] Biography数据为空或不存在')
+        }
+        
+        console.log('📦 [PersonDetailAdvancedPage] 完整数据:', JSON.stringify(rawData, null, 2))
         
         // 确保数据对象存在且为响应式
         this.personData = rawData

@@ -111,6 +111,13 @@
           <!-- 人物简介 -->
           <section class="person-biography">
             <h2 class="section-heading">人物简介</h2>
+            
+            <!-- 调试信息 -->
+            <div v-if="!getBiographyParagraphs() || getBiographyParagraphs().length === 0" style="padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #856404;">⚠️ 暂无人物简介数据</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">Biography数据: {{ personData.biography ? `存在${personData.biography.length}条记录` : '不存在' }}</p>
+            </div>
+            
             <div class="biography-content">
               <!-- 从biography或summary中提取内容 -->
               <div 
@@ -157,13 +164,17 @@
       </div>
     </main>
 
-    <!-- 人物关系图谱 - 点击关系图谱按钮时显示 -->
+    <!-- 人物关系图谱 - 始终加载，用visibility控制显示 -->
     <section 
       class="relationship-section-fullwidth" 
       id="relationship-section"
-      v-show="activeSection === 'relationship'"
+      :style="{ 
+        visibility: activeSection === 'relationship' ? 'visible' : 'hidden',
+        position: activeSection === 'relationship' ? 'relative' : 'absolute',
+        zIndex: activeSection === 'relationship' ? 1 : -1
+      }"
     >
-      <RelationshipGraph :personId="personData.id" />
+      <RelationshipGraph ref="relationshipGraph" :personId="personData.id" />
     </section>
 
     <!-- 时间轴区域 - 点击时间轴按钮时显示 -->
@@ -213,8 +224,9 @@
 
 <script>
 import RelationshipGraph from './RelationshipGraph.vue'
-import unknownImg from '@/assets/persons/unknown.png'
-import xuqiangImg from '@/assets/persons/xuqiang.png'
+import { getPersonImage, getUnknownImage } from '@/utils/imageLoader'
+
+const unknownImg = getUnknownImage()
 
 export default {
   name: 'PersonDetailAcademic',
@@ -236,36 +248,37 @@ export default {
     }
   },
   computed: {
-    // 处理人物图片：除了许强本人，其他使用xuqiang照片的都显示unknown
+    // 处理人物图片 - 使用imageLoader统一加载
     displayImage() {
+      console.log('🖼️ [displayImage] personData.image:', this.personData?.image)
+      console.log('🖼️ [displayImage] personData.id:', this.personData?.id)
+      
       if (!this.personData || !this.personData.image) {
+        console.log('🖼️ [displayImage] 没有图片数据，使用unknown')
         return unknownImg
       }
       
-      // 如果是许强本人，直接返回原图片
-      if (this.personData.id === 'xuqiang') {
-        return this.personData.image
-      }
+      // 使用imageLoader加载图片
+      const image = getPersonImage(this.personData.image)
+      console.log('🖼️ [displayImage] 加载结果:', image)
       
-      // 检查图片是否是xuqiang的图片（通过比较引用或路径）
-      const imageSrc = this.personData.image
-      if (imageSrc) {
-        // 方法1：如果是同一个引用对象
-        if (imageSrc === xuqiangImg) {
-          return unknownImg
-        }
-        // 方法2：检查路径字符串
-        const imageSrcStr = imageSrc.toString()
-        if (imageSrcStr.includes('xuqiang') || imageSrcStr.includes('许强')) {
-          return unknownImg
-        }
-      }
-      
-      return this.personData.image
+      return image || unknownImg
     }
   },
   mounted() {
     // 组件挂载完成
+    console.log('✅ [PersonDetailAcademic] 组件已挂载')
+    console.log('📊 [PersonDetailAcademic] 接收到的personData:', this.personData)
+    console.log('📊 [PersonDetailAcademic] personData.name:', this.personData?.name)
+    console.log('📊 [PersonDetailAcademic] personData.biography长度:', this.personData?.biography?.length)
+    
+    if (!this.personData) {
+      console.error('❌ [PersonDetailAcademic] personData为空！')
+    }
+    
+    if (!this.personData?.biography || this.personData.biography.length === 0) {
+      console.warn('⚠️ [PersonDetailAcademic] biography数据为空')
+    }
   },
   methods: {
     goBack() {
@@ -285,6 +298,15 @@ export default {
             top: 0,
             behavior: 'smooth'
           })
+          
+          // 如果是关系图谱，延迟调用居中方法
+          if (section === 'relationship') {
+            setTimeout(() => {
+              if (this.$refs.relationshipGraph && this.$refs.relationshipGraph.triggerCenter) {
+                this.$refs.relationshipGraph.triggerCenter()
+              }
+            }, 500)
+          }
         })
         return
       }
@@ -318,21 +340,40 @@ export default {
     getBiographyParagraphs() {
       const paragraphs = []
       
+      console.log('[PersonDetailAcademic] 开始处理biography数据')
+      console.log('[PersonDetailAcademic] personData:', this.personData)
+      
       // 优先使用summary
       if (this.personData.summary) {
+        console.log('[PersonDetailAcademic] 使用summary:', this.personData.summary)
         paragraphs.push(this.personData.summary)
       }
       
       // 从biography中提取段落
       if (this.personData.biography && this.personData.biography.length > 0) {
-        console.log('[PersonDetailAcademic] biography数据:', this.personData.biography)
-        this.personData.biography.forEach(bio => {
+        console.log('[PersonDetailAcademic] biography数组长度:', this.personData.biography.length)
+        console.log('[PersonDetailAcademic] biography数据:', JSON.stringify(this.personData.biography, null, 2))
+        
+        this.personData.biography.forEach((bio, index) => {
+          console.log(`[PersonDetailAcademic] 处理第${index}个biography:`, bio)
+          console.log(`[PersonDetailAcademic] bio.content存在:`, !!bio.content)
+          console.log(`[PersonDetailAcademic] bio.content类型:`, typeof bio.content)
+          console.log(`[PersonDetailAcademic] bio.content长度:`, bio.content?.length)
+          
           if (bio.content) {
             // 保留HTML格式，直接使用content
             paragraphs.push(bio.content)
+            console.log(`[PersonDetailAcademic] 已添加第${index}个content`)
+          } else {
+            console.warn(`[PersonDetailAcademic] 第${index}个biography没有content`)
           }
         })
+      } else {
+        console.warn('[PersonDetailAcademic] biography为空或不存在')
+        console.warn('[PersonDetailAcademic] biography值:', this.personData.biography)
       }
+      
+      console.log('[PersonDetailAcademic] 提取到的paragraphs数量:', paragraphs.length)
       
       // 如果没有内容，生成默认介绍
       if (paragraphs.length === 0) {
@@ -519,9 +560,11 @@ export default {
 .person-photo {
   width: 100%;
   max-width: 280px;
+  height: 350px;
   margin-bottom: 25px;
   overflow: hidden;
-  /* position: fixed; */
+  position: relative;
+  background: #f0f0f0;
 }
 
 .photo-placeholder {

@@ -86,6 +86,10 @@ export default {
         // 延迟初始化，确保容器尺寸正确
         setTimeout(() => {
           this.initGraph()
+          // 初始化后再延迟一次，确保居中
+          setTimeout(() => {
+            this.triggerCenter()
+          }, 800)
         }, 100)
       }
     })
@@ -109,8 +113,9 @@ export default {
       
       if (!container || !svgElement) return
       
-      const width = container.clientWidth
-      const height = container.clientHeight || window.innerHeight
+      // 确保获取正确的宽高，即使容器被隐藏
+      const width = container.clientWidth || window.innerWidth
+      const height = container.clientHeight || window.innerHeight - 60
       
       // 清空SVG
       d3.select(svgElement).selectAll('*').remove()
@@ -311,17 +316,17 @@ export default {
             clipPath = defs.append('clipPath')
               .attr('id', clipId)
             clipPath.append('circle')
-              .attr('r', radius - 2) // 稍微小一点，留出边框
+              .attr('r', radius) // 裁剪区域等于圆圈大小
           }
           
           // 添加人物图片 - 使用组件实例的方法
           const imageUrl = self.getPersonImageUrl(d.id)
           
           const imageElement = nodeGroup.append('image')
-            .attr('x', -radius + 2)
-            .attr('y', -radius + 2)
-            .attr('width', (radius - 2) * 2)
-            .attr('height', (radius - 2) * 2)
+            .attr('x', -radius * 1.6)
+            .attr('y', -radius * 1.6)
+            .attr('width', radius * 3.2)
+            .attr('height', radius * 3.2)
             .attr('clip-path', `url(#${clipId})`)
             .attr('href', imageUrl)
             .attr('xlink:href', imageUrl) // 兼容旧版SVG
@@ -347,6 +352,7 @@ export default {
       })
       
       // 更新函数
+      let tickCount = 0
       simulation.on('tick', () => {
         link
           .attr('x1', d => {
@@ -403,12 +409,48 @@ export default {
           })
         
         node.attr('transform', d => `translate(${d.x || width / 2},${d.y || height / 2})`)
+        
+        // 在力导向图基本稳定后自动居中（更早触发）
+        tickCount++
+        if (!this.hasCentered && tickCount > 5) {
+          // 延迟一点确保节点位置已更新
+          setTimeout(() => {
+            this.centerGraph(allNodes, width, height, svg, zoom)
+            this.hasCentered = true
+          }, 100)
+        }
       })
       
       // 点击空白处取消选择
       svg.on('click', () => {
         this.selectedNode = null
       })
+    },
+    
+    // 居中图谱
+    centerGraph(nodes, width, height, svg, zoom) {
+      // 计算所有节点的边界
+      let minX = Infinity, maxX = -Infinity
+      let minY = Infinity, maxY = -Infinity
+      
+      nodes.forEach(node => {
+        if (node.x < minX) minX = node.x
+        if (node.x > maxX) maxX = node.x
+        if (node.y < minY) minY = node.y
+        if (node.y > maxY) maxY = node.y
+      })
+      
+      // 计算图谱的中心点
+      const graphCenterX = (minX + maxX) / 2
+      const graphCenterY = (minY + maxY) / 2
+      
+      // 计算需要的偏移量，将图谱中心移到视图中心
+      const offsetX = width / 2 - graphCenterX
+      const offsetY = height / 2 - graphCenterY
+      
+      // 应用居中变换（带过渡动画）
+      const transform = d3.zoomIdentity.translate(offsetX, offsetY)
+      svg.transition().duration(500).call(zoom.transform, transform)
     },
     
     drag(simulation) {
@@ -448,8 +490,19 @@ export default {
     },
     
     resetZoom() {
-      if (this.zoom && this.svg) {
-        this.svg.transition().call(this.zoom.transform, d3.zoomIdentity)
+      if (this.zoom && this.svg && this.simulation) {
+        // 获取当前所有节点
+        const nodes = this.simulation.nodes()
+        const container = this.$refs.graphContainer
+        if (nodes && nodes.length > 0 && container) {
+          const width = container.clientWidth
+          const height = container.clientHeight || window.innerHeight
+          // 重置并居中
+          this.centerGraph(nodes, width, height, this.svg, this.zoom)
+        } else {
+          // 如果无法获取节点信息，直接重置
+          this.svg.transition().call(this.zoom.transform, d3.zoomIdentity)
+        }
       }
     },
     
@@ -517,6 +570,19 @@ export default {
       
       // 如果找不到对应图片，返回默认图片
       return typeof unknownImg === 'string' ? unknownImg : (unknownImg?.default || unknownImg)
+    },
+    
+    // 公开方法：手动触发居中
+    triggerCenter() {
+      if (this.simulation && this.svg && this.zoom) {
+        const nodes = this.simulation.nodes()
+        const container = this.$refs.graphContainer
+        if (nodes && nodes.length > 0 && container) {
+          const width = container.clientWidth
+          const height = container.clientHeight || window.innerHeight
+          this.centerGraph(nodes, width, height, this.svg, this.zoom)
+        }
+      }
     }
   },
   

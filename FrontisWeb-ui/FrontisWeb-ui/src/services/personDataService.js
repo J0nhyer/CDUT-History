@@ -4,48 +4,41 @@ let profileCachePromise = null;
 let profileMapCache = null;
 
 function resolveAssetPath(path) {
-  if (!path) return null;
+  console.log('[resolveAssetPath] 输入路径:', path);
+  
+  if (!path) {
+    console.log('[resolveAssetPath] 路径为空');
+    return null;
+  }
   
   // 如果已经是完整URL，直接返回
   if (path.startsWith('http://') || path.startsWith('https://')) {
+    console.log('[resolveAssetPath] HTTP URL，直接返回');
     return path;
   }
   
-  // 处理 persons/ 开头的路径（新格式）
+  // 处理 persons/ 开头的路径（新格式）- 保持为相对路径字符串，让组件的computed处理
   if (path.startsWith('persons/')) {
-    const fileName = path.substring('persons/'.length);
-    try {
-      // 尝试加载对应的图片文件
-      return require(`@/assets/persons/${fileName}`);
-    } catch (e) {
-      // 如果加载失败，使用 unknown.png
-      console.warn(`[resolveAssetPath] 无法加载图片: ${path}，使用默认图片`);
-      try {
-        return require('@/assets/persons/unknown.png');
-      } catch (e2) {
-        // 如果连 unknown.png 都加载失败，返回原始路径
-        return `/assets/persons/${fileName}`;
-      }
-    }
+    console.log('[resolveAssetPath] persons/路径，保持原样返回（让组件处理require）');
+    return path;  // 返回字符串，让displayImage计算属性处理require
   }
   
   // 处理相对路径
   if (path.startsWith('/assets/')) {
+    console.log('[resolveAssetPath] /assets/路径，直接返回');
     return path;
   }
   
   // 处理@/assets路径
   if (path.startsWith('@/assets/')) {
-    return path.replace('@/assets/', '/assets/');
+    const converted = path.replace('@/assets/', '/assets/');
+    console.log('[resolveAssetPath] @/assets/路径，转换为:', converted);
+    return converted;
   }
   
-  // 其他情况尝试使用require或import
-  try {
-    const normalized = path.replace(/^[/\\.]+/, '');
-    return `/assets/${normalized}`;
-  } catch (e) {
-    return path;
-  }
+  // 其他情况返回原路径
+  console.log('[resolveAssetPath] 其他情况，返回原路径');
+  return path;
 }
 
 function normalizeProfile(profile) {

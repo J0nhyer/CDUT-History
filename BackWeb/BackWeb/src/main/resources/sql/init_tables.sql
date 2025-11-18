@@ -60,15 +60,6 @@ CREATE TABLE IF NOT EXISTS `person_relationship` (
     INDEX `idx_related_person_id` (`related_person_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='人物关系表';
 
--- 创建person_profile表
-CREATE TABLE IF NOT EXISTS `person_profile` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
-    `person_id` VARCHAR(100) NOT NULL UNIQUE COMMENT '人物ID',
-    `profile_json` LONGTEXT NOT NULL COMMENT '完整人物资料JSON',
-    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX `idx_profile_person_id` (`person_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='人物完整资料JSON表';
-
 SET FOREIGN_KEY_CHECKS = 1;
 
 SELECT '表结构创建完成' AS status;

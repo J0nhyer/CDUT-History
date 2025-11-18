@@ -84,6 +84,82 @@
           </div>
         </div>
       </section>
+
+      <!-- 2. 人物和事件板块 -->
+      <section class="content-blocks-section">
+        <div class="container">
+          <!-- 人物板块 -->
+          <div class="content-block">
+            <div class="block-header">
+              <div class="block-icon">👤</div>
+              <h2 class="block-title">成理人物</h2>
+              <router-link to="/persons" class="block-more">
+                更多 >
+              </router-link>
+            </div>
+            <div class="block-content">
+              <div 
+                v-for="person in featuredPersons" 
+                :key="person.personId"
+                class="content-card person-card"
+                @click="goToPersonDetail(person.personId)"
+              >
+                <div class="card-image">
+                  <img :src="person.imageUrl" :alt="person.name" />
+                </div>
+                <div class="card-info">
+                  <h3 class="card-title">{{ person.name }}</h3>
+                  <p class="card-subtitle">{{ person.subtitle }}</p>
+                  <div class="card-tags" v-if="person.keyTagsList && person.keyTagsList.length">
+                    <span 
+                      v-for="(tag, index) in person.keyTagsList.slice(0, 3)" 
+                      :key="index"
+                      class="tag"
+                    >
+                      {{ tag }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="featuredPersons.length === 0" class="empty-state">
+                暂无人物数据
+              </div>
+            </div>
+          </div>
+
+          <!-- 事件板块 -->
+          <div class="content-block">
+            <div class="block-header">
+              <div class="block-icon">📅</div>
+              <h2 class="block-title">历史事件</h2>
+              <router-link to="/digital-history" class="block-more">
+                更多 >
+              </router-link>
+            </div>
+            <div class="block-content">
+              <div 
+                v-for="event in featuredEvents" 
+                :key="event.eventId"
+                class="content-card event-card"
+                @click="goToEventDetail(event.eventId)"
+              >
+                <div class="event-year">{{ event.year }}</div>
+                <div class="card-info">
+                  <h3 class="card-title">{{ event.title }}</h3>
+                  <p class="card-description">{{ event.description }}</p>
+                  <div class="event-meta">
+                    <span class="event-type" v-if="event.eventType">{{ event.eventType }}</span>
+                    <span class="event-importance" v-if="event.importance">{{ event.importance }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="featuredEvents.length === 0" class="empty-state">
+                暂无事件数据
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- 媒体灯箱 -->
@@ -214,6 +290,7 @@ import defaultAvatar from '@/assets/default-avatar.png'
 import AuthModal from '@/components/AuthModal.vue'
 import MediaLightbox from '@/components/MediaLightbox.vue'
 import { getAllPersonProfiles } from '@/services/personDataService'
+import { getPersonImage } from '@/utils/imageLoader'
 
 // 导入背景图片
 import libraryImageSrc from '@/assets/mainbg/新图书馆.jpg'
@@ -276,6 +353,10 @@ export default {
       // 著名人物数据（从数据库加载）
       persons: [],
       allPersonsData: {}, // 存储从数据库加载的所有人物数据
+      
+      // 首页展示的人物和事件
+      featuredPersons: [],
+      featuredEvents: [],
 
       // 历史重要时期数据
       historyPeriods: [
@@ -457,8 +538,8 @@ export default {
 
       // AI 助手弹窗位置（右下角）
       aiPopupPosition: {
-        top: typeof window !== 'undefined' ? window.innerHeight - 600 : 100,
-        left: typeof window !== 'undefined' ? window.innerWidth - 400 : 100
+        top: typeof window !== 'undefined' ? window.innerHeight - 450 : 100,
+        left: typeof window !== 'undefined' ? window.innerWidth - 420 : 100
       },
       aiDragging: false,
       aiDragStartX: 0,
@@ -1015,6 +1096,84 @@ export default {
         this.allPersonsData = {}
       }
     },
+
+    // 加载首页展示的人物数据
+    async loadFeaturedPersons() {
+      try {
+        const url = `${this.apiBase}/api/person/list`
+        const response = await fetch(url)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          // 解析keyTags字段
+          const persons = result.data.map(person => {
+            try {
+              if (person.keyTags) {
+                person.keyTagsList = JSON.parse(person.keyTags)
+              } else {
+                person.keyTagsList = []
+              }
+            } catch (e) {
+              person.keyTagsList = []
+            }
+            
+            // 处理图片路径 - 使用imageLoader
+            if (person.imageUrl) {
+              if (person.imageUrl.startsWith('http://') || person.imageUrl.startsWith('https://')) {
+                // HTTP URL直接使用
+                person.imageUrl = person.imageUrl
+              } else {
+                // 使用imageLoader加载本地图片
+                person.imageUrl = getPersonImage(person.imageUrl)
+              }
+            } else {
+              person.imageUrl = getPersonImage(null)
+            }
+            
+            return person
+          })
+          
+          // 取前4个人物
+          this.featuredPersons = persons.slice(0, 4)
+          console.log('✅ 首页人物数据加载完成:', this.featuredPersons)
+        }
+      } catch (error) {
+        console.error('❌ 加载首页人物数据失败:', error)
+        this.featuredPersons = []
+      }
+    },
+
+    // 加载首页展示的事件数据
+    async loadFeaturedEvents() {
+      try {
+        const url = `${this.apiBase}/api/history/events`
+        const response = await fetch(url)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          // 取前4个重要事件
+          this.featuredEvents = result.data
+            .filter(event => event.importance === 'high' || event.importance === '重要')
+            .slice(0, 4)
+          
+          console.log('✅ 首页事件数据加载完成:', this.featuredEvents)
+        }
+      } catch (error) {
+        console.error('❌ 加载首页事件数据失败:', error)
+        this.featuredEvents = []
+      }
+    },
+
+    // 跳转到人物详情
+    goToPersonDetail(personId) {
+      this.$router.push(`/person/${personId}`)
+    },
+
+    // 跳转到事件详情
+    goToEventDetail(eventId) {
+      // 目前跳转到历史页面，可以根据需要修改
+      this.$router.push('/digital-history')
+    },
     
     // 将数据库人物数据转换为显示格式
     mapPersonToDisplayFormat(personData) {
@@ -1094,12 +1253,12 @@ export default {
       if (typeof window !== 'undefined') {
         const vw = window.innerWidth
         const vh = window.innerHeight
-        const popupWidth = 340
-        const totalHeight = 480 + 80 // 弹窗 + 小图标上下高度
-        const margin = 24
+        const popupWidth = 220
+        const totalHeight = 120 // 弹窗 + 小图标上下高度
+        const margin = 10
 
-        this.aiPopupPosition.left = Math.max(margin, vw - popupWidth - margin)
-        this.aiPopupPosition.top = Math.max(margin, vh - totalHeight - margin)
+        this.aiPopupPosition.left = vw - popupWidth - margin
+        this.aiPopupPosition.top = vh - totalHeight - margin
       }
 
       if (this.aiMessages.length > 0 && !this.aiMessages[0].time) {
@@ -1115,6 +1274,10 @@ export default {
           console.error('[MainPage] 预加载人物数据失败:', preloadError)
         }
       })()
+
+      // 加载首页展示的人物和事件数据
+      this.loadFeaturedPersons()
+      this.loadFeaturedEvents()
     } catch (error) {
       console.error('MainPage mounted error:', error)
     }
@@ -2140,6 +2303,179 @@ section {
   transform: translateY(8px);
 }
 
+/* 人物和事件板块样式 */
+.content-blocks-section {
+  position: relative;
+  padding: 60px 0;
+  background: white;
+  z-index: 2;
+}
+
+.content-blocks-section .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.content-block {
+  background: white;
+  padding: 30px;
+}
+
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.block-icon {
+  font-size: 1.5rem;
+}
+
+.block-title {
+  flex: 1;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.block-more {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.block-more:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.block-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.content-card {
+  background: white;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.content-card:hover {
+  background: #fafafa;
+}
+
+.content-card:last-child {
+  border-bottom: none;
+}
+
+.person-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-image {
+  display: none;
+}
+
+.card-info {
+  padding: 0;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.event-card {
+  display: flex;
+  gap: 15px;
+  padding: 0;
+}
+
+.event-year {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 60px;
+}
+
+.card-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.event-type,
+.event-importance {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.event-type {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.event-importance {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-size: 0.95rem;
+}
+
 /* 响应式适配 */
 @media (max-width: 768px) {
   section {
@@ -2185,6 +2521,26 @@ section {
   .ai-popup {
     width: 92vw;
     max-height: 70vh;
+  }
+
+  /* 人物和事件板块响应式 */
+  .content-blocks-section {
+    padding: 40px 0;
+  }
+
+  .content-blocks-section .container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 0 20px;
+  }
+
+  .block-title {
+    font-size: 1.3rem;
+  }
+
+  .event-year {
+    font-size: 1rem;
+    min-width: 50px;
   }
 }
 </style>

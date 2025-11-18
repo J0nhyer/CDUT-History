@@ -23,5 +23,11 @@ public interface PersonMapper extends BaseMapper<Person> {
      * 根据数据状态查询
      */
     List<Person> findByDataStatus(@Param("dataStatus") String dataStatus);
+    
+    /**
+     * 查询所有人物的key_tags字段
+     */
+    @org.apache.ibatis.annotations.Select("SELECT key_tags FROM person WHERE key_tags IS NOT NULL AND key_tags != ''")
+    List<String> getAllKeyTags();
 }
 

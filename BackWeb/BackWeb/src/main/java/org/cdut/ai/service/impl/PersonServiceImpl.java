@@ -403,5 +403,70 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
         
         return path;
     }
+    
+    @Override
+    public Map<String, List<String>> getAllAvailableTags() {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        
+        // 定义标签分类
+        List<String> disciplineTags = new ArrayList<>();
+        List<String> eraTags = new ArrayList<>();
+        List<String> achievementTags = new ArrayList<>();
+        
+        // 添加"全部"选项
+        disciplineTags.add("全部");
+        eraTags.add("全部");
+        achievementTags.add("全部");
+        
+        try {
+            // 获取所有人物的key_tags
+            List<String> allKeyTagsJson = personMapper.getAllKeyTags();
+            
+            for (String keyTagsJson : allKeyTagsJson) {
+                if (!StringUtils.hasText(keyTagsJson)) {
+                    continue;
+                }
+                
+                try {
+                    List<String> tags = objectMapper.readValue(keyTagsJson, new TypeReference<List<String>>() {});
+                    
+                    for (String tag : tags) {
+                        // 学科领域标签
+                        if (tag.equals("地质学") || tag.equals("工程学") || tag.equals("石油") || 
+                            tag.equals("环境") || tag.equals("经济") || tag.equals("法律") || 
+                            tag.equals("艺术") || tag.equals("计算机") || tag.equals("其他")) {
+                            if (!disciplineTags.contains(tag)) {
+                                disciplineTags.add(tag);
+                            }
+                        }
+                        // 年代标签
+                        else if (tag.equals("20世纪初") || tag.equals("20世纪中") || tag.equals("21世纪")) {
+                            if (!eraTags.contains(tag)) {
+                                eraTags.add(tag);
+                            }
+                        }
+                        // 成就标签
+                        else if (tag.equals("院士") || tag.equals("奖项人") || tag.equals("教授")) {
+                            if (!achievementTags.contains(tag)) {
+                                achievementTags.add(tag);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // 解析单个标签失败，跳过
+                    System.err.println("解析标签失败: " + keyTagsJson);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("获取标签失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        result.put("discipline", disciplineTags);
+        result.put("era", eraTags);
+        result.put("achievement", achievementTags);
+        
+        return result;
+    }
 }
 

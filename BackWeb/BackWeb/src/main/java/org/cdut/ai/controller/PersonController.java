@@ -216,4 +216,20 @@ public class PersonController {
         System.out.println("=== DEBUG API 结束 ===");
         return result;
     }
+    
+    @Operation(summary = "获取所有可用的标签选项")
+    @GetMapping("/tags")
+    public Map<String, Object> getAvailableTags() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Map<String, List<String>> tags = personService.getAllAvailableTags();
+            result.put("success", true);
+            result.put("data", tags);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取标签选项失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
