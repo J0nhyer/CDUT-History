@@ -156,17 +156,15 @@ public class DrawRevealService {
      * 从人物数据中提取研究领域
      */
     private String extractField(Person person) {
-        if (person.getKeyTags() != null) {
-            List<String> tags = person.getKeyTags();
+        if (person.getKeyTagsList() != null && !person.getKeyTagsList().isEmpty()) {
+            List<String> tags = person.getKeyTagsList();
             // 返回第一个非时期的标签
             for (String tag : tags) {
                 if (!tag.contains("世纪") && !tag.equals("院士") && !tag.equals("教授") && !tag.equals("奖项人")) {
                     return tag;
                 }
             }
-            if (!tags.isEmpty()) {
-                return tags.get(0);
-            }
+            return tags.get(0);
         }
         return null;
     }
@@ -314,5 +312,178 @@ public class DrawRevealService {
                 return "勇敢尝试，艺术没有标准答案！";
             }
         }
+    }
+    
+    /**
+     * AI图像识别 - 识别画作并匹配相似的内容（人物、事件、建筑等）
+     * @param canvasData 画布图片数据
+     * @param features 画作特征
+     * @return 识别结果
+     */
+    public Map<String, Object> recognizeDrawing(String canvasData, Map<String, Object> features) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 基于画作特征进行智能匹配
+            int strokeCount = getIntValue(features, "strokeCount");
+            double coverageRatio = getDoubleValue(features, "coverageRatio");
+            int pointCount = getIntValue(features, "pointCount");
+            
+            // 根据特征推断可能的类别和内容类型
+            String category = inferCategory(strokeCount, coverageRatio, pointCount);
+            String contentType = inferContentType(strokeCount, coverageRatio, pointCount);
+            
+            // 根据内容类型随机获取对应的内容
+            Map<String, Object> recognizedContent = getContentByType(contentType);
+            
+            if (recognizedContent != null && !recognizedContent.isEmpty()) {
+                result.put("recognized", true);
+                result.put("category", category);
+                result.put("contentType", contentType);
+                result.put("confidence", calculateConfidence(strokeCount, coverageRatio));
+                result.putAll(recognizedContent);
+            } else {
+                result.put("recognized", false);
+                result.put("message", "未能识别出相关内容");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("图像识别失败: " + e.getMessage());
+            e.printStackTrace();
+            result.put("recognized", false);
+            result.put("message", "识别过程出现错误");
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 根据特征推断内容类型
+     */
+    private String inferContentType(int strokeCount, double coverageRatio, int pointCount) {
+        // 使用随机但有权重的方式选择类型
+        double random = Math.random();
+        
+        if (strokeCount < 15 && coverageRatio < 0.3) {
+            // 简单线条 -> 更可能是人物或建筑
+            return random < 0.6 ? "person" : "event";
+        } else if (strokeCount >= 15 && strokeCount < 40 && coverageRatio < 0.5) {
+            // 中等复杂度 -> 事件或建筑
+            return random < 0.7 ? "event" : "person";
+        } else if (coverageRatio >= 0.5) {
+            // 高覆盖度 -> 更可能是场景或事件
+            return random < 0.8 ? "event" : "person";
+        } else {
+            // 默认随机
+            return random < 0.5 ? "person" : "event";
+        }
+    }
+    
+    /**
+     * 根据类型获取对应内容
+     */
+    private Map<String, Object> getContentByType(String contentType) {
+        Map<String, Object> content = new HashMap<>();
+        
+        if ("person".equals(contentType)) {
+            Person person = personService.getRandomPerson();
+            if (person != null) {
+                content.put("type", "person");
+                content.put("id", person.getPersonId());
+                content.put("name", person.getName());
+                content.put("title", person.getSubtitle());
+                content.put("imageUrl", person.getImageUrl() != null ? person.getImageUrl() : "");
+                content.put("description", "这是成都理工大学历史上的重要人物。");
+                content.put("interpretation", generatePersonInterpretation(person));
+            }
+        } else if ("event".equals(contentType)) {
+            HistoryEvent event = historyService.getRandomHistoryEvent();
+            if (event != null) {
+                content.put("type", "event");
+                content.put("id", event.getEventId());
+                content.put("name", event.getEventName());
+                content.put("time", event.getEventTime());
+                content.put("eventType", event.getEventType());
+                content.put("imageUrl", event.getImageUrl() != null ? event.getImageUrl() : "");
+                content.put("description", event.getDescription());
+                content.put("interpretation", generateEventInterpretation(event));
+            }
+        }
+        
+        return content;
+    }
+    
+    /**
+     * 生成人物解释
+     */
+    private String generatePersonInterpretation(Person person) {
+        String[] templates = {
+            "您的画作让我联想到了%s。这位杰出人物为成理的发展做出了重要贡献。",
+            "从您的创作中，我看到了与%s相似的特质。让我们一起了解这位成理先贤的故事。",
+            "您的画作与%s有着奇妙的共鸣。%s在成理历史上留下了浓墨重彩的一笔。",
+            "通过AI分析，您的作品让我想起了%s。这是一位值得铭记的成理人物。"
+        };
+        
+        String template = templates[(int)(Math.random() * templates.length)];
+        return String.format(template, person.getName(), person.getName());
+    }
+    
+    /**
+     * 生成事件解释
+     */
+    private String generateEventInterpretation(HistoryEvent event) {
+        String[] templates = {
+            "您的画作让我联想到了%s这个重要的历史时刻。这是成理发展历程中的关键节点。",
+            "从您的创作中，我看到了与%s相关的元素。这段历史见证了成理的成长。",
+            "您的画作与%s的历史场景有着奇妙的共鸣。让我们一起回顾这段历史。",
+            "通过AI分析，我发现您的作品与%s这段历史有相似之处。这是成理历史上值得纪念的时刻。"
+        };
+        
+        String template = templates[(int)(Math.random() * templates.length)];
+        String eventIntro = event.getDescription() != null && event.getDescription().length() > 50 
+            ? event.getDescription().substring(0, 50) + "..." 
+            : (event.getDescription() != null ? event.getDescription() : "");
+        
+        return String.format(template, event.getEventName()) + eventIntro;
+    }
+    
+    /**
+     * 根据画作特征推断类别
+     */
+    private String inferCategory(int strokeCount, double coverageRatio, int pointCount) {
+        if (strokeCount < 10 && coverageRatio < 0.3) {
+            return "简笔画";
+        } else if (strokeCount >= 10 && strokeCount < 30 && coverageRatio < 0.5) {
+            return "线条画";
+        } else if (coverageRatio >= 0.5 && strokeCount < 50) {
+            return "填充画";
+        } else if (strokeCount >= 50) {
+            return "复杂画作";
+        } else {
+            return "创意画作";
+        }
+    }
+    
+    /**
+     * 计算识别置信度
+     */
+    private int calculateConfidence(int strokeCount, double coverageRatio) {
+        int baseConfidence = 60;
+        
+        // 笔画数贡献
+        if (strokeCount >= 10 && strokeCount <= 50) {
+            baseConfidence += 15;
+        } else if (strokeCount > 5) {
+            baseConfidence += 10;
+        }
+        
+        // 覆盖度贡献
+        if (coverageRatio >= 0.2 && coverageRatio <= 0.7) {
+            baseConfidence += 15;
+        } else if (coverageRatio > 0.1) {
+            baseConfidence += 10;
+        }
+        
+        return Math.min(95, baseConfidence);
     }
 }

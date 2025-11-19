@@ -821,7 +821,10 @@ export default {
     viewPerson(personId) {
       // ⭐ 使用新的统一路由格式，跳转到高级版人物详情页
       // 所有人物都使用 PersonDetailAdvancedPage 组件
-      this.$router.push(`/person/${personId}`);
+      this.$router.push({
+        path: `/person/${personId}`,
+        query: { from: 'persons' }
+      });
     },
     
     // 处理图片加载错误

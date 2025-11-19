@@ -64,7 +64,8 @@ export default {
       activeKeywords: [],    // 当前显示的关键词
       maxKeywords: 30,       // 同时显示的最大关键词数
       caughtKeywords: new Set(), // 已接住的关键词ID
-      caughtCount: 0         // 接住计数
+      caughtCount: 0,        // 接住计数
+      rainInterval: null     // 雨水定时器
     };
   },
   computed: {
@@ -83,6 +84,9 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.adjustMaxKeywords);
+    if (this.rainInterval) {
+      clearInterval(this.rainInterval);
+    }
   },
   methods: {
     async loadAllKeywords() {
@@ -118,7 +122,7 @@ export default {
               id: `event-${e.event_id}`,
               name: e.title,
               type: 'event',
-              route: `/history/${e.event_id}`
+              route: '/digital-history'
             }));
           this.keywords.push(...events);
         }
@@ -180,6 +184,11 @@ export default {
       for (let i = 0; i < this.maxKeywords; i++) {
         this.addKeyword();
       }
+      
+      // 持续添加新关键词，保持雨水连贯
+      this.rainInterval = setInterval(() => {
+        this.addKeyword();
+      }, 800); // 每0.8秒添加一个新关键词
     },
 
     addKeyword() {
@@ -240,9 +249,17 @@ export default {
         this.caughtCount++;
       }
 
-      // 延迟后跳转到目标页面
+      // 延迟后跳转到目标页面，携带来源信息
       setTimeout(() => {
-        this.$router.push(keyword.route);
+        // 根据类型添加来源参数
+        if (keyword.type === 'person') {
+          this.$router.push({
+            path: keyword.route,
+            query: { from: 'keyword-rain' }
+          });
+        } else {
+          this.$router.push(keyword.route);
+        }
       }, 300);
     },
 
@@ -307,6 +324,7 @@ export default {
   z-index: 10;
   text-align: center;
   padding: 120px 20px 60px;
+  pointer-events: none;
 }
 
 .rain-title {

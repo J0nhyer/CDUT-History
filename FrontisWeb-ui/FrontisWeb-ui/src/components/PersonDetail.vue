@@ -4,7 +4,7 @@
     <div class="back-section">
       <button class="back-btn" @click="goBack">
         <i class="fas fa-arrow-left"></i>
-        返回人物列表
+        返回
       </button>
     </div>
     
@@ -141,7 +141,19 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.back()
+      // 检查来源参数
+      const from = this.$route.query.from;
+      
+      if (from === 'keyword-rain') {
+        // 从倾听雨声来的，返回倾听雨声
+        this.$router.push('/keyword-rain');
+      } else if (from === 'persons') {
+        // 从人物列表来的，返回人物列表
+        this.$router.push('/persons');
+      } else {
+        // 默认使用浏览器历史返回
+        this.$router.back();
+      }
     }
   }
 }

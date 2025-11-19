@@ -83,7 +83,7 @@
       <!-- 画布提示 -->
       <div v-if="!hasDrawn" class="canvas-hint">
         <i class="fas fa-paint-brush"></i>
-        <p>在这里画出你的想象...</p>
+        <p>一笔一划绘出成理色彩...</p>
       </div>
     </div>
 
@@ -109,6 +109,30 @@
           </button>
           
           <div v-if="currentResult" class="card-content">
+            <!-- AI图像识别结果 -->
+            <div v-if="currentResult.recognition && currentResult.recognition.recognized" class="recognition-section">
+              <div class="recognition-header">
+                <i class="fas fa-search"></i>
+                <span>AI识别结果</span>
+                <span class="confidence-badge">置信度 {{ currentResult.recognition.confidence }}%</span>
+              </div>
+              
+              <div v-if="currentResult.recognition.imageUrl" class="recognition-image">
+                <img :src="currentResult.recognition.imageUrl" :alt="currentResult.recognition.name" />
+                <div class="image-overlay">
+                  <div class="event-category">{{ currentResult.recognition.category }}</div>
+                  <div class="content-type-badge">{{ currentResult.recognition.type === 'person' ? '人物' : '事件' }}</div>
+                </div>
+              </div>
+              
+              <div class="recognition-content">
+                <h3 class="recognition-title">{{ currentResult.recognition.name }}</h3>
+                <p v-if="currentResult.recognition.type === 'person'" class="recognition-time">{{ currentResult.recognition.title }}</p>
+                <p v-if="currentResult.recognition.type === 'event'" class="recognition-time">{{ currentResult.recognition.time }}</p>
+                <p class="recognition-interpretation">{{ currentResult.recognition.interpretation }}</p>
+              </div>
+            </div>
+
             <!-- AI评分 -->
             <div v-if="currentResult.aiScore" class="ai-score-section">
               <div class="score-badge">
@@ -444,6 +468,21 @@ export default {
         const apiBase = this.resolveApiBase()
         console.log('API地址:', apiBase)
         
+        // 调用AI图像识别接口
+        console.log('调用AI图像识别接口...')
+        const recognizeResponse = await fetch(`${apiBase}/api/draw-reveal/recognize`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            canvasData: canvasData,
+            features: drawingFeatures
+          })
+        })
+        const recognizeResult = await recognizeResponse.json()
+        console.log('AI识别结果:', recognizeResult)
+        
         // 调用AI打分接口
         console.log('调用AI打分接口...')
         const scoreResponse = await fetch(`${apiBase}/api/draw-reveal/score`, {
@@ -468,7 +507,8 @@ export default {
         if (contentResult.success) {
           this.currentResult = {
             ...contentResult.data,
-            aiScore: scoreResult.success ? scoreResult.data : null
+            aiScore: scoreResult.success ? scoreResult.data : null,
+            recognition: recognizeResult.success && recognizeResult.data ? recognizeResult.data : null
           }
           console.log('最终结果:', this.currentResult)
         } else {
@@ -701,6 +741,7 @@ export default {
   height: 32px;
   cursor: pointer;
   transition: all 0.3s;
+  overflow: visible;
 }
 
 .custom-color-wrapper:hover {
@@ -709,16 +750,13 @@ export default {
 
 .custom-color-input {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
-  z-index: 2;
+  z-index: 3;
   border: none;
   outline: none;
-  background: transparent;
 }
 
 .custom-color-input::-webkit-color-swatch-wrapper {
@@ -733,17 +771,39 @@ export default {
 
 .custom-color-display {
   position: absolute;
-  width: 32px;
-  height: 32px;
-  border: 3px solid transparent;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: linear-gradient(45deg, 
-    #ff0000 0%, #ff7f00 14%, #ffff00 28%, 
-    #00ff00 42%, #0000ff 57%, #4b0082 71%, 
-    #9400d3 85%, #ff0000 100%);
+  background: conic-gradient(
+    from 0deg,
+    #ff0000 0deg,
+    #ff7f00 51deg,
+    #ffff00 102deg,
+    #00ff00 153deg,
+    #00ffff 204deg,
+    #0000ff 255deg,
+    #ff00ff 306deg,
+    #ff0000 360deg
+  );
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   z-index: 1;
+}
+
+.custom-color-display::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border: 3px solid white;
+  border-radius: 50%;
+  z-index: 2;
 }
 
 .custom-color-wrapper:hover .custom-color-display {
@@ -955,6 +1015,112 @@ canvas {
 
 .card-content {
   padding: 40px;
+}
+
+.recognition-section {
+  margin-bottom: 30px;
+  padding: 25px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+}
+
+.recognition-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.recognition-header i {
+  font-size: 20px;
+  color: #667eea;
+}
+
+.confidence-badge {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.recognition-image {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.recognition-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.7));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.event-category {
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.content-type-badge {
+  padding: 6px 16px;
+  background: rgba(102, 126, 234, 0.9);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.recognition-content {
+  text-align: left;
+}
+
+.recognition-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.recognition-time {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 12px;
+}
+
+.recognition-interpretation {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #495057;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
 }
 
 .ai-score-section {

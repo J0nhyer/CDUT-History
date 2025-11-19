@@ -75,6 +75,36 @@ public class DrawRevealController {
     }
     
     /**
+     * AI图像识别接口
+     */
+    @Operation(summary = "AI图像识别")
+    @PostMapping("/recognize")
+    public Map<String, Object> recognizeDrawing(@RequestBody Map<String, Object> requestData) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String canvasData = (String) requestData.get("canvasData");
+            
+            if (canvasData == null || canvasData.isEmpty()) {
+                result.put("success", false);
+                result.put("message", "缺少画作数据");
+                return result;
+            }
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Object> features = (Map<String, Object>) requestData.get("features");
+            
+            Map<String, Object> recognitionData = drawRevealService.recognizeDrawing(canvasData, features);
+            result.put("success", true);
+            result.put("data", recognitionData);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "识别失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
+    /**
      * 测试接口
      */
     @Operation(summary = "测试接口")
