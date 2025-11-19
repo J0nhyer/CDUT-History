@@ -100,7 +100,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO academic_universe
   (university_id, name, type, position_x, position_y, position_z, size, description, color)
 VALUES
-  ('cdut', '成都理工大学', 'university', 0.00, 0.00, 0.00, 3.00, '', '0xffaa00');
+  ('cdut', '成都理工大学', 'university', 0.00, 0.00, 0.00, 8.00, '', '0xffaa00');
 
 -- 插入学院/实验室节点
 INSERT INTO academic_node

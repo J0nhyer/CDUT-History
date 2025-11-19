@@ -7,12 +7,10 @@
 .person-detail-page {
   overflow-x: hidden;
   overflow-y: auto;
-  min-height: 100vh;
   background-color: white;
 }
 
 .person-detail-page .main-page {
-  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -20,7 +18,7 @@
 /* ===== 头部区域 ===== */
 .header-section {
   background: #000000;
-  padding: 40px 0;
+  padding: 20px 0;
   color: white;
 }
 
@@ -83,13 +81,13 @@
 
 /* ===== 主要内容区 ===== */
 .main-content {
-  padding: 40px 0;
+  padding: 20px 0 10px 0;
 }
 
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 40px;
+  gap: 30px;
   align-items: start;
 }
 
@@ -100,7 +98,7 @@
 
 .image-container {
   width: 100%;
-  height: 500px;
+  height: 400px;
   overflow: hidden;
   border-radius: 10px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -146,14 +144,14 @@
 }
 
 .section-title {
-  font-size: 28px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 15px;
   color: #2c3e50;
 }
 
 /* ===== 信息块样式 ===== */
 .info-block {
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   padding: 2px;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 6px;
@@ -202,10 +200,10 @@
 }
 
 .block-title {
-  font-size: 20px;
+  font-size: 18px;
   color: #2c3e50;
-  margin: 15px 0 10px;
-  padding: 10px;
+  margin: 10px 0 8px;
+  padding: 8px;
 }
 
 .highlight-content p {
@@ -734,8 +732,8 @@
 /* ===== 底部区域 ===== */
 .footer-section {
   background: #000000;
-  padding: 30px 0;
-  margin-top: 40px;
+  padding: 10px 0;
+  margin-top: 10px;
   color: white;
 }
 
@@ -869,9 +867,9 @@
 
 /* ===== 关系图谱区域 ===== */
 .relationship-section {
-  padding: 40px 0;
+  padding: 30px 0 10px 0;
   background: #f8f9fa;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 .relationship-section .container {

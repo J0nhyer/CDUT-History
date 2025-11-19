@@ -548,10 +548,10 @@ function createUniverse () {
     return
   }
   const vh = container.value.clientHeight
+  // 强制设置中心恒星为更大的固定值
   const baseSize = Math.max(
-    universeData.university.size * 2.5,
-    Math.floor(vh / 18),
-    42
+    80,  // 直接设置为80，不依赖数据库
+    Math.floor(vh / 18)
   )
   centerSize = baseSize
 

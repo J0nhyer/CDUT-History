@@ -1119,7 +1119,6 @@ export default {
 <style scoped>
 /* 基础样式 */
 .person-detail-narrative {
-  min-height: 100vh;
   background: #fafafa;
   font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -1400,7 +1399,7 @@ export default {
 
 /* 关键信息卡 */
 .info-cards-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: white;
 }
 
@@ -1484,7 +1483,7 @@ export default {
 
 /* 时间轴样式 */
 .timeline-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: #f8f9fa;
 }
 
@@ -1564,7 +1563,7 @@ export default {
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 40px 0;
+  padding: 20px 0;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1806,7 +1805,7 @@ export default {
 
 /* 深度资料区样式 */
 .resources-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: white;
 }
 
@@ -2281,7 +2280,7 @@ export default {
 
 /* 人物关系网样式 */
 .relationships-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: #f8f9fa;
 }
 
@@ -2347,7 +2346,7 @@ export default {
 
 /* 地点地图样式 */
 .map-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: white;
 }
 
@@ -2430,7 +2429,7 @@ export default {
 
 /* 学术引用样式 */
 .citations-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: #f8f9fa;
 }
 
@@ -2573,7 +2572,7 @@ export default {
 
 /* 互动结尾区样式 */
 .interaction-section {
-  padding: 80px 0;
+  padding: 40px 0 20px 0;
   background: white;
 }
 
@@ -2870,9 +2869,9 @@ export default {
 
 /* 扇子展开区域样式 */
 .fan-section {
-  padding: 100px 0;
+  padding: 40px 0 20px 0;
   background: linear-gradient(180deg, #f8f9fa 0%, #e8e9ea 100%);
-  min-height: 600px;
+  min-height: 400px;
   position: relative;
   overflow: hidden;
 }

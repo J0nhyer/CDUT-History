@@ -805,7 +805,6 @@ export default {
 /* 基础样式 */
 .person-detail-advanced {
   background: #f5f7fa;
-  min-height: 100vh;
   overflow-x: hidden;
 }
 

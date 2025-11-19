@@ -22,6 +22,8 @@ import UniversityHistoryGraph from './UniversityHistoryGraph.vue'
 import StarMapKnowledgeGraph from './StarMapKnowledgeGraph.vue'
 import DinoGameMain from './DinoGameMain.vue'
 import DinoCampus3D from './DinoCampus3D.vue'
+import KeywordRain from './KeywordRain.vue'
+import DrawReveal from './DrawReveal.vue'
 
 const routes = [
   {
@@ -144,6 +146,16 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: () => import('./views/ProfilePage.vue')
+  },
+  {
+    path: '/keyword-rain',
+    name: 'KeywordRain',
+    component: KeywordRain
+  },
+  {
+    path: '/draw-reveal',
+    name: 'DrawReveal',
+    component: DrawReveal
   }
 ]
 

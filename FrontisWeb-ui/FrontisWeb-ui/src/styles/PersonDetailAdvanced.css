@@ -1,6 +1,6 @@
 /* ============ 时间轴样式 ============ */
 .overview-section {
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
   background: white;
   position: relative;
   z-index: 1;
@@ -41,13 +41,13 @@
 /* ==================== 生平详情 - 分屏滚动 ==================== */
 .biography-section {
   background: #f5f7fa;
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
 }
 
 .split-screen-container {
   display: flex;
   flex-direction: column;
-  gap: 120px;
+  gap: 60px;
 }
 
 .chapter-block {
@@ -66,10 +66,10 @@
 }
 
 .chapter-title {
-  font-size: 42px;
+  font-size: 32px;
   font-weight: 700;
   color: #2c3e50;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   position: relative;
   padding-left: 20px;
 }
@@ -160,14 +160,14 @@
 /* ==================== 成就卡片网格 ==================== */
 .achievements-section {
   background: white;
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
 }
 
 .filter-tabs {
   display: flex;
   gap: 15px;
   justify-content: center;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
   flex-wrap: wrap;
 }
 
@@ -321,7 +321,7 @@
 /* ==================== 多媒体互动 ==================== */
 .multimedia-section {
   background: #f5f7fa;
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
 }
 
 .media-tabs {
@@ -605,7 +605,7 @@
 /* ==================== 人物关系网络 ==================== */
 .relationship-section {
   background: white;
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
 }
 
 .network-container {
@@ -671,7 +671,7 @@
 /* ==================== 趣闻轶事 - 翻牌卡片 ==================== */
 .anecdotes-section {
   background: #f5f7fa;
-  padding: 100px 0;
+  padding: 40px 0 10px 0;
 }
 
 .flip-cards-grid {
@@ -780,7 +780,7 @@
 .page-footer {
   background: white;
   border-top: 1px solid #e0e0e0;
-  padding: 40px 0;
+  padding: 10px 0;
 }
 
 .footer-actions {

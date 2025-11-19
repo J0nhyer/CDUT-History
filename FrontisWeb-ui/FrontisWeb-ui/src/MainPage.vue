@@ -32,6 +32,8 @@
             <router-link to="/persons" class="nav-link">成理人物</router-link>
             <router-link to="/digital-history" class="nav-link">成理历史</router-link>
             <router-link to="/universe" class="nav-link">学术星图</router-link>
+            <router-link to="/keyword-rain" class="nav-link">倾听雨声</router-link>
+            <router-link to="/draw-reveal" class="nav-link">涂鸦画板</router-link>
           </nav>
           <!-- 用户认证区域 -->
           <div class="auth-section">
@@ -2306,8 +2308,9 @@ section {
 /* 人物和事件板块样式 */
 .content-blocks-section {
   position: relative;
-  padding: 60px 0;
+  padding: 60px 0 120px 0;
   background: white;
+  min-height: 80vh;
   z-index: 2;
 }
 

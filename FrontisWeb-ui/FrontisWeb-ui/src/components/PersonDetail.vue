@@ -141,7 +141,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push('/persons')
+      this.$router.back()
     }
   }
 }

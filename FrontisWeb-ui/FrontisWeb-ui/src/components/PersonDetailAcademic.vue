@@ -164,21 +164,17 @@
       </div>
     </main>
 
-    <!-- 人物关系图谱 - 始终加载，用visibility控制显示 -->
+    <!-- 人物关系图谱 - 使用v-if控制显示 -->
     <section 
       class="relationship-section-fullwidth" 
       id="relationship-section"
-      :style="{ 
-        visibility: activeSection === 'relationship' ? 'visible' : 'hidden',
-        position: activeSection === 'relationship' ? 'relative' : 'absolute',
-        zIndex: activeSection === 'relationship' ? 1 : -1
-      }"
+      v-if="activeSection === 'relationship'"
     >
       <RelationshipGraph ref="relationshipGraph" :personId="personData.id" />
     </section>
 
     <!-- 时间轴区域 - 点击时间轴按钮时显示 -->
-    <section class="timeline-section-fullwidth" id="timeline-section" v-show="activeSection === 'timeline'">
+    <section class="timeline-section-fullwidth" id="timeline-section" v-if="activeSection === 'timeline'">
       <div class="timeline-container-fullwidth">
         <h2 class="timeline-title">重要时间节点</h2>
         <div class="timeline-list-fullwidth" v-if="personData.timeline && personData.timeline.length > 0">
@@ -212,7 +208,7 @@
     </section>
 
     <!-- 页脚 - 只在非关系图谱和时间轴模式下显示 -->
-    <footer class="academic-footer" v-show="activeSection !== 'relationship' && activeSection !== 'timeline'">
+    <footer class="academic-footer" v-if="activeSection !== 'relationship' && activeSection !== 'timeline'">
       <div class="footer-content">
         <p>版权所有 ©成都理工大学数字校史馆</p>
         <p>地址：四川省成都市成华区二仙桥东三路1号 邮编：610059</p>
@@ -432,7 +428,6 @@ export default {
 <style scoped>
 /* 基础样式 - 仿北大校史馆风格 */
 .person-detail-academic {
-  min-height: 100vh;
   background: #ffffff;
   font-family: 'Microsoft YaHei', 'PingFang SC', 'SimSun', serif;
   color: #333333;
@@ -541,14 +536,14 @@ export default {
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px;
+  padding: 20px;
 }
 
 .content-wrapper {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 40px;
-  margin-top: 30px;
+  gap: 30px;
+  margin-top: 20px;
 }
 
 /* 左侧栏 */
@@ -560,8 +555,8 @@ export default {
 .person-photo {
   width: 100%;
   max-width: 280px;
-  height: 350px;
-  margin-bottom: 25px;
+  height: 300px;
+  margin-bottom: 20px;
   overflow: hidden;
   position: relative;
   background: #f0f0f0;
@@ -677,11 +672,11 @@ export default {
 
 /* 章节标题 */
 .section-heading {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 25px 0;
-  padding-bottom: 12px;
+  margin: 0 0 18px 0;
+  padding-bottom: 10px;
   border-bottom: 2px solid #0066cc;
   position: relative;
   overflow: hidden;
@@ -699,7 +694,7 @@ export default {
 
 /* 人物简介 */
 .person-biography {
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 .biography-content {
@@ -726,7 +721,7 @@ export default {
 
 /* 教育经历 */
 .education-section {
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 .education-list {
@@ -762,7 +757,7 @@ export default {
 
 /* 工作经历 */
 .career-section {
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 .career-list {
@@ -844,8 +839,6 @@ export default {
   clear: both;
   text-align: center;
   min-height: calc(100vh - 60px);
-  height: calc(100vh - 60px);
-  margin-bottom: 0;
   overflow: hidden;
 }
 
@@ -865,12 +858,10 @@ export default {
   position: relative;
   display: block;
   margin: 0;
-  padding: 40px 20px;
+  padding: 40px 20px 20px 20px;
   border: none;
   background: #f9f9f9;
   clear: both;
-  min-height: calc(100vh - 60px);
-  margin-bottom: 0;
   overflow-y: auto;
 }
 
@@ -982,8 +973,8 @@ export default {
 .academic-footer {
   background: #f5f5f5;
   border-top: 1px solid #e0e0e0;
-  padding: 40px 0;
-  margin-top: 60px;
+  padding: 20px 0;
+  margin-top: 30px;
 }
 
 .footer-content {

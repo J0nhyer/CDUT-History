@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `person` (
     `subtitle` VARCHAR(500) COMMENT '副标题/职位',
     `image_url` VARCHAR(500) COMMENT '头像图片路径',
     `key_tags` TEXT COMMENT '关键词标签（JSON数组）',
+    `awards` TEXT COMMENT '奖项成就（JSON数组，包含奖项、称号、专利、著作等）',
     `data_status` VARCHAR(20) DEFAULT 'draft' COMMENT '数据状态：completed/pending/draft',
     `last_verified` DATE COMMENT '最后验证日期',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
