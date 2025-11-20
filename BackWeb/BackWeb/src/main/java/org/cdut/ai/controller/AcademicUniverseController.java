@@ -85,6 +85,12 @@ public class AcademicUniverseController {
         }
         return result;
     }
+    
+    @Operation(summary = "获取所有专业")
+    @GetMapping("/majors")
+    public List<org.cdut.ai.model.AcademicMajor> getAllMajors() {
+        return academicUniverseService.getAllMajors();
+    }
 
     @Operation(summary = "根据nodeId获取节点详情")
     @GetMapping("/nodes/{nodeId}")

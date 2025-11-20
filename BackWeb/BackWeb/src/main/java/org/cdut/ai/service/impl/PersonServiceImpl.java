@@ -53,7 +53,10 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
 
     @Override
     public List<Person> getAllPersons() {
-        List<Person> persons = list();
+        // 只查询is_visible为true的人物
+        LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Person::getIsVisible, true);
+        List<Person> persons = list(wrapper);
         // 解析keyTags JSON字符串为List
         persons.forEach(this::parseKeyTags);
         return persons;
@@ -237,7 +240,10 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
     @Override
     public Map<String, Object> getAllAdvancedProfiles() {
         try {
-            List<Person> persons = list();
+            // 只查询is_visible为true的人物
+            LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Person::getIsVisible, true);
+            List<Person> persons = list(wrapper);
 
             Map<String, Object> result = new LinkedHashMap<>();
             for (Person person : persons) {
@@ -467,6 +473,18 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
         result.put("achievement", achievementTags);
         
         return result;
+    }
+    
+    @Override
+    public Person getRandomPerson() {
+        List<Person> allPersons = list();
+        if (allPersons == null || allPersons.isEmpty()) {
+            return null;
+        }
+        int randomIndex = (int) (Math.random() * allPersons.size());
+        Person person = allPersons.get(randomIndex);
+        parseKeyTags(person);
+        return person;
     }
 }
 

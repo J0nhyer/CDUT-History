@@ -166,4 +166,14 @@ public class HistoryServiceImpl implements HistoryService {
         
         return result;
     }
+    
+    @Override
+    public HistoryEvent getRandomHistoryEvent() {
+        List<HistoryEvent> allEvents = historyMapper.getAllEvents();
+        if (allEvents == null || allEvents.isEmpty()) {
+            return null;
+        }
+        int randomIndex = (int) (Math.random() * allEvents.size());
+        return allEvents.get(randomIndex);
+    }
 }

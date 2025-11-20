@@ -16,4 +16,8 @@ export function fetchPersonDetail(personId) {
   return request.get(`/person/${personId}`);
 }
 
+export function fetchPersonEvents(personId) {
+  return request.get(`/person/${personId}/events`);
+}
+
 

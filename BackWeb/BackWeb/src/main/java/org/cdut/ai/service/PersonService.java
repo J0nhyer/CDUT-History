@@ -51,5 +51,10 @@ public interface PersonService extends IService<Person> {
      * 获取所有可用的标签选项（按分类分组）
      */
     Map<String, List<String>> getAllAvailableTags();
+    
+    /**
+     * 随机获取一个人物
+     */
+    Person getRandomPerson();
 }
 

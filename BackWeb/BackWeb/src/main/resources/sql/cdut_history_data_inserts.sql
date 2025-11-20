@@ -15,12 +15,13 @@ SET SQL_SAFE_UPDATES = 1;
 -- 1. 历史大事记数据（完整版 - 23个事件）
 -- ========================================
 
-INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `description`, `event_type`, `importance`, `tags`, `achievements`, `sort_order`) VALUES
+INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `description`, `event_type`, `importance`, `tags`, `achievements`, `image_url`, `sort_order`) VALUES
 ('event-1956', '1956', NULL, NULL, '成都地质勘探学院创办并开学', 
 '成都地质勘探学院创办并开学。国务院批准建立成都地质勘探学院，以重庆大学地质系、西北大学和南京大学地质系的工科部分为基础组建。',
 'founding', 'high', 
 '["建校","地质","教育"]',
 '["学校成立","三所地质院校之一"]',
+'@/assets/events/1956_01_成都地质勘探学院成立.png',
 1),
 
 ('event-1958', '1958', NULL, NULL, '扩展学科并更名为成都地质学院', 
@@ -28,6 +29,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'high',
 '["更名","发展","地质"]',
 '["学校更名"]',
+'@/assets/events/1958年更名为成都地质学院.jpg',
 2),
 
 ('event-1990', '1990', NULL, NULL, '油气藏国家重点实验室获批建设', 
@@ -35,6 +37,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["国家重点实验室","油气藏","科研"]',
 '["国家重点实验室获批"]',
+'@/assets/events/1990年油气藏重点实验室获批建设.jpg',
 3),
 
 ('event-1993', '1993', NULL, NULL, '更名为成都理工学院并获部属重点', 
@@ -42,6 +45,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'high',
 '["更名","发展","理工"]',
 '["学校更名","部属重点"]',
+'@/assets/events/1993年学校更名庆祝大会.jpg',
 4),
 
 ('event-1995', '1995', NULL, NULL, '油气藏国重实验室通过验收', 
@@ -49,6 +53,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["实验室验收","科研平台"]',
 '["国家重点实验室通过验收"]',
+'@/assets/events/1995年油气藏重点实验室通过验收.jpg',
 5),
 
 ('event-2000', '2000', NULL, NULL, '合作成立成都理工学院乐山分院', 
@@ -56,6 +61,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'medium',
 '["分院成立","合作办学"]',
 '["乐山分院成立"]',
+'@/assets/events/2000年乐山分院挂牌暨开学典礼.jpg',
 6),
 
 ('event-2001', '2001', NULL, NULL, '更名为成都理工大学并完成合并', 
@@ -63,6 +69,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'upgrade', 'high',
 '["升格","大学","合并"]',
 '["升格为大学","学校重组"]',
+'@/assets/events/2001年成都理工大学组建成立大会.jpg',
 7),
 
 ('event-2005', '2005', NULL, NULL, '荣获国家科学技术进步奖一等奖', 
@@ -70,6 +77,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'achievement', 'high',
 '["国家科技奖","一等奖","科研成果"]',
 '["国家科技进步一等奖"]',
+'@/assets/events/2005年三代理工人共同托举红灿灿的集体成果.jpg',
 8),
 
 ('event-2007', '2007', NULL, NULL, '地质灾害防治与地质环境保护国家重点实验室被正式批准建设', 
@@ -77,6 +85,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["国家重点实验室","地质灾害","科研"]',
 '["第二个国家重点实验室"]',
+'@/assets/events/2007年地质灾害防治与地质环境保护国家重点实验室被正式批准建设.jpg',
 9),
 
 ('event-2008', '2008', NULL, NULL, '汶川地震中发挥地灾专业所长', 
@@ -84,6 +93,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'achievement', 'high',
 '["汶川地震","地质灾害","社会服务"]',
 '["服务国家重大需求"]',
+'@/assets/events/2008年学校多位专家赴汶川地震实地考察.jpg',
 10),
 
 ('event-2010', '2010', NULL, NULL, '部省共建成理正式签署', 
@@ -91,6 +101,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["部省共建","发展"]',
 '["部省共建高校"]',
+'@/assets/events/2010年国土资源部与四川省共建成都理工大学签字仪式.jpg',
 11),
 
 ('event-2011', '2011', NULL, NULL, '中共成都理工大学第一届委员会第一次全体会议胜利召开', 
@@ -98,6 +109,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'medium',
 '["党代会","党建"]',
 '["第一次党代会"]',
+'@/assets/events/2011年党代会现场.jpg',
 12),
 
 ('event-2012', '2012', NULL, NULL, '就业典型，高质量充分就业', 
@@ -105,6 +117,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'achievement', 'medium',
 '["就业典型","就业质量"]',
 '["就业工作获表彰"]',
+'@/assets/events/2012年学校毕业生就业工作获表彰.jpg',
 13),
 
 ('event-2013', '2013', NULL, NULL, '理工东苑安居工程落成', 
@@ -112,6 +125,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'medium',
 '["安居工程","教职工福利"]',
 '["理工东苑落成"]',
+'@/assets/events/2013年理工东苑奠基仪式现场.jpg',
 14),
 
 ('event-2015', '2015', NULL, NULL, '地质工程首获工程教育认证', 
@@ -119,6 +133,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["工程教育认证","专业建设"]',
 '["首个通过工程教育认证专业"]',
+'@/assets/events/2015年地质工程评估小组与评审专家合影.jpg',
 15),
 
 ('event-2016', '2016', NULL, NULL, '"十三五"规划擘画新蓝图', 
@@ -126,6 +141,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["60周年","双一流","规划"]',
 '["建校60周年","双一流建设启动"]',
+'@/assets/events/2016年学校东区航拍图.jpg',
 16),
 
 ('event-2019', '2019', NULL, NULL, '牛津布鲁克斯学院获批设立', 
@@ -133,6 +149,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["中外合作办学","国际化"]',
 '["中外合作办学学院成立"]',
+'@/assets/events/2019年英国牛津布鲁克斯大学校长阿里斯特･菲特致辞.jpg',
 17),
 
 ('event-2020', '2020', NULL, NULL, '宜宾校区开校启用', 
@@ -140,6 +157,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'high',
 '["宜宾校区","多校区"]',
 '["宜宾校区启用"]',
+'@/assets/events/2020年仪式现场.png',
 18),
 
 ('event-2022', '2022', NULL, NULL, '成都自然博物馆正式开放', 
@@ -147,6 +165,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'achievement', 'high',
 '["自然博物馆","科普教育"]',
 '["成都自然博物馆开放"]',
+'@/assets/events/2022年成都自然博物馆正式开放.jpeg',
 19),
 
 ('event-2023', '2023', NULL, NULL, '油气藏实验室重组为"全国重点"', 
@@ -154,6 +173,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'milestone', 'high',
 '["全国重点实验室","科研平台升级"]',
 '["全国重点实验室重组"]',
+'@/assets/events/2023年会议现场.png',
 20),
 
 ('event-2024', '2024', NULL, NULL, '获国家科技进步二等奖', 
@@ -161,6 +181,7 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'achievement', 'high',
 '["国家科技奖","科研成果"]',
 '["国家科技进步二等奖"]',
+'@/assets/events/2024年国家科技进步二等奖.png',
 21),
 
 ('event-2025', '2025', NULL, NULL, '成都理工与地质大队深化校企合作，推进多领域创新', 
@@ -168,5 +189,6 @@ INSERT INTO `history_event` (`event_id`, `year`, `month`, `day`, `title`, `descr
 'development', 'medium',
 '["校企合作","战略合作"]',
 '["战略合作协议签署"]',
+'@/assets/events/2025年签署战略合作协议现场.jpg',
 22);
 

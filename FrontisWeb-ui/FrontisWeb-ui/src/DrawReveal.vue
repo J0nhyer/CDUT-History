@@ -8,6 +8,26 @@
       <i class="fas fa-arrow-left"></i>
     </button>
 
+    <!-- 模式选择器 -->
+    <div class="mode-selector">
+      <button 
+        class="mode-btn" 
+        :class="{ active: drawMode === 'person' }"
+        @click="changeMode('person')"
+        title="画人物">
+        <i class="fas fa-user"></i>
+        <span>画人物</span>
+      </button>
+      <button 
+        class="mode-btn" 
+        :class="{ active: drawMode === 'event' }"
+        @click="changeMode('event')"
+        title="画学校">
+        <i class="fas fa-school"></i>
+        <span>画学校</span>
+      </button>
+    </div>
+
     <!-- 画笔工具栏 -->
     <div class="toolbar">
       <button class="toolbar-toggle" @click="showToolbar = !showToolbar" title="画笔工具">
@@ -109,19 +129,35 @@
           </button>
           
           <div v-if="currentResult" class="card-content">
-            <!-- AI图像识别结果 -->
-            <div v-if="currentResult.recognition && currentResult.recognition.recognized" class="recognition-section">
+            <!-- AI图像识别结果 (仅画人物时显示) -->
+            <div v-if="drawMode === 'person' && currentResult.recognition && currentResult.recognition.recognized" class="recognition-section">
               <div class="recognition-header">
                 <i class="fas fa-search"></i>
                 <span>AI识别结果</span>
                 <span class="confidence-badge">置信度 {{ currentResult.recognition.confidence }}%</span>
               </div>
               
-              <div v-if="currentResult.recognition.imageUrl" class="recognition-image">
-                <img :src="currentResult.recognition.imageUrl" :alt="currentResult.recognition.name" />
+              <!-- 人物/事件图片 - 来自数据库image_url字段 -->
+              <div class="recognition-image">
+                <img 
+                  v-if="currentResult.recognition.imageUrl" 
+                  :src="currentResult.recognition.imageUrl" 
+                  :alt="currentResult.recognition.name"
+                  @error="handleImageError"
+                />
+                <div v-else class="no-image-placeholder">
+                  <i :class="currentResult.recognition.type === 'person' ? 'fas fa-user-circle' : 'fas fa-calendar-alt'"></i>
+                  <p>{{ currentResult.recognition.type === 'person' ? '暂无人物照片' : '暂无事件图片' }}</p>
+                  <small>数据库image_url字段为空</small>
+                </div>
                 <div class="image-overlay">
-                  <div class="event-category">{{ currentResult.recognition.category }}</div>
-                  <div class="content-type-badge">{{ currentResult.recognition.type === 'person' ? '人物' : '事件' }}</div>
+                  <div class="overlay-top">
+                    <div class="event-category">{{ currentResult.recognition.category }}</div>
+                    <div class="content-type-badge">{{ currentResult.recognition.type === 'person' ? '人物' : '事件' }}</div>
+                  </div>
+                  <div v-if="currentResult.recognition.imageUrl" class="image-source-badge">
+                    <i class="fas fa-database"></i> 图片来自数据库image_url字段
+                  </div>
                 </div>
               </div>
               
@@ -129,12 +165,24 @@
                 <h3 class="recognition-title">{{ currentResult.recognition.name }}</h3>
                 <p v-if="currentResult.recognition.type === 'person'" class="recognition-time">{{ currentResult.recognition.title }}</p>
                 <p v-if="currentResult.recognition.type === 'event'" class="recognition-time">{{ currentResult.recognition.time }}</p>
+                
+                <!-- 显示数据库来源信息 -->
+                <div v-if="currentResult.recognition.id || currentResult.recognition.dbSource" class="db-source-info">
+                  <i class="fas fa-database"></i>
+                  <span v-if="currentResult.recognition.type === 'person'">
+                    数据来源：person表 (ID: {{ currentResult.recognition.id }})
+                  </span>
+                  <span v-else>
+                    数据来源：history_event表 (ID: {{ currentResult.recognition.id }})
+                  </span>
+                </div>
+                
                 <p class="recognition-interpretation">{{ currentResult.recognition.interpretation }}</p>
               </div>
             </div>
 
-            <!-- AI评分 -->
-            <div v-if="currentResult.aiScore" class="ai-score-section">
+            <!-- AI评分 (仅画学校时显示) -->
+            <div v-if="drawMode === 'event' && currentResult.aiScore" class="ai-score-section">
               <div class="score-badge">
                 <div class="score-label">AI评分</div>
                 <div class="score-value">{{ currentResult.aiScore.score }}</div>
@@ -148,62 +196,14 @@
               <div class="score-comment">{{ currentResult.aiScore.comment }}</div>
             </div>
 
-            <!-- 卡片头部 -->
-            <div class="card-header">
-              <div class="card-icon">
-                <i :class="currentResult.type === 'person' ? 'fas fa-user-circle' : 'fas fa-calendar-alt'"></i>
-              </div>
-              <h2 class="card-title">{{ currentResult.name }}</h2>
-            </div>
-
-            <!-- 卡片内容 -->
-            <div class="card-body">
-              <div v-if="currentResult.type === 'person'" class="person-info">
-                <div v-if="currentResult.birth_year" class="info-item">
-                  <i class="fas fa-birthday-cake"></i>
-                  <span>{{ currentResult.birth_year }}</span>
-                </div>
-                <div v-if="currentResult.title" class="info-item">
-                  <i class="fas fa-briefcase"></i>
-                  <span>{{ currentResult.title }}</span>
-                </div>
-                <div v-if="currentResult.field" class="info-item">
-                  <i class="fas fa-graduation-cap"></i>
-                  <span>{{ currentResult.field }}</span>
-                </div>
-              </div>
-
-              <div v-else class="event-info">
-                <div v-if="currentResult.event_date" class="info-item">
-                  <i class="fas fa-calendar"></i>
-                  <span>{{ currentResult.event_date }}</span>
-                </div>
-                <div v-if="currentResult.event_type" class="info-item">
-                  <i class="fas fa-tag"></i>
-                  <span>{{ currentResult.event_type }}</span>
-                </div>
-                <div v-if="currentResult.importance" class="info-item">
-                  <i class="fas fa-star"></i>
-                  <span>重要度: {{ currentResult.importance }}</span>
-                </div>
-              </div>
-
-              <div class="description">
-                <p>{{ currentResult.description }}</p>
-              </div>
-
-              <!-- 查看详情按钮 -->
-              <div class="card-actions">
-                <button v-if="currentResult.type === 'person'" class="detail-btn" @click="goToPersonDetail">
-                  查看完整人物介绍 <i class="fas fa-arrow-right"></i>
-                </button>
-                <button v-else class="detail-btn" @click="goToHistoryTimeline">
-                  查看历史时间轴 <i class="fas fa-arrow-right"></i>
-                </button>
-                <button class="retry-btn" @click="retryDraw">
-                  <i class="fas fa-redo"></i> 再画一次
-                </button>
-              </div>
+            <!-- 操作按钮 -->
+            <div class="card-actions">
+              <button v-if="drawMode === 'person' && currentResult.type === 'person' && currentResult.id" class="detail-btn" @click="goToPersonDetail">
+                查看完整人物介绍 <i class="fas fa-arrow-right"></i>
+              </button>
+              <button class="retry-btn" @click="retryDraw">
+                <i class="fas fa-redo"></i> 再画一次
+              </button>
             </div>
           </div>
 
@@ -218,10 +218,13 @@
 </template>
 
 <script>
+import { getPersonImage, getEventImage } from '@/utils/imageLoader'
+
 export default {
   name: 'DrawReveal',
   data() {
     return {
+      drawMode: 'person', // 'person' 或 'event'
       canvas: null,
       ctx: null,
       isDrawing: false,
@@ -314,6 +317,11 @@ export default {
     changeBackground(color) {
       this.backgroundColor = color
       this.redrawAll()
+    },
+    
+    changeMode(mode) {
+      this.drawMode = mode
+      console.log('切换模式:', mode === 'person' ? '画人物' : '画学校')
     },
     
     resizeCanvas() {
@@ -468,8 +476,8 @@ export default {
         const apiBase = this.resolveApiBase()
         console.log('API地址:', apiBase)
         
-        // 调用AI图像识别接口
-        console.log('调用AI图像识别接口...')
+        // 调用AI图像识别接口（传递当前选择的模式）
+        console.log('调用AI图像识别接口，模式:', this.drawMode)
         const recognizeResponse = await fetch(`${apiBase}/api/draw-reveal/recognize`, {
           method: 'POST',
           headers: {
@@ -477,44 +485,67 @@ export default {
           },
           body: JSON.stringify({
             canvasData: canvasData,
-            features: drawingFeatures
+            features: drawingFeatures,
+            drawMode: this.drawMode  // 传递用户选择的模式
           })
         })
         const recognizeResult = await recognizeResponse.json()
         console.log('AI识别结果:', recognizeResult)
         
-        // 调用AI打分接口
-        console.log('调用AI打分接口...')
-        const scoreResponse = await fetch(`${apiBase}/api/draw-reveal/score`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            canvasData: canvasData,
-            features: drawingFeatures
+        // 调用AI打分接口（仅在画学校模式下调用）
+        let scoreResult = { success: false, data: null }
+        if (this.drawMode === 'event') {
+          console.log('调用AI打分接口（画学校模式）...')
+          const scoreResponse = await fetch(`${apiBase}/api/draw-reveal/score`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              canvasData: canvasData,
+              features: drawingFeatures
+            })
           })
-        })
-        const scoreResult = await scoreResponse.json()
-        console.log('AI评分结果:', scoreResult)
-        
-        // 调用随机内容接口
-        console.log('调用随机内容接口...')
-        const contentResponse = await fetch(`${apiBase}/api/draw-reveal/random`)
-        const contentResult = await contentResponse.json()
-        console.log('随机内容结果:', contentResult)
-        
-        if (contentResult.success) {
-          this.currentResult = {
-            ...contentResult.data,
-            aiScore: scoreResult.success ? scoreResult.data : null,
-            recognition: recognizeResult.success && recognizeResult.data ? recognizeResult.data : null
-          }
-          console.log('最终结果:', this.currentResult)
+          scoreResult = await scoreResponse.json()
+          console.log('AI评分结果:', scoreResult)
         } else {
-          console.error('获取内容失败:', contentResult.message)
-          alert('获取失败: ' + (contentResult.message || '未知错误'))
-          this.closeResultCard()
+          console.log('画人物模式，跳过AI打分')
+        }
+        
+        // 根据模式处理结果
+        if (this.drawMode === 'person') {
+          // 画人物模式：需要识别结果
+          if (recognizeResult.success && recognizeResult.data && recognizeResult.data.recognized) {
+            // 处理图片路径
+            const recognitionData = { ...recognizeResult.data }
+            if (recognitionData.imageUrl) {
+              console.log('原始图片路径:', recognitionData.imageUrl)
+              recognitionData.imageUrl = getPersonImage(recognitionData.imageUrl)
+              console.log('处理后图片路径:', recognitionData.imageUrl)
+            }
+            
+            this.currentResult = {
+              ...recognitionData,
+              recognition: recognitionData
+            }
+            console.log('最终结果（画人物）:', this.currentResult)
+          } else {
+            console.log('AI未能识别人物，提示用户重试')
+            alert('AI暂未识别出相关人物，请重新绘制')
+            this.closeResultCard()
+          }
+        } else {
+          // 画学校模式：只需要评分，不需要识别结果
+          if (scoreResult.success && scoreResult.data) {
+            this.currentResult = {
+              aiScore: scoreResult.data
+            }
+            console.log('最终结果（画学校）:', this.currentResult)
+          } else {
+            console.log('AI评分失败')
+            alert('AI评分失败，请重试')
+            this.closeResultCard()
+          }
         }
       } catch (error) {
         console.error('提交失败:', error)
@@ -565,6 +596,12 @@ export default {
       return ''
     },
     
+    handleImageError(event) {
+      console.error('图片加载失败，图片路径来自数据库image_url字段:', event.target.src)
+      event.target.style.display = 'none'
+      // 可以在这里添加占位图逻辑
+    },
+    
     closeResultCard() {
       this.showResultCard = false
       setTimeout(() => {
@@ -578,8 +615,11 @@ export default {
     },
     
     goToPersonDetail() {
-      if (this.currentResult && this.currentResult.person_id) {
-        this.$router.push(`/person/${this.currentResult.person_id}`)
+      if (this.currentResult && this.currentResult.id) {
+        this.$router.push({
+          path: `/person/${this.currentResult.id}`,
+          query: { from: 'draw-reveal' }
+        })
       }
     },
     
@@ -638,6 +678,56 @@ export default {
   background: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 模式选择器 */
+.mode-selector {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.mode-btn {
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-btn i {
+  font-size: 18px;
+}
+
+.mode-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.mode-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* 画笔工具栏 */
@@ -1065,17 +1155,51 @@ canvas {
   object-fit: cover;
 }
 
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #7f8c8d;
+}
+
+.no-image-placeholder i {
+  font-size: 80px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.no-image-placeholder p {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.no-image-placeholder small {
+  font-size: 12px;
+  color: #95a5a6;
+}
+
 .image-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.7));
+  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.7));
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 20px;
+}
+
+.overlay-top {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .event-category {
@@ -1096,6 +1220,23 @@ canvas {
   color: white;
 }
 
+.image-source-badge {
+  padding: 4px 12px;
+  background: rgba(40, 167, 69, 0.9);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+}
+
+.image-source-badge i {
+  font-size: 11px;
+}
+
 .recognition-content {
   text-align: left;
 }
@@ -1113,6 +1254,23 @@ canvas {
   margin-bottom: 12px;
 }
 
+.db-source-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 6px;
+}
+
+.db-source-info i {
+  font-size: 13px;
+}
+
 .recognition-interpretation {
   font-size: 15px;
   line-height: 1.6;
@@ -1127,9 +1285,11 @@ canvas {
   text-align: center;
   margin-bottom: 30px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(255, 255, 255, 0.98);
   border-radius: 15px;
-  color: white;
+  color: #000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .score-badge {
@@ -1138,8 +1298,8 @@ canvas {
 
 .score-label {
   font-size: 14px;
-  font-weight: 500;
-  opacity: 0.9;
+  font-weight: 600;
+  color: #000;
   margin-bottom: 8px;
 }
 
@@ -1148,6 +1308,7 @@ canvas {
   font-weight: 700;
   line-height: 1;
   margin-bottom: 12px;
+  color: #000;
 }
 
 .score-stars {
@@ -1158,7 +1319,7 @@ canvas {
 }
 
 .score-stars i {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.2);
   transition: all 0.3s;
 }
 
@@ -1170,7 +1331,7 @@ canvas {
 .score-comment {
   font-size: 15px;
   font-weight: 400;
-  opacity: 0.95;
+  color: #333;
   font-style: italic;
 }
 

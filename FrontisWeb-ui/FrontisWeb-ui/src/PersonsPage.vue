@@ -92,7 +92,7 @@
         <div class="container">
           <div class="filter-header">
             <h2>探索更多</h2>
-            <p>通过学科、年代、成就筛选查找</p>
+            <p>通过学科、年代、荣誉成就筛选查找</p>
           </div>
           
           <!-- 搜索框 -->
@@ -149,7 +149,7 @@
             <div class="filter-group">
               <label class="filter-label">
                 <i class="fas fa-trophy"></i>
-                成就
+                荣誉成就
               </label>
               <div class="filter-options">
                 <button 
@@ -452,7 +452,8 @@ export default {
       });
       const uniquePersons = Array.from(uniquePersonsMap.values());
       
-      return uniquePersons.filter(person => {
+      // 先筛选
+      const filtered = uniquePersons.filter(person => {
         // 搜索匹配
         const searchMatch = !this.searchQuery || 
                            person.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -463,6 +464,35 @@ export default {
         const achievementMatch = this.selectedAchievement === '全部' || person.achievement === this.selectedAchievement;
         
         return searchMatch && subjectMatch && eraMatch && achievementMatch;
+      });
+      
+      // 按照指定顺序排序：许强校长 -> 五大学科奠基人 -> 八大教授 -> 其他人物
+      const personOrder = [
+        // 许强校长
+        'xuqiang',
+        // 五大学科奠基人
+        'zhangzhuoyuan', 'luozhetan', 'liubaojun', 'jinjingfu', 'zengyunfu',
+        // 八大教授
+        'zhangyanseng', 'liuzuyi', 'zhouxiaohe', 'lizhichang', 
+        'wuyansheng', 'litangmi', 'changlongqing', 'lichengsan'
+      ];
+      
+      // 创建优先级映射
+      const priorityMap = new Map();
+      personOrder.forEach((id, index) => {
+        priorityMap.set(id, index);
+      });
+      
+      // 排序：优先级人物在前，其他人物保持原顺序在后
+      return filtered.sort((a, b) => {
+        const aPriority = priorityMap.has(a.id) ? priorityMap.get(a.id) : 9999;
+        const bPriority = priorityMap.has(b.id) ? priorityMap.get(b.id) : 9999;
+        
+        // 如果都有优先级或都没有优先级，保持原顺序
+        if (aPriority === bPriority) return 0;
+        
+        // 否则按照优先级排序
+        return aPriority - bPriority;
       });
     },
     
@@ -495,8 +525,27 @@ export default {
         
         console.log('[PersonsPage] 转换后的数据列表:', allPersonsList)
         
-        // 选择前9个作为轮播人物（可以根据需要调整选择逻辑）
-        this.persons = allPersonsList.slice(0, 9)
+        // 按照特定顺序排列轮播人物：许强校长在中间，然后是五大学科奠基人，然后是八大教授
+        const personOrder = [
+          // 许强校长
+          'xuqiang',
+          // 五大学科奠基人
+          'zhangzhuoyuan', 'luozhetan', 'liubaojun', 'jinjingfu', 'zengyunfu',
+          // 八大教授
+          'zhangyanseng', 'liuzuyi', 'zhouxiaohe', 'lizhichang', 
+          'wuyansheng', 'litangmi', 'changlongqing', 'lichengsan'
+        ]
+        
+        // 创建ID到人物的映射
+        const personMap = new Map()
+        allPersonsList.forEach(person => {
+          personMap.set(person.id, person)
+        })
+        
+        // 按照指定顺序排列人物
+        this.persons = personOrder
+          .map(id => personMap.get(id))
+          .filter(person => person !== undefined) // 过滤掉不存在的人物
         
         // 如果persons为空，使用默认图片
         this.persons.forEach(person => {
@@ -561,7 +610,7 @@ export default {
         }
       }
       
-      // 根据标签和subtitle判断学科和成就
+      // 根据标签和subtitle判断学科和荣誉成就（称号、奖项等）
       let subject = '其他';
       let achievement = '其他';
       let badge = '教授';
@@ -819,8 +868,6 @@ export default {
     
     // 查看人物详情
     viewPerson(personId) {
-      // ⭐ 使用新的统一路由格式，跳转到高级版人物详情页
-      // 所有人物都使用 PersonDetailAdvancedPage 组件
       this.$router.push({
         path: `/person/${personId}`,
         query: { from: 'persons' }

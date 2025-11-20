@@ -3,13 +3,18 @@ package org.cdut.ai.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.cdut.ai.model.Person;
+import org.cdut.ai.model.PersonEvent;
+import org.cdut.ai.mapper.PersonEventMapper;
 import org.cdut.ai.service.PersonService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @Tag(name = "人物管理")
 @RestController
@@ -20,6 +25,11 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+    
+    @Autowired
+    private PersonEventMapper personEventMapper;
+    
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Operation(summary = "获取所有人物列表")
     @GetMapping("/list")
@@ -30,6 +40,12 @@ public class PersonController {
         result.put("data", persons);
         result.put("total", persons.size());
         return result;
+    }
+    
+    @Operation(summary = "获取所有人物列表（简化路径）")
+    @GetMapping("")
+    public List<Person> getPersons() {
+        return personService.getAllPersons();
     }
 
     @Operation(summary = "获取所有人物的完整展示数据")
@@ -228,6 +244,52 @@ public class PersonController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "获取标签选项失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
+    @Operation(summary = "获取指定人物的时间轴事件")
+    @GetMapping("/{personId}/events")
+    public Map<String, Object> getPersonEvents(@PathVariable String personId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 查询该人物的所有事件
+            QueryWrapper<PersonEvent> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("person_id", personId);
+            queryWrapper.orderByAsc("sort_order"); // 按时间排序
+            
+            List<PersonEvent> events = personEventMapper.selectList(queryWrapper);
+            
+            // 处理JSON字段
+            for (PersonEvent event : events) {
+                // 将tags JSON字符串转换为List
+                if (event.getTags() != null && !event.getTags().isEmpty()) {
+                    try {
+                        List<String> tagsList = objectMapper.readValue(event.getTags(), List.class);
+                        event.setTagsList(tagsList);
+                    } catch (Exception e) {
+                        event.setTagsList(new ArrayList<>());
+                    }
+                }
+                
+                // 将achievements JSON字符串转换为List
+                if (event.getAchievements() != null && !event.getAchievements().isEmpty()) {
+                    try {
+                        List<String> achievementsList = objectMapper.readValue(event.getAchievements(), List.class);
+                        event.setAchievementsList(achievementsList);
+                    } catch (Exception e) {
+                        event.setAchievementsList(new ArrayList<>());
+                    }
+                }
+            }
+            
+            result.put("success", true);
+            result.put("data", events);
+            result.put("total", events.size());
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取人物事件失败: " + e.getMessage());
             e.printStackTrace();
         }
         return result;

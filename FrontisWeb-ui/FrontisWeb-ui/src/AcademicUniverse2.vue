@@ -550,8 +550,8 @@ function createUniverse () {
   const vh = container.value.clientHeight
   // 强制设置中心恒星为更大的固定值
   const baseSize = Math.max(
-    80,  // 直接设置为80，不依赖数据库
-    Math.floor(vh / 18)
+    120,  // 增大中心星球尺寸
+    Math.floor(vh / 12)
   )
   centerSize = baseSize
 
@@ -728,7 +728,7 @@ function createUniverse () {
 
     const radialXZ = Math.sqrt(p.x * p.x + p.z * p.z)
     if (radialXZ > 0) {
-      const extra = centerSize * 1.6
+      const extra = centerSize * 0.8
       const targetRadius = radialXZ + extra
       const scale = targetRadius / radialXZ
       p.x *= scale
@@ -1079,6 +1079,9 @@ function selectNode (nodeData) {
   const mesh = nodes.find(n => n.userData.id === nodeData.id)
   if (!mesh || !centerMesh) return
 
+  // 立即停止场景旋转
+  freezeScene()
+
   focusedMesh = mesh
   if (!mesh.userData.origScale) mesh.userData.origScale = mesh.scale.clone()
 
@@ -1104,20 +1107,16 @@ function selectNode (nodeData) {
     desiredDist = THREE.MathUtils.clamp(desiredDist, minDist, maxDist)
   }
 
-  const baseCamPos = nodePos.clone().add(dirToCenter.multiplyScalar(desiredDist))
+  // 相机位置：从星球位置向外推一定距离
+  const camOffset = new THREE.Vector3(
+    nodePos.x * 0.3,
+    size * 4,
+    nodePos.z * 0.3
+  )
+  const newCamPos = nodePos.clone().add(camOffset)
 
-  const viewDir = nodePos.clone().sub(baseCamPos).normalize()
-  const up = new THREE.Vector3(0, 1, 0)
-  const right = viewDir.clone().cross(up).normalize()
-
-  const halfV = (camera.fov * Math.PI / 180) / 2
-  const halfHeight = desiredDist * Math.tan(halfV)
-  const halfWidth = halfHeight * camera.aspect
-  const offsetAmount = halfWidth * 0.6
-  const targetOffset = right.multiplyScalar(offsetAmount)
-
-  const newTarget = nodePos.clone().add(targetOffset)
-  const newCamPos = baseCamPos
+  // 控制器目标直接对准星球中心
+  const newTarget = nodePos.clone()
 
   const tl = gsap.timeline({ defaults: { duration: 1.0, ease: 'power2.out' } })
   tl.to(controls.target, { x: newTarget.x, y: newTarget.y, z: newTarget.z }, 0)
@@ -1141,7 +1140,6 @@ function selectNode (nodeData) {
       } else {
         resetMajorsDisplay()
       }
-      freezeScene()
     })
 }
 
@@ -1654,10 +1652,10 @@ function resumeScene () {
   z-index: 100;
   padding: 26px;
   border-radius: 16px;
-  background: rgba(4, 10, 24, 0.94);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease-out;
 }
 @keyframes slideIn {
@@ -1678,52 +1676,53 @@ function resumeScene () {
   height: 32px;
   border: none;
   border-radius: 50%;
-  color: #fff;
+  color: #000;
   font-size: 22px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.2s;
 }
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.15);
   transform: rotate(90deg);
 }
 .node-info h2 {
-  color: #ffaa00;
+  color: #000;
   margin-bottom: 10px;
   font-size: 26px;
-  text-shadow: 0 0 8px rgba(255, 170, 0, 0.5);
+  font-weight: 700;
 }
 .title {
-  color: #72e4ff;
+  color: #333;
   margin-bottom: 12px;
 }
 .description {
-  color: #d7e1ec;
+  color: #000;
   line-height: 1.65;
 }
 .relations {
   margin-top: 14px;
 }
 .relations h3 {
-  color: #ffaa00;
+  color: #000;
   margin-bottom: 10px;
   font-size: 16px;
+  font-weight: 600;
 }
 .relation-item {
   display: flex;
   gap: 10px;
   padding: 10px;
   margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 8px;
 }
 .relation-type {
-  color: #72e4ff;
+  color: #000;
   font-weight: 800;
 }
 .relation-target {
-  color: #e6eef7;
+  color: #333;
 }
 
 /* 专业列表 */
@@ -1731,14 +1730,15 @@ function resumeScene () {
   margin-top: 16px;
 }
 .majors h3 {
-  color: #72e4ff;
+  color: #000;
   margin-bottom: 8px;
   font-size: 16px;
+  font-weight: 600;
 }
 .major-list {
   margin: 0;
   padding-left: 18px;
-  color: #e6eef7;
+  color: #000;
   max-height: 220px;
   overflow-y: auto;
 }
@@ -1746,7 +1746,7 @@ function resumeScene () {
   font-weight: 500;
 }
 .major-level {
-  color: #b8c5ff;
+  color: #666;
   font-size: 13px;
 }
 

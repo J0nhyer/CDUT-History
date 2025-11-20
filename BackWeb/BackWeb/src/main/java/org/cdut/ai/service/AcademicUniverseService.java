@@ -1,6 +1,7 @@
 package org.cdut.ai.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.cdut.ai.model.AcademicMajor;
 import org.cdut.ai.model.AcademicNode;
 import org.cdut.ai.model.AcademicUniverse;
 
@@ -48,5 +49,10 @@ public interface AcademicUniverseService extends IService<AcademicUniverse> {
      * 删除节点及其关联数据
      */
     boolean deleteNode(String nodeId);
+    
+    /**
+     * 获取所有专业
+     */
+    List<AcademicMajor> getAllMajors();
 }
 

@@ -30,18 +30,13 @@
 </template>
 
 <script>
-// 使用北大校史馆风格的学术型人物详情组件
 import PersonDetailAcademic from '@/components/PersonDetailAcademic.vue'
-// ⭐ 从数据库加载人物数据
 import { getPersonDetail } from '@/services/personDataService.js'
 
 export default {
   name: 'PersonDetailAdvancedPage',
   components: {
     PersonDetailAcademic
-    // 其他可用组件：
-    // PersonDetailNarrative: () => import('@/components/PersonDetailNarrative.vue') - 叙事化风格
-    // PersonDetailAdvanced: () => import('@/components/PersonDetailAdvanced.vue') - 高级版
   },
   data() {
     return {
@@ -149,7 +144,18 @@ export default {
     },
     
     goBack() {
-      this.$router.push('/persons')
+      // 检查来源参数
+      const from = this.$route.query.from;
+      
+      if (from === 'keyword-rain') {
+        this.$router.push('/keyword-rain');
+      } else if (from === 'draw-reveal') {
+        this.$router.push('/draw-reveal');
+      } else if (from === 'persons') {
+        this.$router.push('/persons');
+      } else {
+        this.$router.push('/persons');
+      }
     }
   }
 }

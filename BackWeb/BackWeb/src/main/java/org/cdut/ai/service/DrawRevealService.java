@@ -149,34 +149,38 @@ public class DrawRevealService {
                 return parts[0].trim();
             }
         }
-        return null;
+        return "未知";
     }
     
     /**
-     * 从人物数据中提取研究领域
+     * 从人物数据中提取领域信息
      */
     private String extractField(Person person) {
         if (person.getKeyTagsList() != null && !person.getKeyTagsList().isEmpty()) {
-            List<String> tags = person.getKeyTagsList();
-            // 返回第一个非时期的标签
-            for (String tag : tags) {
-                if (!tag.contains("世纪") && !tag.equals("院士") && !tag.equals("教授") && !tag.equals("奖项人")) {
+            // 查找学科领域标签
+            for (String tag : person.getKeyTagsList()) {
+                if (tag.equals("地质学") || tag.equals("工程学") || tag.equals("石油") ||
+                    tag.equals("环境") || tag.equals("经济") || tag.equals("法律") ||
+                    tag.equals("艺术") || tag.equals("计算机")) {
                     return tag;
                 }
             }
-            return tags.get(0);
         }
-        return null;
+        return "其他";
     }
     
     /**
-     * AI画作评分算法
-     * @param features 画作特征数据
-     * @return 评分结果
+     * 对画作进行评分（公开接口）
      */
     public Map<String, Object> scoreDrawing(Map<String, Object> features) {
+        return calculateQualityScore(features);
+    }
+    
+    /**
+     * 计算画作质量评分
+     */
+    private Map<String, Object> calculateQualityScore(Map<String, Object> features) {
         Map<String, Object> result = new HashMap<>();
-        
         try {
             // 提取特征数据
             int strokeCount = getIntValue(features, "strokeCount");
@@ -316,14 +320,26 @@ public class DrawRevealService {
     
     /**
      * AI图像识别 - 识别画作并匹配相似的内容（人物、事件、建筑等）
+     * 
+     * 当前识别逻辑：
+     * 1. 如果用户明确选择了模式，直接返回对应类型
+     * 2. 否则根据笔画特征智能推断
+     * 3. 从数据库随机返回对应类型的内容
+     * 
+     * 注意：所有识别结果均来自数据库中已整理的人物和事件数据
+     * 
      * @param canvasData 画布图片数据
      * @param features 画作特征
+     * @param drawMode 用户选择的模式（person或event，可为null）
      * @return 识别结果
      */
-    public Map<String, Object> recognizeDrawing(String canvasData, Map<String, Object> features) {
+    public Map<String, Object> recognizeDrawing(String canvasData, Map<String, Object> features, String drawMode) {
         Map<String, Object> result = new HashMap<>();
         
         try {
+            System.out.println("\n========== 开始AI识别 ==========");
+            System.out.println("🔧 用户选择模式: " + (drawMode != null ? drawMode : "未选择（智能推断）"));
+            
             // 基于画作特征进行智能匹配
             int strokeCount = getIntValue(features, "strokeCount");
             double coverageRatio = getDoubleValue(features, "coverageRatio");
@@ -331,24 +347,43 @@ public class DrawRevealService {
             
             // 根据特征推断可能的类别和内容类型
             String category = inferCategory(strokeCount, coverageRatio, pointCount);
-            String contentType = inferContentType(strokeCount, coverageRatio, pointCount);
+            String contentType;
             
-            // 根据内容类型随机获取对应的内容
+            // 如果用户明确选择了模式，优先使用用户选择
+            if (drawMode != null && (drawMode.equals("person") || drawMode.equals("event"))) {
+                contentType = drawMode;
+                System.out.println("✅ 使用用户选择的模式: " + contentType);
+            } else {
+                contentType = inferContentType(strokeCount, coverageRatio, pointCount);
+                System.out.println("🤖 智能推断模式: " + contentType);
+            }
+            
+            System.out.println("🎯 识别类别: " + category);
+            System.out.println("📦 内容类型: " + contentType);
+            
+            // 从数据库中获取对应类型的内容（人物或事件）
             Map<String, Object> recognizedContent = getContentByType(contentType);
             
-            if (recognizedContent != null && !recognizedContent.isEmpty()) {
+            // 验证返回的内容是否来自数据库
+            if (recognizedContent != null && !recognizedContent.isEmpty() && isValidDatabaseContent(recognizedContent)) {
                 result.put("recognized", true);
                 result.put("category", category);
                 result.put("contentType", contentType);
                 result.put("confidence", calculateConfidence(strokeCount, coverageRatio));
+                result.put("dataSource", "数据库");  // 明确标注数据来源
                 result.putAll(recognizedContent);
+                
+                System.out.println("✅ 识别成功: " + recognizedContent.get("name"));
+                System.out.println("========== 识别完成 ==========\n");
             } else {
                 result.put("recognized", false);
-                result.put("message", "未能识别出相关内容");
+                result.put("message", "数据库中暂无匹配的人物或事件");
+                System.out.println("❌ 识别失败: 数据库无匹配内容");
+                System.out.println("========== 识别完成 ==========\n");
             }
             
         } catch (Exception e) {
-            System.err.println("图像识别失败: " + e.getMessage());
+            System.err.println("❌ 图像识别失败: " + e.getMessage());
             e.printStackTrace();
             result.put("recognized", false);
             result.put("message", "识别过程出现错误");
@@ -358,56 +393,154 @@ public class DrawRevealService {
     }
     
     /**
+     * 验证内容是否来自数据库
+     * @param content 识别的内容
+     * @return 是否有效
+     */
+    private boolean isValidDatabaseContent(Map<String, Object> content) {
+        if (content == null || content.isEmpty()) {
+            return false;
+        }
+        
+        // 验证人物数据
+        if ("person".equals(content.get("type"))) {
+            return content.containsKey("id") && content.get("id") != null 
+                && content.containsKey("name") && content.get("name") != null;
+        }
+        
+        // 验证事件数据
+        if ("event".equals(content.get("type"))) {
+            return content.containsKey("id") && content.get("id") != null 
+                && content.containsKey("name") && content.get("name") != null;
+        }
+        
+        return false;
+    }
+    
+    /**
      * 根据特征推断内容类型
+     * 优化逻辑：平衡人物和事件识别
      */
     private String inferContentType(int strokeCount, double coverageRatio, int pointCount) {
-        // 使用随机但有权重的方式选择类型
-        double random = Math.random();
+        System.out.println("📊 笔画分析: strokeCount=" + strokeCount + ", coverageRatio=" + coverageRatio + ", pointCount=" + pointCount);
         
-        if (strokeCount < 15 && coverageRatio < 0.3) {
-            // 简单线条 -> 更可能是人物或建筑
-            return random < 0.6 ? "person" : "event";
-        } else if (strokeCount >= 15 && strokeCount < 40 && coverageRatio < 0.5) {
-            // 中等复杂度 -> 事件或建筑
-            return random < 0.7 ? "event" : "person";
-        } else if (coverageRatio >= 0.5) {
-            // 高覆盖度 -> 更可能是场景或事件
-            return random < 0.8 ? "event" : "person";
+        // 计算笔画密度（点数/笔画数）
+        double strokeDensity = strokeCount > 0 ? (double) pointCount / strokeCount : 0;
+        
+        // 识别事件图画特征（优先判断）
+        if (strokeCount >= 10 && coverageRatio >= 0.3) {
+            // 复杂图形 -> 更可能是场景或事件
+            System.out.println("  ✓ 检测到事件图画特征：笔画多，覆盖率高（像是在画场景）");
+            System.out.println("  → 推断为：事件图画，返回event类型");
+            return "event";
+        }
+        
+        if (coverageRatio >= 0.4) {
+            // 高覆盖率 -> 图画而非文字
+            System.out.println("  ✓ 检测到图画特征：覆盖率高（绘画痕迹明显）");
+            System.out.println("  → 推断为：图画场景，返回event类型");
+            return "event";
+        }
+        
+        // 识别人名书写的特征
+        if (strokeCount <= 10 && coverageRatio < 0.25 && pointCount > 50 && pointCount < 500) {
+            // 低覆盖率 + 少笔画 + 中等点数（书写文字的特征）
+            System.out.println("  ✓ 检测到人名书写特征：笔画少，覆盖率低，点数适中（书写痕迹）");
+            System.out.println("  → 推断为：人名书写，返回person类型");
+            return "person";
+        }
+        
+        // 其他情况的智能推断
+        if (strokeCount < 5 && coverageRatio < 0.2) {
+            // 极简笔画 -> 可能是符号或简单文字
+            System.out.println("  → 推断为：简单笔画，倾向person类型");
+            return "person";
         } else {
-            // 默认随机
-            return random < 0.5 ? "person" : "event";
+            // 默认随机分配（50%概率各半，增加事件展示机会）
+            double random = Math.random();
+            String result = random < 0.5 ? "person" : "event";
+            System.out.println("  → 推断为：默认逻辑，返回" + result + "类型（随机）");
+            return result;
         }
     }
     
     /**
-     * 根据类型获取对应内容
+     * 从数据库获取对应类型的内容
+     * 严格验证：所有数据必须来自person表或history_event表
      */
     private Map<String, Object> getContentByType(String contentType) {
         Map<String, Object> content = new HashMap<>();
         
-        if ("person".equals(contentType)) {
-            Person person = personService.getRandomPerson();
-            if (person != null) {
+        try {
+            if ("person".equals(contentType)) {
+                // 从数据库随机获取一个人物
+                Person person = personService.getRandomPerson();
+                if (person == null || person.getPersonId() == null || person.getName() == null) {
+                    System.err.println("❌ 错误：数据库person表中没有有效数据");
+                    return content;
+                }
+                
+                // 严格验证：必须有person_id和name
+                System.out.println("✓ 从person表获取: name=" + person.getName() + ", person_id=" + person.getPersonId());
+                
+                // 获取并验证图片路径
+                String imageUrl = person.getImageUrl() != null ? person.getImageUrl() : "";
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    System.out.println("  └─ 图片路径(来自person.image_url): " + imageUrl);
+                } else {
+                    System.out.println("  └─ ⚠️  person.image_url字段为空，无图片");
+                }
+                
                 content.put("type", "person");
-                content.put("id", person.getPersonId());
+                content.put("id", person.getPersonId());  // 使用person_id作为唯一标识
                 content.put("name", person.getName());
-                content.put("title", person.getSubtitle());
-                content.put("imageUrl", person.getImageUrl() != null ? person.getImageUrl() : "");
-                content.put("description", "这是成都理工大学历史上的重要人物。");
+                content.put("title", person.getSubtitle() != null ? person.getSubtitle() : "");
+                content.put("imageUrl", imageUrl);  // 图片路径来自数据库person.image_url字段
+                content.put("description", "数据来源：person表 (person_id=" + person.getPersonId() + ")");
                 content.put("interpretation", generatePersonInterpretation(person));
-            }
-        } else if ("event".equals(contentType)) {
-            HistoryEvent event = historyService.getRandomHistoryEvent();
-            if (event != null) {
+                content.put("dbSource", "person");  // 标记数据库来源
+                
+            } else if ("event".equals(contentType)) {
+                // 从数据库随机获取一个历史事件
+                HistoryEvent event = historyService.getRandomHistoryEvent();
+                if (event == null || event.getEventId() == null || event.getTitle() == null) {
+                    System.err.println("❌ 错误：数据库history_event表中没有有效数据");
+                    return content;
+                }
+                
+                System.out.println("✓ 从history_event表获取: title=" + event.getTitle() + ", event_id=" + event.getEventId());
+                
+                // 获取并验证图片路径
+                String eventImageUrl = event.getImageUrl() != null ? event.getImageUrl() : "";
+                if (eventImageUrl != null && !eventImageUrl.isEmpty()) {
+                    System.out.println("  └─ 图片路径(来自history_event.image_url): " + eventImageUrl);
+                } else {
+                    System.out.println("  └─ ⚠️  history_event.image_url字段为空，无图片");
+                }
+                
                 content.put("type", "event");
                 content.put("id", event.getEventId());
-                content.put("name", event.getEventName());
-                content.put("time", event.getEventTime());
+                content.put("name", event.getTitle());
+                
+                // 组合时间字符串
+                String eventTime = event.getYear();
+                if (event.getMonth() != null && !event.getMonth().isEmpty()) {
+                    eventTime += "-" + event.getMonth();
+                    if (event.getDay() != null && !event.getDay().isEmpty()) {
+                        eventTime += "-" + event.getDay();
+                    }
+                }
+                content.put("time", eventTime);
+                
                 content.put("eventType", event.getEventType());
-                content.put("imageUrl", event.getImageUrl() != null ? event.getImageUrl() : "");
+                content.put("imageUrl", eventImageUrl);  // 图片路径来自数据库history_event.image_url字段
                 content.put("description", event.getDescription());
                 content.put("interpretation", generateEventInterpretation(event));
+                content.put("dbSource", "history_event");  // 标记数据库来源
             }
+        } catch (Exception e) {
+            System.err.println("❌ 数据库查询异常: " + e.getMessage());
+            e.printStackTrace();
         }
         
         return content;
@@ -444,7 +577,7 @@ public class DrawRevealService {
             ? event.getDescription().substring(0, 50) + "..." 
             : (event.getDescription() != null ? event.getDescription() : "");
         
-        return String.format(template, event.getEventName()) + eventIntro;
+        return String.format(template, event.getTitle()) + eventIntro;
     }
     
     /**

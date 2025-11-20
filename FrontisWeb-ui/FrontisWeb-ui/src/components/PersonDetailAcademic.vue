@@ -36,43 +36,19 @@
             <span>时间轴</span>
           </button>
           <button 
-            @click="scrollToSection('trajectory')" 
-            class="nav-tab-item"
-            :class="{ active: activeSection === 'trajectory' }"
-          >
-            <i class="fas fa-route"></i>
-            <span>时空轨迹</span>
-          </button>
-          <button 
             @click="scrollToSection('achievements')" 
             class="nav-tab-item"
             :class="{ active: activeSection === 'achievements' }"
           >
             <i class="fas fa-trophy"></i>
-            <span>学术成果</span>
-          </button>
-          <button 
-            @click="scrollToSection('images')" 
-            class="nav-tab-item"
-            :class="{ active: activeSection === 'images' }"
-          >
-            <i class="fas fa-camera"></i>
-            <span>影像记忆</span>
-          </button>
-          <button 
-            @click="scrollToSection('news')" 
-            class="nav-tab-item"
-            :class="{ active: activeSection === 'news' }"
-          >
-            <i class="fas fa-newspaper"></i>
-            <span>资讯报道</span>
+            <span>荣誉成就</span>
           </button>
         </div>
       </div>
     </nav>
 
     <!-- 主要内容区 -->
-    <main class="main-content" id="introduction-section" v-show="activeSection !== 'relationship' && activeSection !== 'timeline'">
+    <main class="main-content" id="introduction-section" v-show="activeSection !== 'relationship' && activeSection !== 'timeline' && activeSection !== 'achievements'">
       <div class="content-wrapper">
         <!-- 左侧栏 - 人物照片 -->
         <aside class="person-sidebar">
@@ -94,15 +70,6 @@
           <header class="person-header-sidebar">
             <h1 class="person-name-sidebar">{{ personData.name }}</h1>
             <p class="person-subtitle-sidebar" v-if="personData.subtitle">{{ personData.subtitle }}</p>
-            <div class="person-tags-sidebar" v-if="personData.keyTags && personData.keyTags.length > 0">
-              <span 
-                v-for="(tag, index) in personData.keyTags" 
-                :key="index"
-                class="tag-item-sidebar"
-              >
-                {{ tag }}
-              </span>
-            </div>
           </header>
         </aside>
 
@@ -173,42 +140,54 @@
       <RelationshipGraph ref="relationshipGraph" :personId="personData.id" />
     </section>
 
-    <!-- 时间轴区域 - 点击时间轴按钮时显示 -->
-    <section class="timeline-section-fullwidth" id="timeline-section" v-if="activeSection === 'timeline'">
-      <div class="timeline-container-fullwidth">
-        <h2 class="timeline-title">重要时间节点</h2>
-        <div class="timeline-list-fullwidth" v-if="personData.timeline && personData.timeline.length > 0">
+    <!-- 荣誉成就区域 - 点击荣誉成就按钮时显示 -->
+    <section class="achievements-section-fullwidth" id="achievements-section" v-if="activeSection === 'achievements'">
+      <div class="achievements-container-fullwidth">
+        <h2 class="achievements-title">荣誉成就</h2>
+        <div class="achievements-list-fullwidth" v-if="personData.keyTags && personData.keyTags.length > 0">
           <div 
-            v-for="(event, index) in personData.timeline" 
+            v-for="(tag, index) in personData.keyTags" 
             :key="index"
-            class="timeline-item-fullwidth"
-            :class="{ 'important': event.importance === 'high' }"
+            class="achievement-item-fullwidth"
           >
-            <div class="timeline-year-fullwidth">{{ event.year }}</div>
-            <div class="timeline-content-fullwidth">
-              <h3 class="timeline-event-title">{{ event.title }}</h3>
-              <p class="timeline-event-description">{{ event.description }}</p>
-              <div v-if="event.achievements && event.achievements.length > 0" class="timeline-achievements">
-                <span 
-                  v-for="(achievement, aIndex) in event.achievements" 
-                  :key="aIndex"
-                  class="achievement-tag"
-                >
-                  {{ achievement }}
-                </span>
-      </div>
-    </div>
+            <div class="achievement-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <div class="achievement-content">
+              <h3 class="achievement-title">{{ tag }}</h3>
+            </div>
           </div>
         </div>
-        <div v-else class="no-timeline-data">
+        <div v-else class="no-achievements-data">
           <i class="fas fa-info-circle"></i>
-          <p>暂无时间轴数据</p>
+          <p>暂无荣誉成就数据</p>
         </div>
       </div>
     </section>
 
-    <!-- 页脚 - 只在非关系图谱和时间轴模式下显示 -->
-    <footer class="academic-footer" v-if="activeSection !== 'relationship' && activeSection !== 'timeline'">
+    <!-- 时间轴区域 - 使用胶片式时间轴 -->
+    <section class="timeline-section-fullwidth" id="timeline-section" v-if="activeSection === 'timeline'">
+      <!-- 加载中状态 -->
+      <div v-if="isLoadingEvents" class="loading-timeline-data">
+        <div class="spinner"></div>
+        <p>加载中...</p>
+      </div>
+      
+      <!-- 胶片时间轴 -->
+      <FilmTimeline 
+        v-else-if="timelineEvents && timelineEvents.length > 0" 
+        :timelineEvents="timelineEvents"
+      />
+      
+      <!-- 无数据状态 -->
+      <div v-else class="no-timeline-data">
+        <i class="fas fa-info-circle"></i>
+        <p>暂无时间轴数据</p>
+      </div>
+    </section>
+
+    <!-- 页脚 - 只在非关系图谱、时间轴和荣誉成就模式下显示 -->
+    <footer class="academic-footer" v-if="activeSection !== 'relationship' && activeSection !== 'timeline' && activeSection !== 'achievements'">
       <div class="footer-content">
         <p>版权所有 ©成都理工大学数字校史馆</p>
         <p>地址：四川省成都市成华区二仙桥东三路1号 邮编：610059</p>
@@ -220,14 +199,17 @@
 
 <script>
 import RelationshipGraph from './RelationshipGraph.vue'
+import FilmTimeline from './FilmTimeline.vue'
 import { getPersonImage, getUnknownImage } from '@/utils/imageLoader'
+import { getPersonEvents } from '@/services/personDataService'
 
 const unknownImg = getUnknownImage()
 
 export default {
   name: 'PersonDetailAcademic',
   components: {
-    RelationshipGraph
+    RelationshipGraph,
+    FilmTimeline
   },
   props: {
     personData: {
@@ -239,8 +221,11 @@ export default {
     return {
       imageLoaded: false,
       // 当前激活的标签
-      activeSection: 'knowledge', // 'knowledge' | 'relationship' | 'timeline' | 'trajectory' | 'achievements' | 'images' | 'news'
-      unknownImg: unknownImg
+      activeSection: 'knowledge', // 'knowledge' | 'relationship' | 'timeline' | 'achievements'
+      unknownImg: unknownImg,
+      // 时间轴事件数据
+      timelineEvents: [],
+      isLoadingEvents: false
     }
   },
   computed: {
@@ -261,7 +246,7 @@ export default {
       return image || unknownImg
     }
   },
-  mounted() {
+  async mounted() {
     // 组件挂载完成
     console.log('✅ [PersonDetailAcademic] 组件已挂载')
     console.log('📊 [PersonDetailAcademic] 接收到的personData:', this.personData)
@@ -275,10 +260,49 @@ export default {
     if (!this.personData?.biography || this.personData.biography.length === 0) {
       console.warn('⚠️ [PersonDetailAcademic] biography数据为空')
     }
+    
+    // 加载时间轴事件数据
+    await this.loadTimelineEvents()
   },
   methods: {
     goBack() {
-      this.$router.push('/persons')
+      // 检查来源参数
+      const from = this.$route.query.from;
+      
+      if (from === 'keyword-rain') {
+        // 从倾听雨声来的，返回倾听雨声
+        this.$router.push('/keyword-rain');
+      } else if (from === 'draw-reveal') {
+        // 从涂鸦揭秘来的，返回涂鸦揭秘
+        this.$router.push('/draw-reveal');
+      } else if (from === 'persons') {
+        // 从人物列表来的，返回人物列表
+        this.$router.push('/persons');
+      } else {
+        // 默认返回人物列表
+        this.$router.push('/persons');
+      }
+    },
+    
+    // 加载时间轴事件
+    async loadTimelineEvents() {
+      if (!this.personData || !this.personData.id) {
+        console.warn('[PersonDetailAcademic] 无法加载事件：personData或id不存在')
+        return
+      }
+      
+      this.isLoadingEvents = true
+      try {
+        console.log(`[PersonDetailAcademic] 开始加载人物事件: ${this.personData.id}`)
+        const events = await getPersonEvents(this.personData.id)
+        console.log(`[PersonDetailAcademic] 获取到 ${events.length} 条事件:`, events)
+        this.timelineEvents = events
+      } catch (error) {
+        console.error('[PersonDetailAcademic] 加载事件失败:', error)
+        this.timelineEvents = []
+      } finally {
+        this.isLoadingEvents = false
+      }
     },
     
     // 滚动到指定区域
@@ -311,18 +335,10 @@ export default {
       let targetElement = null
       if (section === 'knowledge') {
         targetElement = document.getElementById('introduction-section')
-      } else if (section === 'trajectory') {
-        // 时空轨迹 - 暂时跳转到人物介绍
-        targetElement = document.getElementById('introduction-section')
       } else if (section === 'achievements') {
-        // 学术成果 - 暂时跳转到人物介绍
-        targetElement = document.getElementById('introduction-section')
-      } else if (section === 'images') {
-        // 影像记忆 - 暂时跳转到人物介绍
-        targetElement = document.getElementById('introduction-section')
-      } else if (section === 'news') {
-        // 资讯报道 - 暂时跳转到人物介绍
-        targetElement = document.getElementById('introduction-section')
+        // 荣誉成就 - 切换到荣誉成就视图
+        this.activeSection = 'achievements'
+        return
       }
       
       if (targetElement) {
@@ -967,6 +983,139 @@ export default {
 
 .no-timeline-data p {
   font-size: 18px;
+}
+
+/* 荣誉成就区域样式 */
+.achievements-section-fullwidth {
+  min-height: 100vh;
+  padding: 80px 40px 40px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #e0e7ff 100%);
+}
+
+.achievements-container-fullwidth {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.achievements-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30px;
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f59e0b;
+}
+
+.achievements-list-fullwidth {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.achievement-item-fullwidth {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #f59e0b;
+}
+
+.achievement-item-fullwidth:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  border-left-color: #dc2626;
+}
+
+.achievement-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.achievement-icon i {
+  font-size: 24px;
+  color: white;
+}
+
+.achievement-content {
+  flex: 1;
+}
+
+.achievement-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.no-achievements-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9ca3af;
+}
+
+.no-achievements-data i {
+  font-size: 48px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.no-achievements-data p {
+  font-size: 18px;
+}
+
+/* 时间轴加载状态 */
+.loading-timeline-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9ca3af;
+}
+
+.loading-timeline-data .spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #ec4899;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-timeline-data p {
+  font-size: 18px;
+}
+
+/* 时间轴标签样式 */
+.timeline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tag-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: white;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* 页脚 */

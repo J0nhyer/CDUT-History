@@ -60,4 +60,9 @@ public interface HistoryService {
      * 获取完整的历史时间轴数据（包含事件和时期）
      */
     Map<String, Object> getCompleteTimelineData();
+    
+    /**
+     * 随机获取一个历史事件
+     */
+    HistoryEvent getRandomHistoryEvent();
 }

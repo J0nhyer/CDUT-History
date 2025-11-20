@@ -1,18 +1,68 @@
 <template>
   <div class="person-list-page">
-    <!-- 固定背景图片轮播 -->
-    <div class="background-slider">
+    <!-- 背景层：根据当前页切换背景 -->
+    <div class="background-layer">
+      <!-- 首页：背景轮播 -->
+      <div v-if="currentPage === 0" class="background-slider">
+        <div
+          v-for="(bg, index) in backgroundImages"
+          :key="index"
+          class="background-slide"
+          :class="{
+            active: index === currentBackgroundIndex,
+            next: index === nextBackgroundIndex,
+            prev: index === prevBackgroundIndex
+          }"
+          :style="{ backgroundImage: `url(${bg})` }"
+        ></div>
+        <div class="background-gradient top"></div>
+        <div class="background-gradient bottom"></div>
+      </div>
+
+      <!-- 第二页：1956年首届开学典礼 固定背景 -->
       <div
-        v-for="(image, index) in backgroundImages"
-        :key="index"
-        class="background-slide"
-        :class="{
-          active: index === currentBackgroundIndex,
-          next: index === nextBackgroundIndex,
-          prev: index === prevBackgroundIndex
-        }"
-        :style="{ backgroundImage: `url(${image})` }"
-      ></div>
+        v-else-if="currentPage === 1"
+        class="background-static second-bg"
+        :style="{ backgroundImage: `url(${openingCeremonyImage})` }"
+      >
+        <div class="second-bg-gradient"></div>
+      </div>
+
+      <!-- 第三页：成都地质勘探学院成立 固定背景 -->
+      <div
+        v-else-if="currentPage === 2"
+        class="background-static third-bg"
+        :style="{ backgroundImage: `url(${foundingImage})` }"
+      >
+        <div class="second-bg-gradient"></div>
+      </div>
+
+      <!-- 第四页：1990年油气藏重点实验室获批建设 固定背景 -->
+      <div
+        v-else-if="currentPage === 3"
+        class="background-static fourth-bg"
+        :style="{ backgroundImage: `url(${lab1990Image})` }"
+      >
+        <div class="second-bg-gradient"></div>
+      </div>
+
+      <!-- 第五页：1993年学校更名庆祝大会 固定背景 -->
+      <div
+        v-else-if="currentPage === 4"
+        class="background-static rename1993-bg"
+        :style="{ backgroundImage: `url(${rename1993Image})` }"
+      >
+        <div class="second-bg-gradient"></div>
+      </div>
+
+      <!-- 第六页：人物/事件列表，可按需继续用纯色背景，这里简单给一个淡背景 -->
+      <div
+        v-else-if="currentPage === 5"
+        class="background-static sixth-bg"
+        :style="{ backgroundImage: `url(${libraryImage})` }"
+      >
+        <div class="second-bg-gradient"></div>
+      </div>
     </div>
 
     <!-- 页面头部 -->
@@ -21,19 +71,54 @@
         <div class="header-content">
           <div class="logo-section">
             <div class="logo-container">
-              <img :src="cdutLogo" alt="成都理工大学" class="university-logo" />
+              <div class="logo-circle">
+                <img :src="cdutLogo" alt="成都理工大学" class="university-logo" />
+              </div>
               <div class="logo-text">
+                <div class="logo-kicker">CHENGDU UNIVERSITY OF TECHNOLOGY</div>
                 <h1 class="main-logo">成都理工大学数字校史馆</h1>
               </div>
             </div>
           </div>
           <nav class="main-nav">
-            <router-link to="/" class="nav-link active">首页</router-link>
-            <router-link to="/persons" class="nav-link">成理人物</router-link>
-            <router-link to="/digital-history" class="nav-link">成理历史</router-link>
-            <router-link to="/universe" class="nav-link">学术星图</router-link>
-            <router-link to="/keyword-rain" class="nav-link">倾听雨声</router-link>
-            <router-link to="/draw-reveal" class="nav-link">涂鸦画板</router-link>
+            <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+              首页
+            </router-link>
+            <router-link
+              to="/persons"
+              class="nav-link"
+              :class="{ active: $route.path.startsWith('/persons') }"
+            >
+              成理人物
+            </router-link>
+            <router-link
+              to="/digital-history"
+              class="nav-link"
+              :class="{ active: $route.path.startsWith('/digital-history') }"
+            >
+              成理历史
+            </router-link>
+            <router-link
+              to="/universe"
+              class="nav-link"
+              :class="{ active: $route.path.startsWith('/universe') }"
+            >
+              学术星图
+            </router-link>
+            <router-link
+              to="/keyword-rain"
+              class="nav-link"
+              :class="{ active: $route.path.startsWith('/keyword-rain') }"
+            >
+              倾听雨声
+            </router-link>
+            <router-link
+              to="/draw-reveal"
+              class="nav-link"
+              :class="{ active: $route.path.startsWith('/draw-reveal') }"
+            >
+              涂鸦画板
+            </router-link>
           </nav>
           <!-- 用户认证区域 -->
           <div class="auth-section">
@@ -71,97 +156,200 @@
               </div>
             </div>
           </div>
+          <!-- /用户认证区域 -->
         </div>
       </div>
     </header>
 
-    <!-- 主要内容区 -->
+    <!-- 主体：全屏翻页容器 -->
     <main class="main-content">
-      <!-- 1. 顶部Hero区域 -->
-      <section class="hero-section" ref="heroSection" @mousemove="handleHeroMouseMove">
-        <div class="hero-overlay"></div>
-        <div class="hero-content" :style="heroContentStyle">
-          <div class="hero-layer hero-layer-foreground">
-            <h1 class="hero-title">穷究于理 · 成就于工</h1>
-          </div>
-        </div>
-      </section>
+      <div
+        class="fullpage-wrapper"
+        ref="fullpageWrapper"
+        tabindex="0"
+        @wheel.prevent="onWheel"
+        @keydown="onKeyDown"
+        @touchstart="onTouchStart"
+        @touchmove.prevent="onTouchMove"
+        @touchend="onTouchEnd"
+      >
+        <div class="fullpage-inner" :style="fullpageStyle">
+          <!-- 第 1 页：Hero -->
+          <section
+            class="page-section hero-section"
+            ref="heroSection"
+            @mousemove="handleHeroMouseMove"
+          >
+            <div class="hero-overlay"></div>
 
-      <!-- 2. 人物和事件板块 -->
-      <section class="content-blocks-section">
-        <div class="container">
-          <!-- 人物板块 -->
-          <div class="content-block">
-            <div class="block-header">
-              <div class="block-icon">👤</div>
-              <h2 class="block-title">成理人物</h2>
-              <router-link to="/persons" class="block-more">
-                更多 >
-              </router-link>
-            </div>
-            <div class="block-content">
-              <div 
-                v-for="person in featuredPersons" 
-                :key="person.personId"
-                class="content-card person-card"
-                @click="goToPersonDetail(person.personId)"
-              >
-                <div class="card-image">
-                  <img :src="person.imageUrl" :alt="person.name" />
+            <div class="hero-inner">
+              <div class="hero-content" :style="heroContentStyle">
+                <div class="hero-kicker">
+                  成都理工大学 · 数字校史馆
                 </div>
-                <div class="card-info">
-                  <h3 class="card-title">{{ person.name }}</h3>
-                  <p class="card-subtitle">{{ person.subtitle }}</p>
-                  <div class="card-tags" v-if="person.keyTagsList && person.keyTagsList.length">
-                    <span 
-                      v-for="(tag, index) in person.keyTagsList.slice(0, 3)" 
-                      :key="index"
-                      class="tag"
-                    >
-                      {{ tag }}
-                    </span>
+                <h1 class="hero-title">
+                  穷究于理 · 成就于工
+                </h1>
+                <p class="hero-subtitle">
+                  以影像与档案，串联起成理从建校肇始到今日的每一段时光。
+                </p>
+                <div class="hero-meta">
+                  <span class="meta-pill">始建 1956</span>
+                  <span class="meta-dot"></span>
+                  <span class="meta-text">成都地质勘探学院</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 底部小提示：只在第一页显示 -->
+            <div v-if="currentPage === 0" class="scroll-indicator">
+              <span>向下滑动，走进成理校史</span>
+              <div class="scroll-arrow"></div>
+            </div>
+          </section>
+
+          <!-- 第 2 页：1956 首届开学典礼 -->
+          <section class="page-section second-section">
+            <div class="second-inner">
+              <div class="second-text-block">
+                <div class="second-label-row">
+                  <div class="second-label-line"></div>
+                  <div class="second-label-text">
+                    <div class="second-label-top">1956 · 首届开学典礼</div>
+                    <div class="second-label-sub">成理办学的起点</div>
+                  </div>
+                </div>
+                <p class="second-description">
+                  1956 年，成都地质勘探学院在这里迎来了首届开学典礼。一代又一代成理学子由此走进校园、走向矿野与前线，在地质找矿、防灾减灾、能源资源等领域接续奋斗。
+                  这一刻，不只是办学历史的起点，也是“穷究于理，成就于工”精神在西南大地生根发芽的原点。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 第 3 页：成都地质勘探学院成立 -->
+          <section class="page-section third-section">
+            <div class="third-inner">
+              <div class="third-text-block">
+                <div class="third-label-row">
+                  <div class="third-label-line"></div>
+                  <div class="third-label-text">
+                    <div class="third-label-top">1956 · 成都地质勘探学院成立</div>
+                    <div class="third-label-sub">新中国地质高等教育的重要一笔</div>
+                  </div>
+                </div>
+                <p class="third-description">
+                  为服务新中国地质找矿和能源建设需要，成都地质勘探学院在西南腹地创立。
+                  自此，来自全国各地的青年学子汇聚于此，在板块构造、矿产勘查、地震地质等领域扎根钻研，将个人理想与国家需求紧紧相连。
+                  这所学院，也在时代的推进中逐步成长为今日的成都理工大学。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 第 4 页：1990 实验室（使用独立组件，只做前景内容） -->
+          <section class="page-section fourth-section">
+            <HomeOilGasLab1990 />
+          </section>
+
+          <!-- 第 5 页：1993 更名庆祝大会 -->
+          <section class="page-section rename1993-section">
+            <HomeRename1993 />
+          </section>
+
+          <!-- 第 6 页：人物 & 历史事件板块（从第一份代码整合进来） -->
+          <section class="page-section content-blocks-section">
+            <div class="content-blocks-inner container">
+              <!-- 人物板块 -->
+              <div class="content-block">
+                <div class="block-header">
+                  <div class="block-icon">👤</div>
+                  <h2 class="block-title">成理人物</h2>
+                  <router-link to="/persons" class="block-more">
+                    更多 >
+                  </router-link>
+                </div>
+                <div class="block-content">
+                  <div
+                    v-for="person in featuredPersons"
+                    :key="person.personId"
+                    class="content-card person-card"
+                    @click="goToPersonDetail(person.personId)"
+                  >
+                    <div class="card-image">
+                      <img :src="person.imageUrl" :alt="person.name" />
+                    </div>
+                    <div class="card-info">
+                      <h3 class="card-title">{{ person.name }}</h3>
+                      <p class="card-subtitle">{{ person.subtitle }}</p>
+                      <div
+                        class="card-tags"
+                        v-if="person.keyTagsList && person.keyTagsList.length"
+                      >
+                        <span
+                          v-for="(tag, index) in person.keyTagsList.slice(0, 3)"
+                          :key="index"
+                          class="tag"
+                        >
+                          {{ tag }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="featuredPersons.length === 0" class="empty-state">
+                    暂无人物数据
                   </div>
                 </div>
               </div>
-              <div v-if="featuredPersons.length === 0" class="empty-state">
-                暂无人物数据
-              </div>
-            </div>
-          </div>
 
-          <!-- 事件板块 -->
-          <div class="content-block">
-            <div class="block-header">
-              <div class="block-icon">📅</div>
-              <h2 class="block-title">历史事件</h2>
-              <router-link to="/digital-history" class="block-more">
-                更多 >
-              </router-link>
-            </div>
-            <div class="block-content">
-              <div 
-                v-for="event in featuredEvents" 
-                :key="event.eventId"
-                class="content-card event-card"
-                @click="goToEventDetail(event.eventId)"
-              >
-                <div class="event-year">{{ event.year }}</div>
-                <div class="card-info">
-                  <h3 class="card-title">{{ event.title }}</h3>
-                  <p class="card-description">{{ event.description }}</p>
-                  <div class="event-meta">
-                    <span class="event-type" v-if="event.eventType">{{ event.eventType }}</span>
-                    <span class="event-importance" v-if="event.importance">{{ event.importance }}</span>
+              <!-- 事件板块 -->
+              <div class="content-block">
+                <div class="block-header">
+                  <div class="block-icon">📅</div>
+                  <h2 class="block-title">历史事件</h2>
+                  <router-link to="/digital-history" class="block-more">
+                    更多 >
+                  </router-link>
+                </div>
+                <div class="block-content">
+                  <div
+                    v-for="event in featuredEvents"
+                    :key="event.eventId"
+                    class="content-card event-card"
+                    @click="goToEventDetail(event.eventId)"
+                  >
+                    <div class="event-year">{{ event.year }}</div>
+                    <div class="card-info">
+                      <h3 class="card-title">{{ event.title }}</h3>
+                      <p class="card-description">{{ event.description }}</p>
+                      <div class="event-meta">
+                        <span class="event-type" v-if="event.eventType">{{ event.eventType }}</span>
+                        <span class="event-importance" v-if="event.importance">
+                          {{ event.importance }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="featuredEvents.length === 0" class="empty-state">
+                    暂无事件数据
                   </div>
                 </div>
               </div>
-              <div v-if="featuredEvents.length === 0" class="empty-state">
-                暂无事件数据
-              </div>
             </div>
-          </div>
+          </section>
         </div>
-      </section>
+
+        <!-- 右侧翻页指示点 -->
+        <div class="page-indicators">
+          <button
+            v-for="index in totalPages"
+            :key="index"
+            class="indicator-dot"
+            :class="{ active: currentPage === index - 1 }"
+            @click="goToPage(index - 1)"
+          ></button>
+        </div>
+      </div>
     </main>
 
     <!-- 媒体灯箱 -->
@@ -188,7 +376,7 @@
       @register-success="handleRegisterSuccess"
     />
 
-    <!-- AI 助手弹窗 + 小图标：一体拖动 -->
+    <!-- AI 助手弹窗 + 小图标 -->
     <div
       class="ai-assistant"
       ref="aiContainer"
@@ -237,7 +425,6 @@
                 </div>
               </div>
 
-              <!-- 打字中的动画 -->
               <div v-if="aiLoading" class="ai-typing-indicator">
                 <span></span><span></span><span></span>
               </div>
@@ -249,7 +436,7 @@
               v-model="aiInput"
               class="ai-input"
               rows="2"
-              placeholder="可以试着问：成理是哪一年建校的？ / 学术星图是做什么的？"
+              placeholder="可以试着问：成理是哪一年建校的？ / 校史馆里有哪些模块？"
               @keyup.enter.exact.prevent="handleAISend"
               @keyup.shift.enter.stop
             ></textarea>
@@ -268,7 +455,7 @@
         </div>
       </transition>
 
-      <!-- 浮动按钮（也可拖拽，弹窗一起动） -->
+      <!-- 浮动按钮 -->
       <button
         class="ai-fab"
         @pointerdown.stop.prevent="startAIDrag"
@@ -279,7 +466,7 @@
         </div>
         <div class="ai-fab-text">
           <span class="ai-fab-title">AI 助手</span>
-          <span class="ai-fab-subtitle">问问成理校史 / 学术</span>
+          <span class="ai-fab-subtitle">问问成理校史</span>
         </div>
       </button>
     </div>
@@ -293,10 +480,16 @@ import AuthModal from '@/components/AuthModal.vue'
 import MediaLightbox from '@/components/MediaLightbox.vue'
 import { getAllPersonProfiles } from '@/services/personDataService'
 import { getPersonImage } from '@/utils/imageLoader'
+import HomeOilGasLab1990 from '@/components/home/HomeOilGasLab1990.vue'
+import HomeRename1993 from '@/components/home/HomeRename1993.vue'
 
-// 导入背景图片
+// 背景图片
 import libraryImageSrc from '@/assets/mainbg/新图书馆.jpg'
 import buildingImageSrc from '@/assets/mainbg/东区教学楼.jpg'
+import openingCeremonyImageSrc from '@/assets/events/1956年首届开学典礼.jpg'
+import foundingImageSrc from '@/assets/events/1956_01_成都地质勘探学院成立.png'
+import lab1990ImageSrc from '@/assets/events/1990年油气藏重点实验室获批建设.jpg'
+import rename1993ImageSrc from '@/assets/events/1993年学校更名庆祝大会.jpg'
 
 const resolveApiBase = () => {
   const raw = (import.meta.env.VITE_API_BASE_URL || '').trim()
@@ -304,10 +497,8 @@ const resolveApiBase = () => {
     return raw.replace(/\/+$/, '')
   }
   if (import.meta.env.DEV) {
-    // 开发环境下走 Vite 代理（相对路径）
     return ''
   }
-  // 生产环境默认同源
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin
   }
@@ -320,23 +511,26 @@ export default {
   name: 'MainPage',
   components: {
     AuthModal,
-    MediaLightbox
+    MediaLightbox,
+    HomeOilGasLab1990,
+    HomeRename1993
   },
   data() {
     return {
-      // 基础图片
       cdutLogo,
       defaultAvatar,
       libraryImage: libraryImageSrc || cdutLogo,
+      openingCeremonyImage: openingCeremonyImageSrc,
+      foundingImage: foundingImageSrc,
+      lab1990Image: lab1990ImageSrc,
+      rename1993Image: rename1993ImageSrc,
 
-      // 背景图片轮播
       backgroundImages: [libraryImageSrc, buildingImageSrc],
       currentBackgroundIndex: 0,
       nextBackgroundIndex: 1,
       prevBackgroundIndex: -1,
       backgroundTimer: null,
 
-      // 登录相关数据
       isLoggedIn: false,
       showLoginModal: false,
       showRegisterModal: false,
@@ -347,184 +541,20 @@ export default {
         avatar: ''
       },
 
-      // 轮播相关数据
-      currentIndex: 0,
-      isScrolling: false,
-      scrollInterval: null,
-
-      // 著名人物数据（从数据库加载）
       persons: [],
-      allPersonsData: {}, // 存储从数据库加载的所有人物数据
-      
-      // 首页展示的人物和事件
+      allPersonsData: {},
       featuredPersons: [],
       featuredEvents: [],
 
-      // 历史重要时期数据
-      historyPeriods: [
-        {
-          year: '1956',
-          title: '建校初期 · 艰辛起步',
-          description: '成都地质勘探学院创建，开启理工人奋斗之路',
-          events: [
-            '1956年3月，成都地质勘探学院创建',
-            '开设地质测量、石油天然气等专业',
-            '奠定了地质学科特色基础'
-          ]
-        },
-        {
-          year: '1958-1993',
-          title: '发展壮大 · 砥砺前行',
-          description: '更名为成都地质学院，学科体系不断完善',
-          events: [
-            '1958年更名为成都地质学院',
-            '1978年恢复研究生招生',
-            '1993年更名为成都理工学院'
-          ]
-        },
-        {
-          year: '2001',
-          title: '改革与跨越 · 升格大学',
-          description: '正式更名为成都理工大学，进入快速发展期',
-          events: [
-            '2001年正式更名为成都理工大学',
-            '学校进入崭新的发展阶段',
-            '办学规模与层次显著提升'
-          ]
-        },
-        {
-          year: '2017-至今',
-          title: '双一流建设 · 再创辉煌',
-          description: '进入地学领域国家一流学科建设，迈向新征程',
-          events: [
-            '2017年进入地学领域国家一流学科建设',
-            '持续提升高水平大学建设',
-            '深化产学研结合与地方发展'
-          ]
-        }
-      ],
-
-      // 办学特色成果标签页
-      activeTab: 0,
-      achievementTabs: [
-        {
-          name: '学科建设',
-          icon: 'fas fa-book',
-          items: [
-            {
-              icon: 'fas fa-globe',
-              title: '地球科学',
-              desc: '国家一流学科建设，ESI全球排名前1%'
-            },
-            {
-              icon: 'fas fa-oil-can',
-              title: '石油与天然气工程',
-              desc: '国家重点学科，行业特色鲜明'
-            },
-            {
-              icon: 'fas fa-mountain',
-              title: '地质资源与地质工程',
-              desc: '国家重点学科，服务资源勘探'
-            },
-            {
-              icon: 'fas fa-atom',
-              title: '核技术应用',
-              desc: '特色优势学科，服务科技支撑'
-            }
-          ]
-        },
-        {
-          name: '科研成果',
-          icon: 'fas fa-flask',
-          items: [
-            {
-              icon: 'fas fa-award',
-              title: '国家科技进步奖',
-              desc: '荣获国家级科技奖励成果'
-            },
-            {
-              icon: 'fas fa-microscope',
-              title: '国家重点实验室',
-              desc: '地质灾害防治与地质环境保护'
-            },
-            {
-              icon: 'fas fa-satellite',
-              title: '遥感技术应用',
-              desc: '地球观测与信息提取领域'
-            },
-            {
-              icon: 'fas fa-chart-line',
-              title: '产学研合作',
-              desc: '服务行业企业与科研成果转化平台'
-            }
-          ]
-        },
-        {
-          name: '人才培养',
-          icon: 'fas fa-user-graduate',
-          items: [
-            {
-              icon: 'fas fa-chalkboard-teacher',
-              title: '拔尖人才培养',
-              desc: '参与拔尖创新人才培养计划'
-            },
-            {
-              icon: 'fas fa-lightbulb',
-              title: '创新创业教育',
-              desc: '国家级创新创业示范基地'
-            },
-            {
-              icon: 'fas fa-hands-helping',
-              title: '校企协同育人',
-              desc: '产教深度融合，协同育人'
-            },
-            {
-              icon: 'fas fa-globe-americas',
-              title: '国际化培养',
-              desc: '开展国际校际合作交流项目'
-            }
-          ]
-        },
-        {
-          name: '社会服务',
-          icon: 'fas fa-handshake',
-          items: [
-            {
-              icon: 'fas fa-house-damage',
-              title: '地质灾害防治',
-              desc: '服务国家级防灾减灾战略'
-            },
-            {
-              icon: 'fas fa-industry',
-              title: '能源资源保障',
-              desc: '支撑国家资源安全'
-            },
-            {
-              icon: 'fas fa-tree',
-              title: '生态环境保护',
-              desc: '服务生态文明建设'
-            },
-            {
-              icon: 'fas fa-city',
-              title: '助力地方发展',
-              desc: '校地合作推动区域经济发展'
-            }
-          ]
-        }
-      ],
-
-      // Hero区域样式
       mouseX: 0,
       mouseY: 0,
       heroContentStyle: {},
 
-      // 媒体灯箱相关数据
       mediaLightboxOpen: false,
       currentMedia: {},
       mediaList: [],
       mediaIndex: 0,
 
-      // AI 助手相关数据
       aiWindowOpen: false,
       aiInput: '',
       aiLoading: false,
@@ -533,12 +563,10 @@ export default {
         {
           role: 'assistant',
           content:
-            '你好！我是成理 · AI 学术助手，可以帮助你了解成都理工大学的校史、人物与学术星图。',
+            '你好！我是成理 · AI 学术助手，可以帮助你了解成都理工大学的校史与人物故事。',
           time: ''
         }
       ],
-
-      // AI 助手弹窗位置（右下角）
       aiPopupPosition: {
         top: typeof window !== 'undefined' ? window.innerHeight - 450 : 100,
         left: typeof window !== 'undefined' ? window.innerWidth - 420 : 100
@@ -547,55 +575,47 @@ export default {
       aiDragStartX: 0,
       aiDragStartY: 0,
       aiDragMoved: false,
-
-      // API 基础地址
-      apiBase: API_BASE,
       aiAbortController: null,
-      aiStreamingIndex: null
+      aiStreamingIndex: null,
+
+      currentIndex: 0,
+      isScrolling: false,
+      scrollInterval: null,
+
+      apiBase: API_BASE,
+
+      currentPage: 0,
+      totalPages: 6, // 六页：Hero + 3 静态 + 2 组件 + 人物/事件
+      isPageAnimating: false,
+      touchStartY: 0,
+      touchDeltaY: 0,
+      lastScrollTime: 0
     }
   },
+
+  computed: {
+    fullpageStyle() {
+      return {
+        transform: `translateY(-${this.currentPage * 100}%)`,
+        transition: this.isPageAnimating
+          ? 'transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
+          : 'none'
+      }
+    }
+  },
+
   methods: {
-    viewPerson(personId) {
-      if (personId === 'zhangzhuoyuan') {
-        this.$router.push('/zhangzhuoyuan')
-      } else if (personId === 'liubaojun') {
-        this.$router.push('/liubaojun')
-      } else {
-        this.showToast(`正在查看${personId}的详细信息`, 'info')
-      }
-    },
-
-    // Hero区域鼠标移动事件
-    enterDigitalMuseum() {
-      this.$router.push('/digital-history')
-    },
-
-    scrollToHistory() {
-      const element = document.getElementById('history')
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    },
-
-    openUniverse() {
-      this.$router.push('/universe')
-    },
-
-    // 用户菜单切换
+    // 登录 / 用户相关
     toggleUserMenu(e) {
-      if (e) {
-        e.stopPropagation()
-      }
+      if (e) e.stopPropagation()
       this.showUserMenu = !this.showUserMenu
     },
-
     handleClickOutside(e) {
       const userMenu = this.$el?.querySelector('.user-menu')
       if (userMenu && !userMenu.contains(e.target) && this.showUserMenu) {
         this.showUserMenu = false
       }
     },
-
     goToProfile(e) {
       if (e) {
         e.preventDefault()
@@ -610,18 +630,14 @@ export default {
         })
       })
     },
-
     logout() {
       this.isLoggedIn = false
       this.userInfo = { username: '', avatar: '' }
       this.showUserMenu = false
-
       localStorage.removeItem('userInfo')
       sessionStorage.removeItem('userInfo')
-
       this.showToast('已退出登录', 'success')
     },
-
     checkLoginStatus() {
       let savedUser = localStorage.getItem('userInfo')
       if (!savedUser) {
@@ -639,37 +655,30 @@ export default {
         }
       }
     },
-
     closeLoginModal() {
       this.showLoginModal = false
     },
-
     closeRegisterModal() {
       this.showRegisterModal = false
     },
-
     closeForgotPasswordModal() {
       this.showForgotPasswordModal = false
     },
-
     switchToRegister() {
       this.showLoginModal = false
       this.showForgotPasswordModal = false
       this.showRegisterModal = true
     },
-
     switchToLogin() {
       this.showRegisterModal = false
       this.showForgotPasswordModal = false
       this.showLoginModal = true
     },
-
     switchToForgotPassword() {
       this.showLoginModal = false
       this.showRegisterModal = false
       this.showForgotPasswordModal = true
     },
-
     handleLoginSuccess(userInfo) {
       this.userInfo = userInfo
       this.isLoggedIn = true
@@ -682,7 +691,6 @@ export default {
         localStorage.removeItem('userInfo')
       }
     },
-
     handleRegisterSuccess(userInfo) {
       this.userInfo = userInfo
       this.isLoggedIn = true
@@ -690,40 +698,10 @@ export default {
       localStorage.removeItem('userInfo')
     },
 
-    // 轮播相关方法
-    startAutoScroll() {
-      this.scrollInterval = setInterval(() => {
-        if (!this.isScrolling) {
-          this.nextPerson()
-        }
-      }, 5000)
-    },
-
-    stopAutoScroll() {
-      if (this.scrollInterval) {
-        clearInterval(this.scrollInterval)
-        this.scrollInterval = null
-      }
-    },
-
-    nextPerson() {
-      this.currentIndex = (this.currentIndex + 1) % this.persons.length
-    },
-
-    pauseScroll() {
-      this.isScrolling = true
-      this.stopAutoScroll()
-    },
-
-    resumeScroll() {
-      this.isScrolling = false
-      this.startAutoScroll()
-    },
-
-    // Hero区域鼠标移动事件
+    // Hero 视差
     handleHeroMouseMove(e) {
       const heroSection = this.$refs.heroSection
-      if (!heroSection) return
+      if (!heroSection || this.currentPage !== 0) return
 
       const rect = heroSection.getBoundingClientRect()
       const centerX = rect.left + rect.width / 2
@@ -732,40 +710,48 @@ export default {
       this.mouseX = (e.clientX - centerX) / rect.width
       this.mouseY = (e.clientY - centerY) / rect.height
 
-      const parallaxX = this.mouseX * 30
-      const parallaxY = this.mouseY * 30
+      const parallaxX = this.mouseX * 25
+      const parallaxY = this.mouseY * 14
 
       this.heroContentStyle = {
         transform: `translate(${parallaxX}px, ${parallaxY}px)`,
-        transition: 'transform 0.1s ease-out'
+        transition: 'transform 0.12s ease-out'
       }
     },
 
-    handleScrollParallax() {
-      const heroSection = this.$refs.heroSection
-      if (!heroSection) return
-
-      const scrollY = window.scrollY
-      const heroHeight = heroSection.offsetHeight
-      const scrollProgress = Math.min(scrollY / heroHeight, 1)
-
-      if (scrollProgress < 0.5) {
-        const opacity = 1 - scrollProgress * 2
-        this.heroContentStyle.opacity = opacity
+    // 背景轮播
+    startBackgroundSlider() {
+      this.backgroundTimer = setInterval(() => {
+        this.nextBackground()
+      }, 12000)
+    },
+    stopBackgroundSlider() {
+      if (this.backgroundTimer) {
+        clearInterval(this.backgroundTimer)
+        this.backgroundTimer = null
       }
     },
+    nextBackground() {
+      const nextIndex = (this.currentBackgroundIndex + 1) % this.backgroundImages.length
+      const currentIndex = this.currentBackgroundIndex
+      if (this.nextBackgroundIndex !== nextIndex) {
+        this.nextBackgroundIndex = nextIndex
+      }
 
-    openMediaLightbox(media, mediaList = [], index = 0) {
-      this.currentMedia = media
-      this.mediaList = mediaList.length > 0 ? mediaList : [media]
-      this.mediaIndex = index
-      this.mediaLightboxOpen = true
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.prevBackgroundIndex = currentIndex
+          this.currentBackgroundIndex = nextIndex
+
+          setTimeout(() => {
+            this.prevBackgroundIndex = -1
+            this.nextBackgroundIndex = (nextIndex + 1) % this.backgroundImages.length
+          }, 800)
+        })
+      })
     },
 
-    closeMediaLightbox() {
-      this.mediaLightboxOpen = false
-    },
-
+    // Toast
     showToast(message, type = 'info') {
       const toast = document.createElement('div')
       toast.className = `toast toast-${type}`
@@ -811,42 +797,18 @@ export default {
       }, 3000)
     },
 
-    // 背景图片轮播相关方法
-    startBackgroundSlider() {
-      this.backgroundTimer = setInterval(() => {
-        this.nextBackground()
-      }, 10000)
+    // 媒体灯箱
+    openMediaLightbox(media, mediaList = [], index = 0) {
+      this.currentMedia = media
+      this.mediaList = mediaList.length > 0 ? mediaList : [media]
+      this.mediaIndex = index
+      this.mediaLightboxOpen = true
+    },
+    closeMediaLightbox() {
+      this.mediaLightboxOpen = false
     },
 
-    stopBackgroundSlider() {
-      if (this.backgroundTimer) {
-        clearInterval(this.backgroundTimer)
-        this.backgroundTimer = null
-      }
-    },
-
-    nextBackground() {
-      const nextIndex = (this.currentBackgroundIndex + 1) % this.backgroundImages.length
-      const currentIndex = this.currentBackgroundIndex
-
-      if (this.nextBackgroundIndex !== nextIndex) {
-        this.nextBackgroundIndex = nextIndex
-      }
-
-      this.$nextTick(() => {
-        requestAnimationFrame(() => {
-          this.prevBackgroundIndex = currentIndex
-          this.currentBackgroundIndex = nextIndex
-
-          setTimeout(() => {
-            this.prevBackgroundIndex = -1
-            this.nextBackgroundIndex = (nextIndex + 1) % this.backgroundImages.length
-          }, 800)
-        })
-      })
-    },
-
-    // 时间格式化
+    // AI 助手
     formatTime() {
       try {
         return new Date().toLocaleTimeString('zh-CN', {
@@ -857,8 +819,6 @@ export default {
         return ''
       }
     },
-
-    // AI 助手相关方法
     scrollAIMessagesToBottom() {
       this.$nextTick(() => {
         const container = this.$refs.aiMessagesContainer
@@ -867,7 +827,6 @@ export default {
         }
       })
     },
-
     toggleAIWindow() {
       this.aiWindowOpen = !this.aiWindowOpen
       if (this.aiWindowOpen) {
@@ -875,19 +834,16 @@ export default {
       }
     },
     handleFabClick() {
-      // 如果拖动了浮动按钮，则不切换弹窗状态
       if (this.aiDragMoved) {
         this.aiDragMoved = false
         return
       }
       this.toggleAIWindow()
     },
-
     onCloseAIWindow() {
       this.aiWindowOpen = false
       this.cancelAIStream()
     },
-
     handleAISend() {
       const text = this.aiInput.trim()
       if (!text || this.aiLoading) return
@@ -902,7 +858,6 @@ export default {
 
       this.requestAIReply(text)
     },
-
     cancelAIStream() {
       try {
         if (this.aiAbortController) {
@@ -911,14 +866,10 @@ export default {
         }
       } catch (_) {}
     },
-
     async requestAIReply(userText) {
-      // 取消上一次请求
       this.cancelAIStream()
 
       this.aiLoading = true
-
-      // 添加助手回复占位符
       const idx = this.aiMessages.push({
         role: 'assistant',
         content: '',
@@ -927,14 +878,13 @@ export default {
       this.aiStreamingIndex = idx
       this.scrollAIMessagesToBottom()
 
-      // 构造请求数据
       const payload = {
-        question: userText,  
+        question: userText,
         history: this.aiMessages.slice(0, -1).map(msg => ({
           role: msg.role,
           content: msg.content
         })),
-        useKnowledgeBase: true  
+        useKnowledgeBase: true
       }
 
       const url = `${this.apiBase}/api/ai/chat`
@@ -946,14 +896,10 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'text/event-stream',
-            // 如果需要 cookie，取消注释：
-            // 'Authorization': `Bearer ${yourToken}`
+            Accept: 'text/event-stream'
           },
           body: JSON.stringify(payload),
-          signal: controller.signal,
-          // 如果需要 cookie，取消注释：
-          // credentials: 'include'
+          signal: controller.signal
         })
 
         if (!resp.ok || !resp.body) {
@@ -964,7 +910,7 @@ export default {
         const decoder = new TextDecoder('utf-8')
         let buffer = ''
 
-        const commitChunk = (text) => {
+        const commitChunk = text => {
           if (!text) return
           this.aiMessages[this.aiStreamingIndex].content += text
           this.scrollAIMessagesToBottom()
@@ -975,13 +921,11 @@ export default {
           if (done) break
           buffer += decoder.decode(value, { stream: true })
 
-          // SSE 使用 \n\n 分隔事件
           let idxSep
           while ((idxSep = buffer.indexOf('\n\n')) !== -1) {
             const rawEvent = buffer.slice(0, idxSep)
             buffer = buffer.slice(idxSep + 2)
 
-            // 解析单个事件
             const lines = rawEvent.split('\n')
             let eventName = 'message'
             let dataLines = []
@@ -998,14 +942,15 @@ export default {
             if (eventName === 'message') {
               commitChunk(data)
             } else if (eventName === 'error') {
-              // 处理后端 error 事件
               commitChunk(`\n[错误] ${data}`)
             }
           }
         }
       } catch (err) {
         console.error('AI 请求失败：', err)
-        this.aiMessages[this.aiStreamingIndex].content += `\n[连接中断] ${err?.message || ''}`
+        if (this.aiStreamingIndex != null) {
+          this.aiMessages[this.aiStreamingIndex].content += `\n[连接中断] ${err?.message || ''}`
+        }
       } finally {
         this.aiLoading = false
         this.aiAbortController = null
@@ -1014,7 +959,7 @@ export default {
       }
     },
 
-    // AI 助手：开始拖拽（支持弹窗 + 浮标，系统一起动：大窗口 + 小图标）
+    // AI 拖拽
     startAIDrag(e) {
       const container = this.$refs.aiContainer
       if (!container) return
@@ -1023,15 +968,12 @@ export default {
       this.aiDragMoved = false
 
       const rect = container.getBoundingClientRect()
-
       this.aiDragStartX = e.clientX - rect.left
       this.aiDragStartY = e.clientY - rect.top
 
       window.addEventListener('pointermove', this.onAIDrag)
       window.addEventListener('pointerup', this.endAIDrag)
     },
-
-    // AI 助手：拖拽中
     onAIDrag(e) {
       if (!this.aiDragging) return
 
@@ -1059,55 +1001,35 @@ export default {
       this.aiPopupPosition.left = newLeft
       this.aiPopupPosition.top = newTop
     },
-
-    // AI 助手：结束拖拽
     endAIDrag() {
       if (!this.aiDragging) return
-
       this.aiDragging = false
       window.removeEventListener('pointermove', this.onAIDrag)
       window.removeEventListener('pointerup', this.endAIDrag)
     },
 
-    // 加载人物数据
+    // 人物数据（逻辑保留）
     async loadPersonsData() {
       try {
-        console.log('[MainPage] 开始加载人物数据...')
-        // 加载所有人物数据
-        this.allPersonsData = await getAllPersonProfiles()
-        console.log('[MainPage] 原始数据:', this.allPersonsData)
-        
-        // 转换数据格式并选择前2个重要人物
-        const allPersonsList = Object.values(this.allPersonsData).map(personData => 
+        const allPersonsData = await getAllPersonProfiles()
+        const allPersonsList = Object.values(allPersonsData).map(personData =>
           this.mapPersonToDisplayFormat(personData)
         )
-        
-        console.log('[MainPage] 转换后的数据列表:', allPersonsList)
-        
-        // 选择前2个作为首页展示人物
         this.persons = allPersonsList.slice(0, 2)
-        
-        console.log('✅ 人物数据加载完成:', {
-          total: allPersonsList.length,
-          displayPersons: this.persons.length,
-          persons: this.persons
-        })
+        this.allPersonsData = allPersonsData
       } catch (error) {
-        console.error('❌ 加载人物数据失败:', error)
+        console.error('加载人物数据失败:', error)
         this.persons = []
         this.allPersonsData = {}
       }
     },
-
-    // 加载首页展示的人物数据
     async loadFeaturedPersons() {
       try {
         const url = `${this.apiBase}/api/person/list`
         const response = await fetch(url)
         const result = await response.json()
-        
+
         if (result.success && result.data) {
-          // 解析keyTags字段
           const persons = result.data.map(person => {
             try {
               if (person.keyTags) {
@@ -1118,68 +1040,52 @@ export default {
             } catch (e) {
               person.keyTagsList = []
             }
-            
-            // 处理图片路径 - 使用imageLoader
+
             if (person.imageUrl) {
-              if (person.imageUrl.startsWith('http://') || person.imageUrl.startsWith('https://')) {
-                // HTTP URL直接使用
+              if (
+                person.imageUrl.startsWith('http://') ||
+                person.imageUrl.startsWith('https://')
+              ) {
                 person.imageUrl = person.imageUrl
               } else {
-                // 使用imageLoader加载本地图片
                 person.imageUrl = getPersonImage(person.imageUrl)
               }
             } else {
               person.imageUrl = getPersonImage(null)
             }
-            
+
             return person
           })
-          
-          // 取前4个人物
           this.featuredPersons = persons.slice(0, 4)
-          console.log('✅ 首页人物数据加载完成:', this.featuredPersons)
         }
       } catch (error) {
-        console.error('❌ 加载首页人物数据失败:', error)
+        console.error('加载首页人物数据失败:', error)
         this.featuredPersons = []
       }
     },
-
-    // 加载首页展示的事件数据
     async loadFeaturedEvents() {
       try {
         const url = `${this.apiBase}/api/history/events`
         const response = await fetch(url)
         const result = await response.json()
-        
+
         if (result.success && result.data) {
-          // 取前4个重要事件
           this.featuredEvents = result.data
             .filter(event => event.importance === 'high' || event.importance === '重要')
             .slice(0, 4)
-          
-          console.log('✅ 首页事件数据加载完成:', this.featuredEvents)
         }
       } catch (error) {
-        console.error('❌ 加载首页事件数据失败:', error)
+        console.error('加载首页事件数据失败:', error)
         this.featuredEvents = []
       }
     },
-
-    // 跳转到人物详情
     goToPersonDetail(personId) {
       this.$router.push(`/person/${personId}`)
     },
-
-    // 跳转到事件详情
-    goToEventDetail(eventId) {
-      // 目前跳转到历史页面，可以根据需要修改
+    goToEventDetail() {
       this.$router.push('/digital-history')
     },
-    
-    // 将数据库人物数据转换为显示格式
     mapPersonToDisplayFormat(personData) {
-      // 获取时间信息
       let period = ''
       if (personData.biography && personData.biography.length > 0) {
         const firstBio = personData.biography[0]
@@ -1190,12 +1096,10 @@ export default {
           }
         }
       }
-      
-      // 根据标签和subtitle判断学科和成就
+
       let badge = '教授'
       let badgeClass = 'badge-professor'
-      
-      // 优先从subtitle中提取头衔信息
+
       if (personData.subtitle) {
         const subtitle = personData.subtitle.toString()
         if (subtitle.includes('院士')) {
@@ -1215,48 +1119,111 @@ export default {
           badgeClass = 'badge-founder'
         }
       }
-      
-      // 从keyTags中补充判断
+
       const keyTags = personData.keyTags || []
       if (keyTags.some(tag => tag.includes('院士'))) {
         badge = '院士'
         badgeClass = 'badge-president'
-      } else if (keyTags.some(tag => tag.includes('奠基') || tag.includes('建校元勋') || tag.includes('五大奠基人'))) {
+      } else if (
+        keyTags.some(tag => tag.includes('奠基') || tag.includes('建校元勋') || tag.includes('五大奠基人'))
+      ) {
         badge = '奠基人'
         badgeClass = 'badge-founder'
       }
-      
+
       return {
         id: personData.id,
         name: personData.name,
         title: personData.subtitle || '成都理工大学人物',
-        period: period,
+        period,
         image: personData.image,
-        badge: badge,
-        badgeClass: badgeClass,
+        badge,
+        badgeClass,
         tags: keyTags.slice(0, 3)
       }
+    },
+
+    // 全屏翻页逻辑
+    goToPage(target) {
+      if (target === this.currentPage || target < 0 || target >= this.totalPages) return
+      if (this.isPageAnimating) return
+      this.isPageAnimating = true
+      this.currentPage = target
+      this.lastScrollTime = Date.now()
+      setTimeout(() => {
+        this.isPageAnimating = false
+      }, 750)
+    },
+    nextPage() {
+      this.goToPage(this.currentPage + 1)
+    },
+    prevPage() {
+      this.goToPage(this.currentPage - 1)
+    },
+    onWheel(e) {
+      if (this.isPageAnimating) return
+      const now = Date.now()
+      if (now - this.lastScrollTime < 700) return
+
+      const delta = e.deltaY
+      const threshold = 30
+
+      if (delta > threshold) {
+        this.nextPage()
+      } else if (delta < -threshold) {
+        this.prevPage()
+      }
+    },
+    onKeyDown(e) {
+      if (this.isPageAnimating) return
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        this.nextPage()
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        this.prevPage()
+      }
+    },
+    onTouchStart(e) {
+      if (!e.touches || e.touches.length === 0) return
+      this.touchStartY = e.touches[0].clientY
+      this.touchDeltaY = 0
+    },
+    onTouchMove(e) {
+      if (!e.touches || e.touches.length === 0) return
+      const currentY = e.touches[0].clientY
+      this.touchDeltaY = currentY - this.touchStartY
+    },
+    onTouchEnd() {
+      const threshold = 60
+      if (this.isPageAnimating) return
+      if (this.touchDeltaY < -threshold) {
+        this.nextPage()
+      } else if (this.touchDeltaY > threshold) {
+        this.prevPage()
+      }
+      this.touchStartY = 0
+      this.touchDeltaY = 0
     }
   },
 
   async mounted() {
     try {
       this.checkLoginStatus()
-
       document.addEventListener('click', this.handleClickOutside)
-      window.addEventListener('scroll', this.handleScrollParallax, { passive: true })
 
       this.startBackgroundSlider()
-
-      // 加载人物数据
       await this.loadPersonsData()
 
-      // 初始化 AI 弹窗位置（右下角）
+      this.$nextTick(() => {
+        if (this.$refs.fullpageWrapper) {
+          this.$refs.fullpageWrapper.focus()
+        }
+      })
+
       if (typeof window !== 'undefined') {
         const vw = window.innerWidth
         const vh = window.innerHeight
         const popupWidth = 220
-        const totalHeight = 120 // 弹窗 + 小图标上下高度
+        const totalHeight = 120
         const margin = 10
 
         this.aiPopupPosition.left = vw - popupWidth - margin
@@ -1269,15 +1236,13 @@ export default {
 
       ;(async () => {
         try {
-          console.log('[MainPage] 开始预加载人物简介信息...')
           const profiles = await getAllPersonProfiles()
-          console.log('[MainPage] 人物简介信息预加载完成，数量:', Object.keys(profiles || {}).length)
+          console.log('[MainPage] 人物简介预加载完成：', Object.keys(profiles || {}).length)
         } catch (preloadError) {
           console.error('[MainPage] 预加载人物数据失败:', preloadError)
         }
       })()
 
-      // 加载首页展示的人物和事件数据
       this.loadFeaturedPersons()
       this.loadFeaturedEvents()
     } catch (error) {
@@ -1287,9 +1252,7 @@ export default {
 
   beforeUnmount() {
     try {
-      this.stopAutoScroll()
       this.stopBackgroundSlider()
-      window.removeEventListener('scroll', this.handleScrollParallax)
       document.removeEventListener('click', this.handleClickOutside)
       this.endAIDrag()
       this.cancelAIStream()
@@ -1301,107 +1264,148 @@ export default {
 </script>
 
 <style scoped>
-/* 页面布局 */
 .person-list-page {
   position: relative;
-  min-height: 100vh;
-  background: transparent;
-  font-family: 'Arial', sans-serif;
-  overflow-x: hidden;
-  overflow-y: auto;
+  height: 100vh;
+  background: #02030a;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', system-ui,
+    sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 背景图片轮播容器 */
-.background-slider {
+/* 背景层 */
+.background-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-/* 背景图片单个幻灯片 */
+.background-slider {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 .background-slide {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  filter: brightness(0.6);
-  transform: translateX(100%);
+  filter: brightness(0.72) contrast(1.08);
+  transform: scale(1.04) translateX(100%);
   opacity: 0;
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform, opacity;
   z-index: 1;
 }
 
-/* 当前显示的图片 - 正中间位置 */
 .background-slide.active {
-  transform: translateX(0) !important;
+  transform: scale(1.03) translateX(0) !important;
   opacity: 1 !important;
   z-index: 2;
 }
-
-/* 下一张要显示的图片 - 在右侧等待 */
 .background-slide.next {
-  transform: translateX(100%);
+  transform: scale(1.04) translateX(100%);
   opacity: 0;
   z-index: 1;
 }
-
-/* 下一张图片同时是active时 - 从右侧滑入 */
-.background-slide.next.active {
-  transform: translateX(0) !important;
-  opacity: 1 !important;
-  z-index: 2;
-}
-
-/* 上一张图片 - 左侧滑出（已滑出） */
 .background-slide.prev {
-  transform: translateX(-100%) !important;
+  transform: scale(1.04) translateX(-100%) !important;
   opacity: 0 !important;
   z-index: 0;
 }
 
-/* 页面头部 */
+.background-gradient {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.background-gradient.top {
+  top: 0;
+  height: 38%;
+  background: linear-gradient(to bottom, rgba(4, 6, 20, 0.96), rgba(4, 6, 20, 0.35), transparent);
+}
+.background-gradient.bottom {
+  bottom: 0;
+  height: 35%;
+  background: linear-gradient(to top, rgba(4, 6, 20, 0.98), rgba(4, 6, 20, 0.3), transparent);
+}
+
+/* 固定背景页（2~6） */
+.background-static.second-bg,
+.background-static.third-bg,
+.background-static.fourth-bg,
+.background-static.rename1993-bg,
+.background-static.sixth-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: scale(1.03);
+  transition: transform 0.9s ease-out;
+}
+
+.second-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% 75%, rgba(2, 3, 10, 0.2), transparent 55%),
+    linear-gradient(to right, rgba(2, 3, 10, 0.2), rgba(2, 3, 10, 0.78) 55%, rgba(2, 3, 10, 0.94));
+}
+
+/* 头部导航 */
 .page-header {
   position: sticky;
   top: 0;
-  background: transparent;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(to bottom, rgba(2, 3, 12, 0.96), rgba(2, 3, 12, 0.78), transparent);
+  backdrop-filter: blur(18px);
   z-index: 100;
-  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
+  padding: 14px 40px;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-left: 0;
+  gap: 16px;
+}
+
+.logo-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 2px;
+  background: radial-gradient(circle at 0% 0%, #ffffff, #9fb3ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 10px 25px rgba(0, 0, 0, 0.35);
 }
 
 .university-logo {
-  width: 80px;
-  height: 80px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: #ffffff;
 }
 
 .logo-text {
@@ -1410,54 +1414,58 @@ export default {
   align-items: flex-start;
 }
 
-.main-logo {
-  font-size: 1.8rem;
-  color: #ffffff;
-  margin: 0;
-  font-weight: bold;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+.logo-kicker {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(200, 210, 255, 0.76);
+  margin-bottom: 2px;
 }
 
+.main-logo {
+  font-size: 1.4rem;
+  color: #ffffff;
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* 导航链接 */
 .main-nav {
   display: flex;
-  gap: 20px;
-  margin-left: 100px;
+  gap: 18px;
+  margin-left: 80px;
 }
 
 .nav-link {
+  position: relative;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(235, 238, 255, 0.84);
   font-weight: 500;
-  padding: 10px 20px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  padding: 8px 18px;
+  border-radius: 999px;
+  transition: all 0.25s ease;
+  font-size: 0.92rem;
+  border: 1px solid transparent;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .nav-link.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #0b1024;
+  background: linear-gradient(135deg, #fdfdff, #dfe6ff);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
-.nav-link.highlight {
-  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
-  color: #2c3e50;
-  font-weight: 700;
-  border-color: #ffd700;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-}
-
-/* 用户认证区域样式 */
+/* 登录/用户 */
 .auth-section {
   display: flex;
   align-items: center;
@@ -1466,71 +1474,48 @@ export default {
 
 .auth-buttons {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
 .auth-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  color: white;
-  font-size: 14px;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(10, 16, 40, 0.8);
+  border: 1px solid rgba(200, 210, 255, 0.4);
+  color: rgba(238, 241, 255, 0.96);
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  backdrop-filter: blur(16px);
 }
 
 .auth-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: radial-gradient(circle at 0% 0%, #ffffff, #aebeff);
+  color: #050816;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-.login-btn {
-  background: rgba(52, 152, 219, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.login-btn:hover {
-  background: rgba(52, 152, 219, 0.4);
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-.register-btn {
-  background: rgba(52, 152, 219, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.register-btn:hover {
-  background: rgba(52, 152, 219, 0.4);
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-/* 用户信息显示 */
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   position: relative;
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(235, 238, 255, 0.85);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 .user-avatar img {
@@ -1542,14 +1527,14 @@ export default {
 .user-details {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .username {
-  color: white;
-  font-size: 14px;
+  color: #ffffff;
+  font-size: 13px;
   font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .user-menu {
@@ -1557,22 +1542,21 @@ export default {
 }
 
 .user-menu-btn {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
+  background: rgba(7, 14, 40, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 210, 255, 0.6);
+  border-radius: 999px;
   color: white;
   cursor: pointer;
-  padding: 6px 10px;
-  transition: all 0.3s ease;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .user-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .user-dropdown {
@@ -1580,49 +1564,64 @@ export default {
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(14, 18, 40, 0.96);
   backdrop-filter: blur(20px);
   border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(180, 190, 255, 0.35);
   min-width: 180px;
   overflow: hidden;
   z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .user-dropdown a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  color: #2c3e50;
+  padding: 10px 14px;
+  color: rgba(235, 239, 255, 0.96);
   text-decoration: none;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  transition: background 0.18s ease;
 }
-
 .user-dropdown a:hover {
-  background: rgba(74, 144, 226, 0.1);
-  color: #4a90e2;
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.user-dropdown a i {
-  width: 18px;
-  text-align: center;
-}
-
-/* 主要内容 */
+/* 主内容 */
 .main-content {
   position: relative;
+  flex: 1;
   padding: 0;
   background: transparent;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Hero Section */
-.hero-section {
+.fullpage-wrapper {
   position: relative;
-  min-height: 100vh;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: none;
+}
+
+.fullpage-inner {
+  width: 100%;
+  height: 100%;
+}
+
+.page-section {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Hero 区 */
+.hero-section {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1632,328 +1631,480 @@ export default {
 
 .hero-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
+  inset: 0;
+}
+
+.hero-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1180px;
+  padding: 0 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .hero-content {
   position: relative;
-  z-index: 1;
-  text-align: center;
+  z-index: 2;
+  text-align: left;
   color: white;
-  transform: translateY(-80px);
   will-change: transform;
+  max-width: 560px;
 }
 
-.hero-layer {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-layer-foreground {
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.hero-logo-img {
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  background: white;
-  padding: 0;
-  object-fit: cover;
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 228, 255, 0.4);
+  background: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.16), rgba(3, 6, 24, 0.85));
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(231, 235, 255, 0.92);
 }
 
 .hero-title {
-  font-size: 3rem;
-  margin: 0 0 20px 0;
-  font-weight: 700;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-size: 3.1rem;
+  margin: 0 0 16px 0;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'Times New Roman', 'Noto Serif SC', serif;
+  text-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(12, 19, 56, 0.8);
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
-  margin: 0 0 15px 0;
-  opacity: 0.95;
+  font-size: 1.05rem;
+  margin: 0 0 20px 0;
+  opacity: 0.96;
+  line-height: 1.9;
+  color: rgba(234, 239, 255, 0.96);
 }
 
-.hero-slogan {
-  font-size: 1.4rem;
-  margin: 0 0 40px 0;
-  font-weight: 500;
+/* Hero 底部元信息 */
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(215, 224, 255, 0.9);
+}
+
+.meta-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(5, 9, 30, 0.9);
+  border: 1px solid rgba(202, 210, 255, 0.7);
+}
+
+.meta-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(233, 237, 255, 0.95);
+}
+.meta-text {
   opacity: 0.9;
 }
 
-.hero-buttons {
+/* 底部滚动提示 */
+.scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: 20px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(228, 233, 255, 0.92);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.hero-btn {
-  padding: 15px 40px;
-  font-size: 1.1rem;
-  border-radius: 50px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.hero-btn.primary {
-  background: rgba(255, 255, 255, 0.9);
-  color: #667eea;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.hero-btn.secondary {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
-  backdrop-filter: blur(10px);
-}
-
-/* 通用Section样式 */
-section {
-  padding: 60px 40px;
+.scroll-arrow {
+  width: 20px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(237, 241, 255, 0.95);
+  margin-top: 6px;
   position: relative;
-  z-index: 1;
+  overflow: hidden;
 }
-
-.section-header-main {
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.section-tag {
-  display: inline-block;
-  padding: 8px 20px;
-  background: rgba(102, 126, 234, 0.6);
-  backdrop-filter: blur(10px);
-  color: white;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  margin-bottom: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.section-title-main {
-  font-size: 2rem;
-  color: #2c3e50;
-  margin: 0 0 15px 0;
-  font-weight: 700;
-}
-
-.section-divider {
-  width: 80px;
+.scroll-arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 4px;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  margin: 0 auto 20px;
-  border-radius: 2px;
-}
-
-.section-desc {
-  font-size: 1.1rem;
-  color: #7f8c8d;
-  margin: 0;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* About Section */
-.about-section {
-  position: relative;
-  background: transparent;
-  backdrop-filter: blur(5px);
-}
-
-.about-content {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 60px;
-  align-items: center;
-}
-
-.about-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.stat-number {
-  display: block;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #667eea;
-  margin-bottom: 8px;
-}
-
-/* Timeline Section */
-.timeline-section {
-  position: relative;
-  background: transparent;
-  backdrop-filter: blur(5px);
-}
-
-.timeline-container {
-  max-width: 900px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 60px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-}
-
-.timeline-content {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Achievements Section */
-.achievements-section {
-  position: relative;
-  background: transparent;
-  backdrop-filter: blur(5px);
-}
-
-.achievement-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  padding: 12px 30px;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: white;
-}
-
-.achievement-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-}
-
-.achievement-card {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  padding: 35px 25px;
-  border-radius: 15px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Digital Museum Section */
-.digital-museum-section {
-  background: transparent;
-  color: white;
-}
-
-.digital-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-}
-
-.digital-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  padding: 40px 30px;
-  border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.4s ease;
-}
-
-.digital-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 25px;
-  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
+  background: rgba(243, 246, 255, 0.98);
+  transform: translateX(-50%);
+  animation: scroll-dot 1.4s infinite ease-out;
+}
+
+@keyframes scroll-dot {
+  0% {
+    transform: translate(-50%, 0px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 16px);
+    opacity: 0;
+  }
+}
+
+/* 第二页内容（右下角） */
+.second-section {
+  z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  font-size: 2.5rem;
 }
 
-/* Vision Section */
-.vision-section {
+.second-inner {
   position: relative;
-  background: transparent;
-  backdrop-filter: blur(5px);
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  padding: 40px 64px;
 }
 
-.vision-content {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 60px;
-  align-items: center;
-  margin-bottom: 60px;
+.second-text-block {
+  position: absolute;
+  right: 8%;
+  bottom: 13%;
+  max-width: 460px;
+  color: #ffffff;
 }
 
-.vision-goals {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
+.second-label-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.goal-item {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  padding: 35px 25px;
-  border-radius: 15px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.second-label-line {
+  width: 2px;
+  border-radius: 999px;
+  height: 40px;
+  background: linear-gradient(to bottom, #ffffff, rgba(255, 255, 255, 0.2));
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.8);
 }
 
-.container {
-  max-width: 100%;
+.second-label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.second-label-top {
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.second-label-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.second-description {
   margin: 0;
+  margin-top: 8px;
+  font-size: 0.98rem;
+  line-height: 1.9;
+  text-align: left;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* 第三页内容（左下角） */
+.third-section {
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.third-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  padding: 40px 64px;
+}
+
+.third-text-block {
+  position: absolute;
+  left: 8%;
+  bottom: 14%;
+  max-width: 460px;
+  color: #ffffff;
+}
+
+.third-label-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.third-label-line {
+  width: 2px;
+  border-radius: 999px;
+  height: 40px;
+  background: linear-gradient(to bottom, #ffffff, rgba(255, 255, 255, 0.2));
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.8);
+}
+
+.third-label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.third-label-top {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.third-label-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.third-description {
+  margin: 0;
+  margin-top: 8px;
+  font-size: 0.98rem;
+  line-height: 1.9;
+  text-align: left;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* 翻页指示点 */
+.page-indicators {
+  position: absolute;
+  top: 50%;
+  right: 28px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.indicator-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(222, 228, 255, 0.8);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
   padding: 0;
 }
 
-/* AI 助手样式 */
+.indicator-dot:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(248, 250, 255, 0.9);
+}
+
+.indicator-dot.active {
+  background: rgba(249, 251, 255, 0.98);
+  transform: scale(1.25);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* 人物和事件板块样式（整合自第一份代码，作为第六页内容） */
+.content-blocks-section {
+  position: relative;
+  padding: 60px 0 120px 0;
+  background: white;
+  z-index: 2;
+}
+
+.content-blocks-section .content-blocks-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.content-block {
+  background: white;
+  padding: 30px;
+}
+
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.block-icon {
+  font-size: 1.5rem;
+}
+
+.block-title {
+  flex: 1;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.block-more {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.block-more:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.block-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.content-card {
+  background: white;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.content-card:hover {
+  background: #fafafa;
+}
+
+.content-card:last-child {
+  border-bottom: none;
+}
+
+.person-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-image {
+  display: none;
+}
+
+.card-info {
+  padding: 0;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.event-card {
+  display: flex;
+  gap: 20px;
+  padding: 0;
+}
+
+.event-year {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 70px;
+}
+
+.card-description {
+  font-size: 1rem;
+  color: #666;
+  margin: 0 0 10px 0;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.event-type,
+.event-importance {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.event-type {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.event-importance {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+/* AI 助手样式（包含弹窗，整合自第一份代码） */
 .ai-assistant {
   position: fixed;
   z-index: 1200;
@@ -1972,25 +2123,29 @@ section {
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  background: radial-gradient(circle at 0% 0%, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+  background: radial-gradient(circle at 0% 0%, rgba(140, 170, 255, 0.98), rgba(75, 110, 220, 0.98));
   color: #fff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(14px);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(240, 244, 255, 0.7);
+  backdrop-filter: blur(16px);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
 }
 
 .ai-fab:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.9);
 }
 
 .ai-fab-avatar-wrap {
-  width: 60px;   
-  height: 60px;  
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2009,13 +2164,13 @@ section {
 }
 
 .ai-fab-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .ai-fab-subtitle {
   font-size: 11px;
-  opacity: 0.86;
+  opacity: 0.9;
 }
 
 /* 聊天窗口 */
@@ -2305,233 +2460,102 @@ section {
   transform: translateY(8px);
 }
 
-/* 人物和事件板块样式 */
-.content-blocks-section {
-  position: relative;
-  padding: 60px 0 120px 0;
-  background: white;
-  min-height: 80vh;
-  z-index: 2;
-}
-
-.content-blocks-section .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 40px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
-}
-
-.content-block {
-  background: white;
-  padding: 30px;
-}
-
-.block-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.block-icon {
-  font-size: 1.5rem;
-}
-
-.block-title {
-  flex: 1;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #333;
+/* 容器 */
+.container {
+  max-width: 100%;
   margin: 0;
-}
-
-.block-more {
-  color: #666;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.block-more:hover {
-  color: #333;
-  text-decoration: underline;
-}
-
-.block-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.content-card {
-  background: white;
-  padding: 15px 0;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-}
-
-.content-card:hover {
-  background: #fafafa;
-}
-
-.content-card:last-child {
-  border-bottom: none;
-}
-
-.person-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.card-image {
-  display: none;
-}
-
-.card-info {
   padding: 0;
 }
 
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 5px 0;
-}
-
-.card-subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0 0 8px 0;
-}
-
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #f5f5f5;
-  color: #666;
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-
-.event-card {
-  display: flex;
-  gap: 15px;
-  padding: 0;
-}
-
-.event-year {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
-  min-width: 60px;
-}
-
-.card-description {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0 0 8px 0;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.event-meta {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.event-type,
-.event-importance {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-
-.event-type {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.event-importance {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 30px;
-  color: #999;
-  font-size: 0.95rem;
-}
-
-/* 响应式适配 */
-@media (max-width: 768px) {
-  section {
-    padding: 40px 20px;
+/* 响应式 */
+@media (max-width: 1024px) {
+  .header-content {
+    padding: 12px 20px;
   }
+  .hero-inner,
+  .second-inner,
+  .third-inner {
+    padding-inline: 24px;
+  }
+  .content-blocks-section .content-blocks-inner {
+    padding: 0 24px;
+  }
+}
 
+@media (max-width: 768px) {
   .header-content {
     flex-direction: column;
-    gap: 15px;
-    padding: 15px 20px;
+    gap: 10px;
+    align-items: flex-start;
   }
 
+  .logo-circle {
+    width: 54px;
+    height: 54px;
+  }
   .university-logo {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
   }
 
   .main-logo {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 
   .main-nav {
     margin-left: 0;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    padding-inline: 12px;
+    font-size: 0.85rem;
+  }
+
+  .hero-inner {
+    padding-inline: 20px;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.4rem;
   }
 
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
-  .hero-slogan {
-    font-size: 1.2rem;
+  .second-inner,
+  .third-inner {
+    padding-inline: 20px;
   }
 
-  .about-content, .vision-content {
-    grid-template-columns: 1fr;
+  .second-text-block {
+    right: 6%;
+    bottom: 10%;
+    max-width: 340px;
   }
 
-  .ai-popup {
-    width: 92vw;
-    max-height: 70vh;
+  .third-text-block {
+    left: 6%;
+    bottom: 10%;
+    max-width: 340px;
   }
 
-  /* 人物和事件板块响应式 */
+  .second-description,
+  .third-description {
+    font-size: 0.94rem;
+  }
+
+  .page-indicators {
+    right: 16px;
+  }
+
   .content-blocks-section {
-    padding: 40px 0;
+    padding: 40px 0 80px 0;
   }
 
-  .content-blocks-section .container {
+  .content-blocks-section .content-blocks-inner {
     grid-template-columns: 1fr;
     gap: 30px;
     padding: 0 20px;
@@ -2544,6 +2568,11 @@ section {
   .event-year {
     font-size: 1rem;
     min-width: 50px;
+  }
+
+  .ai-popup {
+    width: 92vw;
+    max-height: 70vh;
   }
 }
 </style>

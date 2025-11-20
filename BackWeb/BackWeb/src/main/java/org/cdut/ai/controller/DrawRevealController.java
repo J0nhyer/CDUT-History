@@ -93,7 +93,10 @@ public class DrawRevealController {
             @SuppressWarnings("unchecked")
             Map<String, Object> features = (Map<String, Object>) requestData.get("features");
             
-            Map<String, Object> recognitionData = drawRevealService.recognizeDrawing(canvasData, features);
+            // 获取用户选择的模式（person或event）
+            String drawMode = (String) requestData.get("drawMode");
+            
+            Map<String, Object> recognitionData = drawRevealService.recognizeDrawing(canvasData, features, drawMode);
             result.put("success", true);
             result.put("data", recognitionData);
         } catch (Exception e) {

@@ -387,9 +387,20 @@ export default {
       }
     }
     
-    // 返回成理历史
+    // 返回上一页（根据来源参数决定）
     const goBack = () => {
-      router.push('/digital-history')
+      const from = route.query.from;
+      
+      if (from === 'keyword-rain') {
+        // 从倾听雨声来的，返回倾听雨声
+        router.push('/keyword-rain');
+      } else if (from === 'digital-history') {
+        // 从成理历史来的，返回成理历史
+        router.push('/digital-history');
+      } else {
+        // 默认返回成理历史
+        router.push('/digital-history');
+      }
     }
     
     onMounted(() => {

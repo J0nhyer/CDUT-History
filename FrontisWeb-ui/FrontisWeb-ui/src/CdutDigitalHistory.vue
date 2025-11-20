@@ -23,7 +23,7 @@
           opacity: 0
         }"
       ></div>
-    
+      
       <!-- 顶部Logo和标题 -->
       <div class="header">
       <div class="logo-section">
@@ -144,7 +144,7 @@ const dragStartDinoX = ref(0)
 const dragStartTranslateX = ref(0)
 
 // 卡片尺寸配置
-const cardWidth = 360 // 卡片宽度
+const cardWidth = 480 // 卡片宽度
 const gap = 120 // 卡片间距
 
 // 使用艺术大楼图片
@@ -158,7 +158,7 @@ const currentBackgroundImage = ref(historyImages.length > 0 ? historyImages[0] :
 const nextBackgroundImage = ref('')
 const backgroundOpacity = ref(1) // layer-1的透明度
 const backgroundTimer = ref(null)
-const SLIDE_INTERVAL = 10000 // 每张图片显示8秒（包括过渡时间）
+const SLIDE_INTERVAL = 6000 // 每张图片显示6秒（包括过渡时间）
 
 // 图片映射配置（前端本地资源）
 const imageMapping = {
@@ -408,7 +408,10 @@ const goHome = () => {
 
 // 查看事件详情
 const viewEventDetail = (year) => {
-  router.push(`/event/${year}`)
+  router.push({
+    path: `/event/${year}`,
+    query: { from: 'digital-history' }
+  })
 }
 
 // 背景图片轮播 - 完全重新实现
@@ -465,7 +468,7 @@ const switchBackground = () => {
       const img = new Image()
       img.src = nextNextImgUrl
     }
-  }, 1500) // 等待1.5秒过渡时间完成
+  }, 800) // 等待0.8秒过渡时间完成
 }
 
 // 停止背景轮播
@@ -712,7 +715,7 @@ onUnmounted(() => {
   100% { transform: rotate(360deg); }
 }
 
-/* 背景图片层 - 完全参考首页的实现 */
+/* 背景图片层 */
 .background-layer {
   position: fixed;
   top: 0;
@@ -725,8 +728,11 @@ onUnmounted(() => {
   background-repeat: no-repeat;
   background-attachment: fixed;
   z-index: 0;
-  pointer-events: none; /* 关键：让背景不拦截鼠标事件 */
-  transition: opacity 1.5s ease-in-out; /* 平滑的淡入淡出过渡效果 */
+  pointer-events: none;
+  transition: opacity 0.8s ease-in-out;
+  /* 轻微模糊 + 适度降低亮度 + 保留色彩 */
+  filter: brightness(0.5) blur(1px) saturate(0.7);
+  opacity: 0.7;
 }
 
 .background-layer-1 {
@@ -734,7 +740,7 @@ onUnmounted(() => {
 }
 
 .background-layer-2 {
-  z-index: -1; /* 第二层在第一层下面 */
+  z-index: -1;
 }
 
 /* 顶部Header */
@@ -839,7 +845,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  z-index: 5; /* 确保内容在线条流动层之上 */
   background: transparent !important; /* 关键：设置透明背景 */
 }
 
@@ -1396,7 +1402,7 @@ onUnmounted(() => {
 
 .event-card {
   flex-shrink: 0;
-  width: 360px;
+  width: 480px;
   background: transparent;
   border-radius: 16px;
   overflow: hidden;
@@ -1415,7 +1421,7 @@ onUnmounted(() => {
 .event-image-container {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 420px;
   overflow: hidden;
 }
 

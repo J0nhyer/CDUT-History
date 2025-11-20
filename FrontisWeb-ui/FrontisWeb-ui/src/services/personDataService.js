@@ -1,4 +1,4 @@
-import { fetchPersonAdvancedMap, fetchPersonAdvancedById, fetchPersonList } from '@/api/person';
+import { fetchPersonAdvancedMap, fetchPersonAdvancedById, fetchPersonList, fetchPersonEvents } from '@/api/person';
 
 let profileCachePromise = null;
 let profileMapCache = null;
@@ -218,4 +218,25 @@ export async function getPersonDetail(personId) {
   }
 }
 
-
+// 获取人物时间轴事件
+export async function getPersonEvents(personId) {
+  try {
+    console.log(`[personDataService] 开始获取人物事件: ${personId}`);
+    const response = await fetchPersonEvents(personId);
+    console.log(`[personDataService] 事件API响应:`, response);
+    
+    // axios拦截器已经返回了response.data
+    if (response && response.success) {
+      const events = response.data || [];
+      console.log(`[personDataService] 获取到 ${events.length} 条事件`);
+      return events;
+    } else {
+      console.warn(`[personDataService] 获取事件失败:`, response);
+      return [];
+    }
+  } catch (error) {
+    console.error(`[personDataService] 获取人物事件失败 (${personId}):`, error);
+    console.error(`[personDataService] 错误详情:`, error.response || error.message);
+    return [];
+  }
+}

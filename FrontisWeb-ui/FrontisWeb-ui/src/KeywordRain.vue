@@ -14,36 +14,22 @@
     <!-- 关键词雨容器 -->
     <div class="keyword-rain-container" ref="rainContainer">
       <div
-        v-for="(keyword, index) in activeKeywords"
-        :key="index"
+        v-for="keyword in activeKeywords"
+        :key="keyword.id"
         class="keyword-item"
         :class="{ 'catching': keyword.isCatching }"
         :data-type="keyword.type"
         :style="keyword.style"
-        @click="catchKeyword(keyword, index)"
+        @click="catchKeyword(keyword)"
         @mouseenter="keyword.isHovering = true"
         @mouseleave="keyword.isHovering = false"
+        @animationend="onAnimationEnd(keyword)"
       >
         <span class="keyword-text">{{ keyword.name }}</span>
         <span class="keyword-hint" v-if="keyword.isHovering">点击查看</span>
       </div>
     </div>
 
-    <!-- 统计信息 -->
-    <div class="rain-stats">
-      <div class="stat-item">
-        <span class="stat-label">总关键词</span>
-        <span class="stat-value">{{ totalCount }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">已接住</span>
-        <span class="stat-value">{{ caughtCount }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">接住率</span>
-        <span class="stat-value">{{ catchRate }}%</span>
-      </div>
-    </div>
 
     <!-- 提示信息 -->
     <div class="hint-text">
@@ -61,6 +47,7 @@ export default {
   data() {
     return {
       keywords: [],          // 所有关键词数据（包含人物、事件、学院、专业）
+      availableKeywords: [], // 可用的关键词池（用于避免重复）
       activeKeywords: [],    // 当前显示的关键词
       maxKeywords: 30,       // 同时显示的最大关键词数
       caughtKeywords: new Set(), // 已接住的关键词ID
@@ -69,13 +56,6 @@ export default {
     };
   },
   computed: {
-    catchRate() {
-      if (this.keywords.length === 0) return 0;
-      return Math.round((this.caughtCount / this.keywords.length) * 100);
-    },
-    totalCount() {
-      return this.keywords.length;
-    }
   },
   mounted() {
     this.loadAllKeywords();
@@ -93,71 +73,79 @@ export default {
       try {
         // 并发加载所有类型的数据
         const [personsRes, eventsRes, nodesRes, majorsRes] = await Promise.allSettled([
-          axios.get('/api/persons'),
+          axios.get('/api/person'),
           axios.get('/api/history/events'),
-          axios.get('/api/academic/nodes'),
-          axios.get('/api/academic/majors')
+          axios.get('/api/academic-universe/nodes'),
+          axios.get('/api/academic-universe/majors')
         ]);
 
         this.keywords = [];
 
-        // 1. 加载人物
+        // 1. 加载人物 - 直接返回数组
         if (personsRes.status === 'fulfilled' && personsRes.value.data) {
-          const persons = personsRes.value.data
-            .filter(p => p.name && p.person_id)
+          const personData = Array.isArray(personsRes.value.data) ? personsRes.value.data : [];
+          const persons = personData
+            .filter(p => p.name && p.personId)
             .map(p => ({
-              id: `person-${p.person_id}`,
+              id: `person-${p.personId}`,
               name: p.name,
               type: 'person',
-              route: `/person/${p.person_id}`
+              route: `/person/${p.personId}`
             }));
           this.keywords.push(...persons);
         }
 
-        // 2. 加载历史事件
+        // 2. 加载历史事件 - 返回包装对象 {success, data}
         if (eventsRes.status === 'fulfilled' && eventsRes.value.data) {
-          const events = eventsRes.value.data
-            .filter(e => e.title && e.event_id)
+          const eventData = eventsRes.value.data.data || eventsRes.value.data;
+          const events = (Array.isArray(eventData) ? eventData : [])
+            .filter(e => e.title && e.id && e.year)
             .map(e => ({
-              id: `event-${e.event_id}`,
+              id: `event-${e.id}`,
               name: e.title,
               type: 'event',
-              route: '/digital-history'
+              year: e.year,
+              route: `/event/${e.year}`
             }));
           this.keywords.push(...events);
         }
 
-        // 3. 加载学院/研究院
+        // 3. 加载学院/研究院 - 返回包装对象 {success, data}
         if (nodesRes.status === 'fulfilled' && nodesRes.value.data) {
-          const nodes = nodesRes.value.data
-            .filter(n => n.name && n.node_id)
+          const nodeData = nodesRes.value.data.data || nodesRes.value.data;
+          const nodes = (Array.isArray(nodeData) ? nodeData : [])
+            .filter(n => n.name && n.nodeId)
             .map(n => ({
-              id: `node-${n.node_id}`,
+              id: `node-${n.nodeId}`,
               name: n.name,
               type: 'institute',
-              route: `/academic-universe?node=${n.node_id}`
+              route: `/academic-universe?node=${n.nodeId}`
             }));
           this.keywords.push(...nodes);
         }
 
-        // 4. 加载专业
+        // 4. 加载专业 - 直接返回数组
         if (majorsRes.status === 'fulfilled' && majorsRes.value.data) {
-          const majors = majorsRes.value.data
-            .filter(m => m.name && m.major_id)
+          const majorData = Array.isArray(majorsRes.value.data) ? majorsRes.value.data : [];
+          const majors = majorData
+            .filter(m => m.name && m.majorId)
             .map(m => ({
-              id: `major-${m.major_id}`,
+              id: `major-${m.majorId}`,
               name: m.name,
               type: 'major',
-              route: `/academic-universe?major=${m.major_id}`
+              route: `/academic-universe?major=${m.majorId}`
             }));
           this.keywords.push(...majors);
         }
 
-        console.log(`成功加载 ${this.keywords.length} 个关键词`);
-        console.log(`人物: ${this.keywords.filter(k => k.type === 'person').length}`);
-        console.log(`事件: ${this.keywords.filter(k => k.type === 'event').length}`);
-        console.log(`学院: ${this.keywords.filter(k => k.type === 'institute').length}`);
-        console.log(`专业: ${this.keywords.filter(k => k.type === 'major').length}`);
+        const stats = {
+          total: this.keywords.length,
+          person: this.keywords.filter(k => k.type === 'person').length,
+          event: this.keywords.filter(k => k.type === 'event').length,
+          institute: this.keywords.filter(k => k.type === 'institute').length,
+          major: this.keywords.filter(k => k.type === 'major').length
+        };
+        console.log('✅ 关键词雨数据加载完成:', stats);
         
         // 启动关键词雨
         this.startRain();
@@ -180,43 +168,77 @@ export default {
     },
 
     startRain() {
-      // 初始化显示的关键词
-      for (let i = 0; i < this.maxKeywords; i++) {
-        this.addKeyword();
+      // 初始化关键词池（打乱顺序）
+      this.refillKeywordPool();
+      
+      // 初始化显示的关键词（逐个错开出现）
+      const initialCount = Math.min(15, this.maxKeywords);
+      for (let i = 0; i < initialCount; i++) {
+        setTimeout(() => {
+          this.addKeyword();
+        }, i * 150); // 每个关键词间隔150ms
       }
       
       // 持续添加新关键词，保持雨水连贯
       this.rainInterval = setInterval(() => {
         this.addKeyword();
-      }, 800); // 每0.8秒添加一个新关键词
+      }, 600); // 每0.6秒添加一个新关键词
+    },
+    
+    // 重新填充关键词池（打乱顺序避免重复）
+    refillKeywordPool() {
+      // 复制并打乱关键词数组
+      this.availableKeywords = [...this.keywords].sort(() => Math.random() - 0.5);
+      console.log('关键词池已重新填充，共', this.availableKeywords.length, '个关键词');
     },
 
     addKeyword() {
       if (this.keywords.length === 0) return;
 
-      const keyword = this.keywords[Math.floor(Math.random() * this.keywords.length)];
-      const style = this.generateKeywordStyle(keyword);
+      // 如果关键词池空了，重新填充
+      if (this.availableKeywords.length === 0) {
+        this.refillKeywordPool();
+      }
 
-      this.activeKeywords.push({
+      // 从池中取出一个关键词（避免重复）
+      const keyword = this.availableKeywords.shift();
+      if (!keyword) return;
+      
+      // 调试日志（可选）
+      // console.log('添加关键词:', keyword.name, '剩余池:', this.availableKeywords.length);
+
+      // 随机生成样式参数
+      const duration = 10 + Math.random() * 5; // 动画时长 10-15秒
+      const fontSize = 14 + Math.random() * 8; // 字体大小 14-22px
+      const opacity = 0.5 + Math.random() * 0.4; // 透明度 0.5-0.9
+      
+      const style = this.generateKeywordStyle(keyword, duration, fontSize, opacity);
+
+      const uniqueId = `${keyword.id}-${Date.now()}-${Math.random()}`;
+      const newKeyword = {
         ...keyword,
+        originalId: keyword.id, // 保存原始ID用于统计
+        id: uniqueId, // 确保唯一ID
         style,
         isHovering: false,
         isCatching: false
-      });
+      };
 
-      // 移除最早添加的关键词
-      if (this.activeKeywords.length > this.maxKeywords) {
-        this.activeKeywords.shift();
+      this.activeKeywords.push(newKeyword);
+
+      // 控制最大数量，防止内存泄漏
+      if (this.activeKeywords.length > this.maxKeywords * 2) {
+        // 移除未被接住且不在视图中的旧关键词
+        this.activeKeywords = this.activeKeywords.filter((k, idx) => {
+          return k.isCatching || idx >= this.activeKeywords.length - this.maxKeywords;
+        });
       }
     },
 
-    generateKeywordStyle(keyword) {
-      const duration = 8 + Math.random() * 4;
-      const delay = Math.random() * 2;
-      const xPosition = Math.random() * 90;
-      const fontSize = 12 + Math.random() * 6;
-      const drift = (Math.random() - 0.5) * 50;
-      const opacity = 0.3 + Math.random() * 0.5; // 随机透明度 0.3-0.8
+    generateKeywordStyle(keyword, duration, fontSize, opacity) {
+      const delay = 0; // 无延迟，立即开始
+      const xPosition = Math.random() * 90; // 水平位置 0-90%
+      const drift = (Math.random() - 0.5) * 60; // 左右漂移 -30px到30px
 
       // 根据类型设置不同颜色
       const colorMap = {
@@ -239,20 +261,53 @@ export default {
       };
     },
 
-    catchKeyword(keyword, index) {
+    onAnimationEnd(keyword) {
+      // 动画结束时，如果未被接住，则移除并放回关键词池
+      if (!keyword.isCatching) {
+        const index = this.activeKeywords.findIndex(k => k.id === keyword.id);
+        if (index > -1) {
+          this.activeKeywords.splice(index, 1);
+          
+          // 将原始关键词放回池中（在末尾），让它可以再次出现
+          const originalKeyword = this.keywords.find(k => k.id === keyword.originalId);
+          if (originalKeyword) {
+            this.availableKeywords.push(originalKeyword);
+          }
+        }
+      }
+    },
+
+    catchKeyword(keyword) {
       // 标记为接住状态
       keyword.isCatching = true;
       
-      // 记录接住
-      if (!this.caughtKeywords.has(keyword.id)) {
-        this.caughtKeywords.add(keyword.id);
+      // 记录接住（使用原始ID）
+      if (!this.caughtKeywords.has(keyword.originalId)) {
+        this.caughtKeywords.add(keyword.originalId);
         this.caughtCount++;
       }
 
-      // 延迟后跳转到目标页面，携带来源信息
+      // 延迟后跳转并移除关键词
       setTimeout(() => {
+        // 从数组中移除
+        const index = this.activeKeywords.findIndex(k => k.id === keyword.id);
+        if (index > -1) {
+          this.activeKeywords.splice(index, 1);
+          
+          // 将关键词放回池中
+          const originalKeyword = this.keywords.find(k => k.id === keyword.originalId);
+          if (originalKeyword) {
+            this.availableKeywords.push(originalKeyword);
+          }
+        }
+        
         // 根据类型添加来源参数
         if (keyword.type === 'person') {
+          this.$router.push({
+            path: keyword.route,
+            query: { from: 'keyword-rain' }
+          });
+        } else if (keyword.type === 'event') {
           this.$router.push({
             path: keyword.route,
             query: { from: 'keyword-rain' }
@@ -359,7 +414,7 @@ export default {
   top: -10%;
   white-space: nowrap;
   will-change: transform;
-  animation: keywordFall var(--duration) linear var(--delay) infinite;
+  animation: keywordFall var(--duration) linear forwards;
   user-select: none;
   cursor: pointer;
   transition: opacity 0.3s ease;
@@ -413,40 +468,6 @@ export default {
   }
 }
 
-/* 统计信息 */
-.rain-stats {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 30px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  padding: 15px 30px;
-  border-radius: 12px;
-  z-index: 10;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
 
 /* 提示文本 */
 .hint-text {
@@ -486,21 +507,6 @@ export default {
 
   .rain-subtitle {
     font-size: 14px;
-  }
-
-  .rain-stats {
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 15px 25px;
-    bottom: 20px;
-  }
-
-  .stat-item {
-    min-width: 80px;
-  }
-
-  .stat-value {
-    font-size: 20px;
   }
 
   .back-button {

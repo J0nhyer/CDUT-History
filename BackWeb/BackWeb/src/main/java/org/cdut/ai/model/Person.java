@@ -32,6 +32,12 @@ public class Person {
     @TableField(value = "key_tags", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
     private String keyTags;   // 关键词标签（JSON字符串，前端解析为数组）
     
+    @TableField(value = "awards", jdbcType = org.apache.ibatis.type.JdbcType.LONGVARCHAR)
+    private String awards;    // 奖项成就（JSON字符串）
+    
+    @TableField("is_visible")
+    private Boolean isVisible; // 是否显示人物信息：true-显示，false-不显示
+    
     @TableField("data_status")
     private String dataStatus; // 数据状态：completed/pending/draft
     

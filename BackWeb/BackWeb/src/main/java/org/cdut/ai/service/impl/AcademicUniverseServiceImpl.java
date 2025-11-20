@@ -480,5 +480,12 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
         }
         return null;
     }
+    
+    @Override
+    public List<AcademicMajor> getAllMajors() {
+        LambdaQueryWrapper<AcademicMajor> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByAsc(AcademicMajor::getSortOrder);
+        return majorMapper.selectList(wrapper);
+    }
 }
 
