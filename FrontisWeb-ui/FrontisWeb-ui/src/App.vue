@@ -224,17 +224,28 @@ export default {
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
 body {
   font-family: 'Arial', sans-serif;
   line-height: 1.6;
   color: #333;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 #app {
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .page-container {
   min-height: 100vh;
+  width: 100%;
 }
 </style>

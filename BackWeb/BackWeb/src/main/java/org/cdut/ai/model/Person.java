@@ -59,5 +59,8 @@ public class Person {
     
     @TableField(exist = false)
     private List<PersonRelationship> relationships;
+    
+    @TableField(exist = false)
+    private List<PersonAward> awardsList;
 }
 

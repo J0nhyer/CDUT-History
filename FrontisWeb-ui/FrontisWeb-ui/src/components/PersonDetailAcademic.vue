@@ -28,14 +28,6 @@
             <span>关系图谱</span>
           </button>
           <button 
-            @click="scrollToSection('timeline')" 
-            class="nav-tab-item"
-            :class="{ active: activeSection === 'timeline' }"
-          >
-            <i class="fas fa-clock"></i>
-            <span>时间轴</span>
-          </button>
-          <button 
             @click="scrollToSection('achievements')" 
             class="nav-tab-item"
             :class="{ active: activeSection === 'achievements' }"
@@ -43,12 +35,20 @@
             <i class="fas fa-trophy"></i>
             <span>荣誉成就</span>
           </button>
+          <button 
+            @click="scrollToSection('timeline')" 
+            class="nav-tab-item"
+            :class="{ active: activeSection === 'timeline' }"
+          >
+            <i class="fas fa-history"></i>
+            <span>生平时间线</span>
+          </button>
         </div>
       </div>
     </nav>
 
     <!-- 主要内容区 -->
-    <main class="main-content" id="introduction-section" v-show="activeSection !== 'relationship' && activeSection !== 'timeline' && activeSection !== 'achievements'">
+    <main class="main-content" id="introduction-section" v-show="activeSection !== 'relationship' && activeSection !== 'achievements' && activeSection !== 'timeline'">
       <div class="content-wrapper">
         <!-- 左侧栏 - 人物照片 -->
         <aside class="person-sidebar">
@@ -140,54 +140,192 @@
       <RelationshipGraph ref="relationshipGraph" :personId="personData.id" />
     </section>
 
-    <!-- 荣誉成就区域 - 点击荣誉成就按钮时显示 -->
+
+    <!-- 荣誉成就区域 - 勋章墙式展示 -->
     <section class="achievements-section-fullwidth" id="achievements-section" v-if="activeSection === 'achievements'">
-      <div class="achievements-container-fullwidth">
-        <h2 class="achievements-title">荣誉成就</h2>
-        <div class="achievements-list-fullwidth" v-if="personData.keyTags && personData.keyTags.length > 0">
-          <div 
-            v-for="(tag, index) in personData.keyTags" 
-            :key="index"
-            class="achievement-item-fullwidth"
+      <div class="medal-wall-container">
+        <!-- 顶部统计区 -->
+        <div class="statistics-area" data-aos="fade-down">
+          <div class="stat-card">
+            <div class="stat-number" :data-count="getTotalCount()">{{ animatedTotalCount }}</div>
+            <div class="stat-label">荣誉总数</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number highlight">{{ getHighestLevel() }}</div>
+            <div class="stat-label">最高级别</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ getYearSpan() }}</div>
+            <div class="stat-label">获奖跨度</div>
+          </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar" data-aos="fade-up" data-aos-delay="200">
+          <div class="filter-group">
+            <button 
+              v-for="type in achievementTypes" 
+              :key="type.id"
+              :class="['filter-btn', { active: selectedType === type.id }]"
+              @click="filterByType(type.id)"
+            >
+              <i :class="type.icon"></i>
+              <span>{{ type.name }}</span>
+              <span class="count" v-if="getCountByType(type.id) > 0">({{ getCountByType(type.id) }})</span>
+            </button>
+          </div>
+          <div class="sort-controls">
+            <select v-model="sortBy" class="sort-select">
+              <option value="type">按类型</option>
+              <option value="time-desc">时间从新到旧</option>
+              <option value="time-asc">时间从旧到新</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 勋章墙主体 -->
+        <div class="medal-wall-main" v-if="processedAchievements.length > 0">
+          <transition-group 
+            name="medal" 
+            tag="div" 
+            class="medal-grid"
           >
-            <div class="achievement-icon">
-              <i class="fas fa-trophy"></i>
+            <div 
+              v-for="(achievement, index) in filteredAndSortedAchievements" 
+              :key="achievement.awardId || index"
+              :class="['medal-item', `type-${getTypeClass(achievement.awardType)}`, { hovered: hoveredMedal === achievement.awardId }]"
+              :style="getMedalStyle(achievement)"
+              @mouseenter="onMedalHover(achievement)"
+              @mouseleave="onMedalLeave()"
+              @click="openMedalDetail(achievement)"
+              data-aos="zoom-in"
+              :data-aos-delay="index * 50"
+            >
+              <!-- 勋章外框 -->
+              <div class="medal-frame">
+                <!-- 光晕效果 -->
+                <div class="medal-glow" :class="`glow-${getTypeClass(achievement.awardType)}`"></div>
+                
+                <!-- 勋章主体 -->
+                <div class="medal-body">
+                  <!-- 图标 -->
+                  <div class="medal-icon">
+                    <i :class="getMedalIcon(achievement)"></i>
+                  </div>
+                  
+                  <!-- 绸带装饰(仅院士) -->
+                  <div v-if="achievement.awardType === '院士'" class="medal-ribbon">
+                    <div class="ribbon-left"></div>
+                    <div class="ribbon-right"></div>
+                  </div>
+                </div>
+                
+                <!-- 勋章名称 -->
+                <div class="medal-name">{{ achievement.awardName }}</div>
+              </div>
+
+              <!-- 悬浮提示卡片 -->
+              <transition name="tooltip">
+                <div 
+                  v-if="hoveredMedal === achievement.awardId" 
+                  class="medal-tooltip"
+                  :style="getTooltipPosition(index)"
+                >
+                  <h4 class="tooltip-title">{{ achievement.awardName }}</h4>
+                  <p class="tooltip-desc">{{ achievement.awardDescription || '暂无描述' }}</p>
+                  <div class="tooltip-meta">
+                    <span v-if="achievement.awardYear"><i class="fas fa-calendar"></i> {{ achievement.awardYear }}年</span>
+                    <span v-if="achievement.awardingOrganization"><i class="fas fa-building"></i> {{ achievement.awardingOrganization }}</span>
+                  </div>
+                </div>
+              </transition>
             </div>
-            <div class="achievement-content">
-              <h3 class="achievement-title">{{ tag }}</h3>
+          </transition-group>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="empty-state">
+          <i class="fas fa-medal"></i>
+          <p>{{ selectedType === 'all' ? '暂无荣誉成就数据' : '该类型暂无荣誉' }}</p>
+          <button v-if="selectedType !== 'all'" @click="filterByType('all')" class="clear-filter-btn">
+            查看全部荣誉
+          </button>
+        </div>
+      </div>
+
+      <!-- 详情模态框 -->
+      <transition name="modal">
+        <div v-if="selectedMedal" class="medal-modal-overlay" @click="closeMedalDetail">
+          <div class="medal-modal" @click.stop>
+            <button class="modal-close-btn" @click="closeMedalDetail">
+              <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- 模态框头部 -->
+            <div class="modal-header" :class="`header-${getTypeClass(selectedMedal.awardType)}`">
+              <div class="modal-medal-icon">
+                <i :class="getMedalIcon(selectedMedal)"></i>
+              </div>
+              <div class="modal-title-group">
+                <h3 class="modal-title">{{ selectedMedal.awardName }}</h3>
+                <span class="modal-level-badge" :class="`badge-${getTypeClass(selectedMedal.awardType)}`">
+                  {{ selectedMedal.awardType }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="modal-body">
+              <div class="modal-description">
+                <p>{{ selectedMedal.awardDescription || '暂无详细描述' }}</p>
+              </div>
+              
+              <div class="modal-info-cards">
+                <div class="info-card" v-if="selectedMedal.awardYear">
+                  <i class="fas fa-calendar-alt"></i>
+                  <div>
+                    <div class="card-label">获得时间</div>
+                    <div class="card-value">{{ selectedMedal.awardYear }}年</div>
+                  </div>
+                </div>
+                <div class="info-card" v-if="selectedMedal.awardingOrganization">
+                  <i class="fas fa-building"></i>
+                  <div>
+                    <div class="card-label">颁发机构</div>
+                    <div class="card-value">{{ selectedMedal.awardingOrganization }}</div>
+                  </div>
+                </div>
+                <div class="info-card" v-if="selectedMedal.awardRank">
+                  <i class="fas fa-award"></i>
+                  <div>
+                    <div class="card-label">奖项等级</div>
+                    <div class="card-value">{{ selectedMedal.awardRank }}</div>
+                  </div>
+                </div>
+                <div class="info-card" v-if="selectedMedal.awardLevel">
+                  <i class="fas fa-layer-group"></i>
+                  <div>
+                    <div class="card-label">荣誉级别</div>
+                    <div class="card-value">{{ selectedMedal.awardLevel }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div v-else class="no-achievements-data">
-          <i class="fas fa-info-circle"></i>
-          <p>暂无荣誉成就数据</p>
-        </div>
-      </div>
+      </transition>
     </section>
 
-    <!-- 时间轴区域 - 使用胶片式时间轴 -->
+    <!-- 生平时间线区域 -->
     <section class="timeline-section-fullwidth" id="timeline-section" v-if="activeSection === 'timeline'">
-      <!-- 加载中状态 -->
-      <div v-if="isLoadingEvents" class="loading-timeline-data">
-        <div class="spinner"></div>
-        <p>加载中...</p>
-      </div>
-      
-      <!-- 胶片时间轴 -->
-      <FilmTimeline 
-        v-else-if="timelineEvents && timelineEvents.length > 0" 
-        :timelineEvents="timelineEvents"
+      <TimelineFlipBook 
+        v-if="personData && personData.id"
+        :personId="personData.id"
       />
-      
-      <!-- 无数据状态 -->
-      <div v-else class="no-timeline-data">
-        <i class="fas fa-info-circle"></i>
-        <p>暂无时间轴数据</p>
-      </div>
     </section>
 
-    <!-- 页脚 - 只在非关系图谱、时间轴和荣誉成就模式下显示 -->
-    <footer class="academic-footer" v-if="activeSection !== 'relationship' && activeSection !== 'timeline' && activeSection !== 'achievements'">
+    <!-- 页脚 - 只在非关系图谱、荣誉成就、时间线模式下显示 -->
+    <footer class="academic-footer" v-if="activeSection !== 'relationship' && activeSection !== 'achievements' && activeSection !== 'timeline'">
       <div class="footer-content">
         <p>版权所有 ©成都理工大学数字校史馆</p>
         <p>地址：四川省成都市成华区二仙桥东三路1号 邮编：610059</p>
@@ -199,9 +337,8 @@
 
 <script>
 import RelationshipGraph from './RelationshipGraph.vue'
-import FilmTimeline from './FilmTimeline.vue'
+import TimelineFlipBook from './TimelineFlipBook.vue'
 import { getPersonImage, getUnknownImage } from '@/utils/imageLoader'
-import { getPersonEvents } from '@/services/personDataService'
 
 const unknownImg = getUnknownImage()
 
@@ -209,7 +346,7 @@ export default {
   name: 'PersonDetailAcademic',
   components: {
     RelationshipGraph,
-    FilmTimeline
+    TimelineFlipBook
   },
   props: {
     personData: {
@@ -221,11 +358,24 @@ export default {
     return {
       imageLoaded: false,
       // 当前激活的标签
-      activeSection: 'knowledge', // 'knowledge' | 'relationship' | 'timeline' | 'achievements'
+      activeSection: 'knowledge', // 'knowledge' | 'relationship' | 'achievements' | 'timeline'
       unknownImg: unknownImg,
-      // 时间轴事件数据
-      timelineEvents: [],
-      isLoadingEvents: false
+      // 荣誉成就相关
+      achievementTypes: [
+        { id: 'all', name: '全部', icon: 'fas fa-list' },
+        { id: '院士', name: '院士', icon: 'fas fa-crown' },
+        { id: '国家级奖项', name: '国家级奖项', icon: 'fas fa-trophy' },
+        { id: '省部级奖项', name: '省部级奖项', icon: 'fas fa-medal' },
+        { id: '学术职务', name: '学术职务', icon: 'fas fa-users' },
+        { id: '教学荣誉', name: '教学荣誉', icon: 'fas fa-chalkboard-teacher' },
+        { id: '人才计划', name: '人才计划', icon: 'fas fa-user-graduate' },
+        { id: '其他荣誉', name: '其他', icon: 'fas fa-star' }
+      ],
+      selectedType: 'all',
+      sortBy: 'type',
+      hoveredMedal: null,
+      selectedMedal: null,
+      animatedTotalCount: 0
     }
   },
   computed: {
@@ -244,6 +394,48 @@ export default {
       console.log('🖼️ [displayImage] 加载结果:', image)
       
       return image || unknownImg
+    },
+    
+    // 处理荣誉成就数据
+    processedAchievements() {
+      if (!this.personData || !this.personData.awards || this.personData.awards.length === 0) {
+        return []
+      }
+      
+      // 直接返回awards数据
+      return this.personData.awards
+    },
+    
+    // 筛选和排序后的荣誉
+    filteredAndSortedAchievements() {
+      let filtered = this.processedAchievements
+      
+      // 按类型筛选
+      if (this.selectedType !== 'all') {
+        filtered = filtered.filter(a => a.awardType === this.selectedType)
+      }
+      
+      // 排序
+      if (this.sortBy === 'type') {
+        // 按类型排序
+        const typeOrder = { '院士': 0, '国家级奖项': 1, '省部级奖项': 2, '学术职务': 3, '教学荣誉': 4, '人才计划': 5, '其他荣誉': 6 }
+        filtered.sort((a, b) => (typeOrder[a.awardType] || 999) - (typeOrder[b.awardType] || 999))
+      } else if (this.sortBy === 'time-desc') {
+        filtered.sort((a, b) => (b.awardYear || 0) - (a.awardYear || 0))
+      } else if (this.sortBy === 'time-asc') {
+        filtered.sort((a, b) => (a.awardYear || 0) - (b.awardYear || 0))
+      }
+      
+      return filtered
+    }
+  },
+  watch: {
+    activeSection(newVal) {
+      if (newVal === 'achievements') {
+        this.$nextTick(() => {
+          this.animateCount()
+        })
+      }
     }
   },
   async mounted() {
@@ -260,9 +452,6 @@ export default {
     if (!this.personData?.biography || this.personData.biography.length === 0) {
       console.warn('⚠️ [PersonDetailAcademic] biography数据为空')
     }
-    
-    // 加载时间轴事件数据
-    await this.loadTimelineEvents()
   },
   methods: {
     goBack() {
@@ -284,34 +473,13 @@ export default {
       }
     },
     
-    // 加载时间轴事件
-    async loadTimelineEvents() {
-      if (!this.personData || !this.personData.id) {
-        console.warn('[PersonDetailAcademic] 无法加载事件：personData或id不存在')
-        return
-      }
-      
-      this.isLoadingEvents = true
-      try {
-        console.log(`[PersonDetailAcademic] 开始加载人物事件: ${this.personData.id}`)
-        const events = await getPersonEvents(this.personData.id)
-        console.log(`[PersonDetailAcademic] 获取到 ${events.length} 条事件:`, events)
-        this.timelineEvents = events
-      } catch (error) {
-        console.error('[PersonDetailAcademic] 加载事件失败:', error)
-        this.timelineEvents = []
-      } finally {
-        this.isLoadingEvents = false
-      }
-    },
-    
     // 滚动到指定区域
     scrollToSection(section) {
       this.activeSection = section
       
-      // 如果是关系图谱或时间轴，直接显示，不需要滚动
-      if (section === 'relationship' || section === 'timeline') {
-        // 关系图谱或时间轴直接显示，隐藏人物介绍
+      // 如果是关系图谱，直接显示，不需要滚动
+      if (section === 'relationship') {
+        // 关系图谱直接显示，隐藏人物介绍
         this.$nextTick(() => {
           // 滚动到顶部，确保内容可见
           window.scrollTo({
@@ -327,6 +495,17 @@ export default {
               }
             }, 500)
           }
+        })
+        return
+      }
+      
+      // 时间线视图
+      if (section === 'timeline') {
+        this.$nextTick(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          })
         })
         return
       }
@@ -436,6 +615,123 @@ export default {
       }
       // 否则包装成段落
       return `<p>${text}</p>`
+    },
+    
+    // ========== 荣誉成就相关方法 ==========
+    
+    // 获取类型css类名
+    getTypeClass(awardType) {
+      const typeClassMap = {
+        '院士': 'S',
+        '国家级奖项': 'A',
+        '省部级奖项': 'B',
+        '学术职务': 'C',
+        '教学荣誉': 'C',
+        '人才计划': 'A',
+        '其他荣誉': 'C'
+      }
+      return typeClassMap[awardType] || 'C'
+    },
+    
+    // 获取勋章图标
+    getMedalIcon(achievement) {
+      const icons = {
+        '院士': 'fas fa-crown',
+        '国家级奖项': 'fas fa-trophy',
+        '省部级奖项': 'fas fa-medal',
+        '学术职务': 'fas fa-users',
+        '教学荣誉': 'fas fa-chalkboard-teacher',
+        '人才计划': 'fas fa-user-graduate',
+        '其他荣誉': 'fas fa-star'
+      }
+      return icons[achievement.awardType] || 'fas fa-award'
+    },
+    
+    // 获取勋章样式
+    getMedalStyle(achievement) {
+      // 可以根据需要添加自定义样式
+      return {}
+    },
+    
+    // 获取提示框位置
+    getTooltipPosition(index) {
+      // 简单的定位逻辑，可以根据实际情况优化
+      return {
+        // 默认在右侧显示
+      }
+    },
+    
+    // 统计相关方法
+    getTotalCount() {
+      return this.processedAchievements.length
+    },
+    
+    getHighestLevel() {
+      const types = this.processedAchievements.map(a => a.awardType)
+      if (types.includes('院士')) return '院士'
+      if (types.includes('国家级奖项')) return '国家级'
+      if (types.includes('省部级奖项')) return '省部级'
+      return '校级'
+    },
+    
+    getYearSpan() {
+      const years = this.processedAchievements
+        .map(a => a.awardYear)
+        .filter(y => y && y > 0)
+      
+      if (years.length === 0) return '-'
+      if (years.length === 1) return years[0] + '年'
+      
+      const minYear = Math.min(...years)
+      const maxYear = Math.max(...years)
+      const span = maxYear - minYear
+      return span > 0 ? `${span}年` : '同年'
+    },
+    
+    getCountByType(typeId) {
+      if (typeId === 'all') return this.processedAchievements.length
+      return this.processedAchievements.filter(a => a.awardType === typeId).length
+    },
+    
+    // 筛选方法
+    filterByType(typeId) {
+      this.selectedType = typeId
+    },
+    
+    // 交互方法
+    onMedalHover(achievement) {
+      this.hoveredMedal = achievement.awardId
+    },
+    
+    onMedalLeave() {
+      this.hoveredMedal = null
+    },
+    
+    openMedalDetail(achievement) {
+      this.selectedMedal = achievement
+    },
+    
+    closeMedalDetail() {
+      this.selectedMedal = null
+    },
+    
+    // 数字动画
+    animateCount() {
+      const target = this.getTotalCount()
+      const duration = 1500
+      const steps = 60
+      const increment = target / steps
+      let current = 0
+      
+      const timer = setInterval(() => {
+        current += increment
+        if (current >= target) {
+          this.animatedTotalCount = target
+          clearInterval(timer)
+        } else {
+          this.animatedTotalCount = Math.floor(current)
+        }
+      }, duration / steps)
     }
   }
 }
@@ -985,94 +1281,1196 @@ export default {
   font-size: 18px;
 }
 
-/* 荣誉成就区域样式 */
+/* ========== 荣誉成就 - 勋章墙样式 ========== */
 .achievements-section-fullwidth {
   min-height: 100vh;
-  padding: 80px 40px 40px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #e0e7ff 100%);
+  padding: 60px 20px 80px;
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(220, 20, 60, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-.achievements-container-fullwidth {
-  max-width: 1200px;
+/* 动态背景效果 */
+.achievements-section-fullwidth::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 20% 80%, rgba(123, 104, 238, 0.1) 0%, transparent 40%);
+  animation: bg-pulse 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 星光粒子背景 */
+.achievements-section-fullwidth::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, white, transparent),
+    radial-gradient(2px 2px at 60% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 80% 10%, white, transparent),
+    radial-gradient(2px 2px at 90% 60%, white, transparent),
+    radial-gradient(1px 1px at 33% 80%, white, transparent),
+    radial-gradient(1px 1px at 15% 90%, white, transparent);
+  background-size: 200% 200%;
+  animation: stars-twinkle 20s linear infinite;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.medal-wall-container {
+  max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
-.achievements-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 30px;
+/* 顶部统计区 */
+.statistics-area {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 30px 40px;
+  min-width: 180px;
   text-align: center;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #f59e0b;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.achievements-list-fullwidth {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+.stat-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 
+    0 15px 50px rgba(255, 215, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 215, 0, 0.6);
+}
+
+.stat-number {
+  font-size: 56px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 40px rgba(255, 215, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  animation: number-glow 2s ease-in-out infinite;
+}
+
+.stat-number.highlight {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
-.achievement-item-fullwidth {
+.filter-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
+}
+
+.filter-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #1a1a1a;
+  border-color: #FFD700;
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 5px 20px rgba(255, 215, 0, 0.3);
+  font-weight: 600;
+}
+
+.filter-btn.active i {
+  animation: icon-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.filter-btn .count {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-select {
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 勋章墙主体 */
+.medal-wall-main {
+  margin-top: 40px;
+}
+
+.medal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 40px 30px;
+  justify-items: center;
+}
+
+/* 勋章项 */
+.medal-item {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.medal-item:hover {
+  transform: translateY(-20px) scale(1.2) rotateZ(5deg);
+  z-index: 10;
+  filter: brightness(1.2);
+}
+
+.medal-item:hover .medal-body {
+  animation-play-state: paused;
+}
+
+.medal-item.hovered ~ .medal-item:not(.hovered) {
+  opacity: 0.7;
+}
+
+/* 勋章外框 */
+.medal-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 勋章主体 */
+.medal-body {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+/* 勋章尺寸 - 按类型 */
+.medal-item.type-S .medal-body {
+  width: 130px;
+  height: 130px;
+  background: 
+    linear-gradient(135deg, #FFD700 0%, #FFA500 30%, #FF8C00 100%);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 1),
+    0 0 60px rgba(255, 215, 0, 0.6),
+    0 12px 40px rgba(255, 215, 0, 0.8),
+    inset 0 2px 10px rgba(255, 255, 255, 0.5);
+  animation: pulse-S 3s ease-in-out infinite, rotate-slow 20s linear infinite;
+  position: relative;
+}
+
+.medal-item.type-S .medal-body::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: spin-border 3s linear infinite;
+}
+
+.medal-item.type-S .medal-body::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  right: 10%;
+  bottom: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+}
+
+.medal-item.type-A .medal-body {
+  width: 105px;
+  height: 105px;
+  background: linear-gradient(135deg, #DC143C 0%, #FF6B6B 50%, #FF4757 100%);
+  box-shadow: 
+    0 0 25px rgba(220, 20, 60, 0.9),
+    0 0 50px rgba(220, 20, 60, 0.5),
+    0 8px 30px rgba(220, 20, 60, 0.7),
+    inset 0 1px 8px rgba(255, 255, 255, 0.4);
+  animation: float-A 4s ease-in-out infinite;
+}
+
+.medal-item.type-B .medal-body {
+  width: 85px;
+  height: 85px;
+  background: linear-gradient(135deg, #4169E1 0%, #6A5ACD 50%, #7B68EE 100%);
+  box-shadow: 
+    0 0 20px rgba(65, 105, 225, 0.8),
+    0 0 40px rgba(65, 105, 225, 0.4),
+    0 6px 20px rgba(65, 105, 225, 0.6),
+    inset 0 1px 6px rgba(255, 255, 255, 0.3);
+  animation: float-B 5s ease-in-out infinite;
+}
+
+.medal-item.type-C .medal-body {
+  width: 65px;
+  height: 65px;
+  background: linear-gradient(135deg, #E8E8E8 0%, #C0C0C0 50%, #A9A9A9 100%);
+  box-shadow: 
+    0 0 15px rgba(192, 192, 192, 0.7),
+    0 0 30px rgba(192, 192, 192, 0.3),
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 4px rgba(255, 255, 255, 0.4);
+  animation: float-C 6s ease-in-out infinite;
+}
+
+/* 光晕效果 */
+.medal-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.medal-item:hover .medal-glow {
+  opacity: 1;
+}
+
+.medal-item.type-S .medal-glow {
+  width: 180px;
+  height: 180px;
+  background: 
+    radial-gradient(circle, rgba(255, 215, 0, 0.6) 0%, rgba(255, 215, 0, 0.3) 40%, transparent 70%);
+  animation: glow-pulse-strong 1.5s ease-in-out infinite;
+  filter: blur(15px);
+}
+
+.medal-item.type-A .medal-glow {
+  width: 150px;
+  height: 150px;
+  background: 
+    radial-gradient(circle, rgba(220, 20, 60, 0.5) 0%, rgba(220, 20, 60, 0.2) 40%, transparent 70%);
+  animation: glow-pulse-medium 2s ease-in-out infinite;
+  filter: blur(12px);
+}
+
+.medal-item.type-B .medal-glow {
+  width: 120px;
+  height: 120px;
+  background: 
+    radial-gradient(circle, rgba(65, 105, 225, 0.4) 0%, rgba(65, 105, 225, 0.2) 40%, transparent 70%);
+  animation: glow-pulse-soft 2.5s ease-in-out infinite;
+  filter: blur(10px);
+}
+
+.medal-item.type-C .medal-glow {
+  width: 85px;
+  height: 85px;
+  background: radial-gradient(circle, rgba(192, 192, 192, 0.2) 0%, transparent 70%);
+}
+
+/* 勋章图标 */
+.medal-icon {
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.medal-item:hover .medal-icon {
+  transform: scale(1.1) rotateY(15deg);
+}
+
+.medal-item.type-S .medal-icon i {
+  font-size: 60px;
+  color: white;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))
+          drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+  animation: icon-shine-S 3s ease-in-out infinite;
+}
+
+.medal-item.type-A .medal-icon i {
+  font-size: 48px;
+  color: white;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4))
+          drop-shadow(0 0 15px rgba(220, 20, 60, 0.5));
+  animation: icon-shine-A 4s ease-in-out infinite;
+}
+
+.medal-item.type-B .medal-icon i {
+  font-size: 38px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))
+          drop-shadow(0 0 12px rgba(65, 105, 225, 0.4));
+}
+
+.medal-item.type-C .medal-icon i {
+  font-size: 30px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))
+          drop-shadow(0 0 8px rgba(192, 192, 192, 0.3));
+}
+
+/* 图标闪光动画 */
+@keyframes icon-shine-S {
+  0%, 100% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 35px rgba(255, 215, 0, 0.9))
+            drop-shadow(0 0 50px rgba(255, 215, 0, 0.5));
+  }
+}
+
+@keyframes icon-shine-A {
+  0%, 100% {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 15px rgba(220, 20, 60, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 25px rgba(220, 20, 60, 0.8));
+  }
+}
+
+/* 绸带装饰 (仅S级) */
+.medal-ribbon {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 40px;
+  display: flex;
+  gap: 2px;
+  z-index: 1;
+}
+
+.ribbon-left, .ribbon-right {
+  width: 38px;
+  height: 100%;
+  background: linear-gradient(180deg, #DC143C 0%, #8B0000 100%);
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+  animation: ribbon-float 2s ease-in-out infinite;
+}
+
+.ribbon-left {
+  animation-delay: 0.1s;
+}
+
+.ribbon-right {
+  animation-delay: 0.3s;
+}
+
+/* 勋章名称 */
+.medal-name {
+  font-size: 13px;
+  color: white;
+  text-align: center;
+  font-weight: 500;
+  max-width: 150px;
+  line-height: 1.3;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  transition: all 0.3s ease;
+}
+
+.medal-item:hover .medal-name {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(255, 255, 255, 0.6),
+    0 0 25px rgba(255, 255, 255, 0.4);
+}
+
+.medal-item.type-S .medal-name {
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 15px rgba(255, 215, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.medal-item.type-A .medal-name {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(220, 20, 60, 0.4);
+}
+
+.medal-item.type-B .medal-name {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(65, 105, 225, 0.4);
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.empty-state i {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.clear-filter-btn {
+  padding: 12px 30px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  color: #667eea;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* 悬浮提示卡片 */
+.medal-tooltip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 20px);
+  transform: translateY(-50%);
+  width: 300px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.tooltip-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+.tooltip-desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.tooltip-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tooltip-meta span {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltip-meta i {
+  font-size: 10px;
+}
+
+/* 提示框动画 */
+.tooltip-enter-active, .tooltip-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.tooltip-enter-from, .tooltip-leave-to {
+  opacity: 0;
+  transform: translateY(-50%) translateX(-10px);
+}
+
+/* 详情模态框 */
+.medal-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.medal-modal {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 650px;
+  max-height: 80vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: rotate(90deg);
+}
+
+.modal-close-btn i {
+  font-size: 18px;
+  color: white;
+}
+
+.modal-header {
+  padding: 40px 30px 30px;
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px 25px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border-left: 4px solid #f59e0b;
+  position: relative;
 }
 
-.achievement-item-fullwidth:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-3px);
-  border-left-color: #dc2626;
+.modal-header.header-S {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
 }
 
-.achievement-icon {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+.modal-header.header-A {
+  background: linear-gradient(135deg, #DC143C 0%, #FF6B6B 100%);
+}
+
+.modal-header.header-B {
+  background: linear-gradient(135deg, #4169E1 0%, #7B68EE 100%);
+}
+
+.modal-header.header-C {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+}
+
+.modal-medal-icon {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.achievement-icon i {
-  font-size: 24px;
+.modal-medal-icon i {
+  font-size: 40px;
   color: white;
 }
 
-.achievement-content {
+.modal-title-group {
   flex: 1;
 }
 
-.achievement-title {
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modal-level-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.modal-body {
+  padding: 30px;
+  overflow-y: auto;
+  max-height: calc(80vh - 160px);
+}
+
+.modal-description {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.modal-info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.modal-info-cards .info-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.modal-info-cards .info-card i {
+  font-size: 20px;
+  color: #667eea;
+  margin-top: 2px;
+}
+
+.modal-info-cards .card-label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.modal-info-cards .card-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-significance {
+  background: #f0f4ff;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.modal-significance h4 {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin: 0;
-  line-height: 1.5;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.no-achievements-data {
-  text-align: center;
-  padding: 60px 20px;
-  color: #9ca3af;
-}
-
-.no-achievements-data i {
-  font-size: 48px;
-  margin-bottom: 20px;
-  display: block;
-}
-
-.no-achievements-data p {
+.modal-significance h4 i {
+  color: #667eea;
   font-size: 18px;
+}
+
+.modal-significance p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #666;
+  margin: 0;
+}
+
+/* 模态框动画 */
+.modal-enter-active, .modal-leave-active {
+  transition: opacity 0.35s ease;
+}
+
+.modal-enter-active .medal-modal,
+.modal-leave-active .medal-modal {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+}
+
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .medal-modal {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+.modal-leave-to .medal-modal {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+/* 勋章过渡动画 */
+.medal-enter-active, .medal-leave-active {
+  transition: all 0.4s ease;
+}
+
+.medal-enter-from {
+  opacity: 0;
+  transform: translateY(30px) scale(0.8);
+}
+
+.medal-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.medal-move {
+  transition: transform 0.4s ease;
+}
+
+/* ========== 关键帧动画 ========== */
+
+/* 背景脉冲 */
+@keyframes bg-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* 星光闪烁 */
+@keyframes stars-twinkle {
+  0%, 100% {
+    opacity: 0.5;
+    background-position: 0% 0%;
+  }
+  50% {
+    opacity: 0.8;
+    background-position: 100% 100%;
+  }
+}
+
+/* 统计卡片光泽 */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* 数字发光 */
+@keyframes number-glow {
+  0%, 100% {
+    text-shadow: 
+      0 0 20px rgba(255, 215, 0, 0.8),
+      0 0 40px rgba(255, 215, 0, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    text-shadow: 
+      0 0 30px rgba(255, 215, 0, 1),
+      0 0 60px rgba(255, 215, 0, 0.6),
+      0 0 90px rgba(255, 215, 0, 0.3),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* S级勋章脉冲 */
+@keyframes pulse-S {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* S级勋章缓慢旋转 */
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* S级边框旋转 */
+@keyframes spin-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* A级勋章浮动 */
+@keyframes float-A {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-2deg);
+  }
+}
+
+/* B级勋章浮动 */
+@keyframes float-B {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-4px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+}
+
+/* C级勋章浮动 */
+@keyframes float-C {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 强烈光晕脉冲 */
+@keyframes glow-pulse-strong {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* 中等光晕脉冲 */
+@keyframes glow-pulse-medium {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.8;
+  }
+}
+
+/* 柔和光晕脉冲 */
+@keyframes glow-pulse-soft {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+/* 绸带飘动 */
+@keyframes ribbon-float {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg);
+  }
+  25% {
+    transform: translateY(-3px) rotateX(5deg);
+  }
+  75% {
+    transform: translateY(-3px) rotateX(-5deg);
+  }
+}
+
+/* 响应式 - 勋章墙 */
+@media (max-width: 1200px) {
+  .medal-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 30px 25px;
+  }
+  
+  .medal-item.type-S .medal-body {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .medal-item.type-A .medal-body {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .medal-item.type-B .medal-body {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .medal-item.type-C .medal-body {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .achievements-section-fullwidth {
+    padding: 40px 15px 60px;
+  }
+  
+  .statistics-area {
+    gap: 20px;
+  }
+  
+  .stat-card {
+    padding: 20px 25px;
+    min-width: 140px;
+  }
+  
+  .stat-number {
+    font-size: 36px;
+  }
+  
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    justify-content: center;
+  }
+  
+  .sort-controls {
+    justify-content: center;
+  }
+  
+  .medal-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 25px 20px;
+  }
+  
+  .medal-item.type-S .medal-body {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .medal-item.type-S .medal-icon i {
+    font-size: 45px;
+  }
+  
+  .medal-item.type-A .medal-body {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .medal-item.type-A .medal-icon i {
+    font-size: 38px;
+  }
+  
+  .medal-item.type-B .medal-body {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .medal-item.type-B .medal-icon i {
+    font-size: 32px;
+  }
+  
+  .medal-item.type-C .medal-body {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .medal-item.type-C .medal-icon i {
+    font-size: 26px;
+  }
+  
+  .medal-name {
+    font-size: 11px;
+  }
+  
+  .medal-tooltip {
+    position: fixed;
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 320px;
+  }
+  
+  .medal-modal {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+  
+  .modal-header {
+    padding: 30px 20px 20px;
+  }
+  
+  .modal-medal-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .modal-medal-icon i {
+    font-size: 30px;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
 }
 
 /* 时间轴加载状态 */
@@ -1116,6 +2514,50 @@ export default {
   border-radius: 4px;
   font-size: 13px;
   font-weight: 500;
+}
+
+/* 时间线占位区域 */
+.timeline-section-fullwidth {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-placeholder {
+  text-align: center;
+  color: white;
+  padding: 60px 40px;
+}
+
+.timeline-placeholder i {
+  font-size: 120px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 30px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.timeline-placeholder h2 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.timeline-placeholder p {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
 
 /* 页脚 */
@@ -1215,5 +2657,6 @@ export default {
     min-width: auto;
   }
 }
+
 </style>
 

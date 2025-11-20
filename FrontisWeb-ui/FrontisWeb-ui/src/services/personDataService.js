@@ -77,9 +77,15 @@ function normalizeProfile(profile) {
     cloned.relationships = cloned.relationships.map(rel => ({ ...rel }));
   }
 
+  // 处理awards（荣誉成就）
+  if (Array.isArray(cloned.awards)) {
+    cloned.awards = cloned.awards.map(award => ({ ...award }));
+  }
+
   // 确保有默认值（即使后端没有这些字段）
   if (!cloned.timeline) cloned.timeline = [];
   if (!cloned.achievements) cloned.achievements = [];
+  if (!cloned.awards) cloned.awards = [];
   if (!cloned.videos) cloned.videos = [];
   if (!cloned.audios) cloned.audios = [];
   if (!cloned.vrScenes) cloned.vrScenes = [];

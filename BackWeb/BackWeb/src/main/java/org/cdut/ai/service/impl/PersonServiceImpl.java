@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cdut.ai.mapper.PersonAwardMapper;
 import org.cdut.ai.mapper.PersonBiographyMapper;
 import org.cdut.ai.mapper.PersonMapper;
 import org.cdut.ai.mapper.PersonRelationshipMapper;
 import org.cdut.ai.model.Person;
+import org.cdut.ai.model.PersonAward;
 import org.cdut.ai.model.PersonBiography;
 import org.cdut.ai.model.PersonRelationship;
 import org.cdut.ai.service.PersonService;
@@ -34,6 +36,9 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
     
     @Autowired
     private PersonRelationshipMapper relationshipMapper;
+    
+    @Autowired
+    private PersonAwardMapper awardMapper;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -190,6 +195,20 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
             throw e; // 重新抛出异常以便上层捕获
         }
         
+        try {
+            System.out.println(">>> [DEBUG] 查询awards表...");
+            // 查询荣誉成就
+            List<PersonAward> awards = awardMapper.findByPersonId(personId);
+            System.out.println(">>> [DEBUG] awards查询成功，记录数: " + awards.size());
+            person.setAwardsList(awards);
+        } catch (Exception e) {
+            System.err.println(">>> [ERROR] 查询荣誉成就数据失败: " + e.getMessage());
+            System.err.println(">>> [ERROR] 错误类型: " + e.getClass().getName());
+            e.printStackTrace();
+            person.setAwardsList(new ArrayList<>());
+            // 不抛出异常，允许awards为空
+        }
+        
         System.out.println(">>> [DEBUG] fillPersonDetails - 完成");
     }
     
@@ -331,10 +350,11 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
         LocalDate lastVerified = person.getLastVerified();
         profileData.put("lastVerified", lastVerified != null ? lastVerified.toString() : null);
 
-        // 添加biography和relationships数据
+        // 添加biography、relationships和awards数据
         List<PersonBiography> biographyList = person.getBiography() != null ? person.getBiography() : new ArrayList<>();
         profileData.put("biography", biographyList);
         profileData.put("relationships", person.getRelationships() != null ? person.getRelationships() : new ArrayList<>());
+        profileData.put("awards", person.getAwardsList() != null ? person.getAwardsList() : new ArrayList<>());
 
         // 从biography中提取特定类型的内容，方便前端直接使用
         extractBiographyContent(profileData, biographyList);

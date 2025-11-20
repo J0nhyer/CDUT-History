@@ -55,14 +55,6 @@
         <div class="second-bg-gradient"></div>
       </div>
 
-      <!-- 第六页：人物/事件列表，可按需继续用纯色背景，这里简单给一个淡背景 -->
-      <div
-        v-else-if="currentPage === 5"
-        class="background-static sixth-bg"
-        :style="{ backgroundImage: `url(${libraryImage})` }"
-      >
-        <div class="second-bg-gradient"></div>
-      </div>
     </div>
 
     <!-- 页面头部 -->
@@ -257,86 +249,6 @@
             <HomeRename1993 />
           </section>
 
-          <!-- 第 6 页：人物 & 历史事件板块（从第一份代码整合进来） -->
-          <section class="page-section content-blocks-section">
-            <div class="content-blocks-inner container">
-              <!-- 人物板块 -->
-              <div class="content-block">
-                <div class="block-header">
-                  <div class="block-icon">👤</div>
-                  <h2 class="block-title">成理人物</h2>
-                  <router-link to="/persons" class="block-more">
-                    更多 >
-                  </router-link>
-                </div>
-                <div class="block-content">
-                  <div
-                    v-for="person in featuredPersons"
-                    :key="person.personId"
-                    class="content-card person-card"
-                    @click="goToPersonDetail(person.personId)"
-                  >
-                    <div class="card-image">
-                      <img :src="person.imageUrl" :alt="person.name" />
-                    </div>
-                    <div class="card-info">
-                      <h3 class="card-title">{{ person.name }}</h3>
-                      <p class="card-subtitle">{{ person.subtitle }}</p>
-                      <div
-                        class="card-tags"
-                        v-if="person.keyTagsList && person.keyTagsList.length"
-                      >
-                        <span
-                          v-for="(tag, index) in person.keyTagsList.slice(0, 3)"
-                          :key="index"
-                          class="tag"
-                        >
-                          {{ tag }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="featuredPersons.length === 0" class="empty-state">
-                    暂无人物数据
-                  </div>
-                </div>
-              </div>
-
-              <!-- 事件板块 -->
-              <div class="content-block">
-                <div class="block-header">
-                  <div class="block-icon">📅</div>
-                  <h2 class="block-title">历史事件</h2>
-                  <router-link to="/digital-history" class="block-more">
-                    更多 >
-                  </router-link>
-                </div>
-                <div class="block-content">
-                  <div
-                    v-for="event in featuredEvents"
-                    :key="event.eventId"
-                    class="content-card event-card"
-                    @click="goToEventDetail(event.eventId)"
-                  >
-                    <div class="event-year">{{ event.year }}</div>
-                    <div class="card-info">
-                      <h3 class="card-title">{{ event.title }}</h3>
-                      <p class="card-description">{{ event.description }}</p>
-                      <div class="event-meta">
-                        <span class="event-type" v-if="event.eventType">{{ event.eventType }}</span>
-                        <span class="event-importance" v-if="event.importance">
-                          {{ event.importance }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="featuredEvents.length === 0" class="empty-state">
-                    暂无事件数据
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
 
         <!-- 右侧翻页指示点 -->
@@ -543,8 +455,6 @@ export default {
 
       persons: [],
       allPersonsData: {},
-      featuredPersons: [],
-      featuredEvents: [],
 
       mouseX: 0,
       mouseY: 0,
@@ -585,7 +495,7 @@ export default {
       apiBase: API_BASE,
 
       currentPage: 0,
-      totalPages: 6, // 六页：Hero + 3 静态 + 2 组件 + 人物/事件
+      totalPages: 5, // 五页：Hero + 3 静态 + 2 组件
       isPageAnimating: false,
       touchStartY: 0,
       touchDeltaY: 0,
@@ -1023,68 +933,6 @@ export default {
         this.allPersonsData = {}
       }
     },
-    async loadFeaturedPersons() {
-      try {
-        const url = `${this.apiBase}/api/person/list`
-        const response = await fetch(url)
-        const result = await response.json()
-
-        if (result.success && result.data) {
-          const persons = result.data.map(person => {
-            try {
-              if (person.keyTags) {
-                person.keyTagsList = JSON.parse(person.keyTags)
-              } else {
-                person.keyTagsList = []
-              }
-            } catch (e) {
-              person.keyTagsList = []
-            }
-
-            if (person.imageUrl) {
-              if (
-                person.imageUrl.startsWith('http://') ||
-                person.imageUrl.startsWith('https://')
-              ) {
-                person.imageUrl = person.imageUrl
-              } else {
-                person.imageUrl = getPersonImage(person.imageUrl)
-              }
-            } else {
-              person.imageUrl = getPersonImage(null)
-            }
-
-            return person
-          })
-          this.featuredPersons = persons.slice(0, 4)
-        }
-      } catch (error) {
-        console.error('加载首页人物数据失败:', error)
-        this.featuredPersons = []
-      }
-    },
-    async loadFeaturedEvents() {
-      try {
-        const url = `${this.apiBase}/api/history/events`
-        const response = await fetch(url)
-        const result = await response.json()
-
-        if (result.success && result.data) {
-          this.featuredEvents = result.data
-            .filter(event => event.importance === 'high' || event.importance === '重要')
-            .slice(0, 4)
-        }
-      } catch (error) {
-        console.error('加载首页事件数据失败:', error)
-        this.featuredEvents = []
-      }
-    },
-    goToPersonDetail(personId) {
-      this.$router.push(`/person/${personId}`)
-    },
-    goToEventDetail() {
-      this.$router.push('/digital-history')
-    },
     mapPersonToDisplayFormat(personData) {
       let period = ''
       if (personData.biography && personData.biography.length > 0) {
@@ -1242,9 +1090,6 @@ export default {
           console.error('[MainPage] 预加载人物数据失败:', preloadError)
         }
       })()
-
-      this.loadFeaturedPersons()
-      this.loadFeaturedEvents()
     } catch (error) {
       console.error('MainPage mounted error:', error)
     }
@@ -1931,179 +1776,6 @@ export default {
     0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
-/* 人物和事件板块样式（整合自第一份代码，作为第六页内容） */
-.content-blocks-section {
-  position: relative;
-  padding: 60px 0 120px 0;
-  background: white;
-  z-index: 2;
-}
-
-.content-blocks-section .content-blocks-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 40px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
-}
-
-.content-block {
-  background: white;
-  padding: 30px;
-}
-
-.block-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.block-icon {
-  font-size: 1.5rem;
-}
-
-.block-title {
-  flex: 1;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.block-more {
-  color: #666;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.block-more:hover {
-  color: #333;
-  text-decoration: underline;
-}
-
-.block-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.content-card {
-  background: white;
-  padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-}
-
-.content-card:hover {
-  background: #fafafa;
-}
-
-.content-card:last-child {
-  border-bottom: none;
-}
-
-.person-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.card-image {
-  display: none;
-}
-
-.card-info {
-  padding: 0;
-}
-
-.card-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
-}
-
-.card-subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0 0 8px 0;
-}
-
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #f5f5f5;
-  color: #666;
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-
-.event-card {
-  display: flex;
-  gap: 20px;
-  padding: 0;
-}
-
-.event-year {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  min-width: 70px;
-}
-
-.card-description {
-  font-size: 1rem;
-  color: #666;
-  margin: 0 0 10px 0;
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.event-meta {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.event-type,
-.event-importance {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-
-.event-type {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.event-importance {
-  background: #f5f5f5;
-  color: #666;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 30px;
-  color: #999;
-  font-size: 0.95rem;
-}
-
 /* AI 助手样式（包含弹窗，整合自第一份代码） */
 .ai-assistant {
   position: fixed;
@@ -2477,9 +2149,6 @@ export default {
   .third-inner {
     padding-inline: 24px;
   }
-  .content-blocks-section .content-blocks-inner {
-    padding: 0 24px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -2549,20 +2218,6 @@ export default {
 
   .page-indicators {
     right: 16px;
-  }
-
-  .content-blocks-section {
-    padding: 40px 0 80px 0;
-  }
-
-  .content-blocks-section .content-blocks-inner {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding: 0 20px;
-  }
-
-  .block-title {
-    font-size: 1.3rem;
   }
 
   .event-year {
