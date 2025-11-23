@@ -1678,7 +1678,7 @@ export default {
 }
 
 .grid-card-info {
-  padding: 12px 25px 25px 25px;
+  padding: 25px;
   min-height: 100px; /* 固定最小高度，避免内容长短不一导致跳动 */
 }
 

@@ -2,28 +2,16 @@
   <div class="timeline-flip-book">
     <!-- 翻页容器 -->
     <div class="book-wrap" ref="bookWrap">
-      <!-- 日历式旋转轴 -->
-      <div class="calendar-binding">
-        <div class="binding-spiral">
-          <div class="spiral-ring" v-for="n in 15" :key="n"></div>
-        </div>
-        <div class="binding-shadow"></div>
-      </div>
-      
       <!-- 页面堆栈 -->
       <div
-        v-for="(event, index) in visibleEvents"
-        :key="event.event_id"
-        :class="['page', `page-${index}`, { flipped: flippedPages.includes(index) }]"
-        :data-index="index"
-        :style="getPageStyle(index)"
-        @pointerdown="onPointerDown($event, index)"
+        v-for="event in visibleEvents"
+        :key="`${event.event_id}-${event.displayIndex}`"
+        :class="['page', `page-${event.displayIndex}`]"
+        :data-index="event.displayIndex"
+        :data-real-index="event.realIndex"
+        :style="getPageStyle(event.displayIndex)"
+        @pointerdown="onPointerDown($event, event.displayIndex)"
       >
-        <!-- 装订孔 -->
-        <div class="binding-holes">
-          <div class="hole" v-for="n in 15" :key="n"></div>
-        </div>
-        
         <!-- 正面 -->
         <div class="face front">
           <div class="page-content">
@@ -103,12 +91,6 @@
         <div class="page-shadow"></div>
       </div>
 
-      <!-- 循环提示 -->
-      <div v-if="allPagesRead && enableLoop" class="loop-message">
-        <i class="fas fa-sync-alt"></i>
-        <span>已阅读所有事件，继续翻页可循环浏览</span>
-      </div>
-
       <!-- 加载提示 -->
       <div v-if="loading" class="loading-overlay">
         <div class="spinner"></div>
@@ -122,8 +104,7 @@
         <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
       </div>
       <div class="progress-text">
-        <span v-if="currentPageIndex < totalEvents">第 {{ currentPageIndex + 1 }} 页 / 共 {{ totalEvents }} 页</span>
-        <span v-else>已浏览完所有事件（支持循环）</span>
+        <span>第 {{ ((currentPageIndex % totalEvents) + totalEvents) % totalEvents + 1 }} 页 / 共 {{ totalEvents }} 页（循环）</span>
       </div>
     </div>
 
@@ -172,23 +153,39 @@ export default {
   },
   computed: {
     visibleEvents() {
-      return this.events
+      if (this.totalEvents === 0) return []
+      
+      // 为循环翻页准备可见的页面（当前页前后各2页）
+      const visible = []
+      for (let i = -2; i <= 2; i++) {
+        const displayIndex = this.currentPageIndex + i
+        // 使用模运算确保索引在有效范围内（支持负数）
+        let realIndex = ((displayIndex % this.totalEvents) + this.totalEvents) % this.totalEvents
+        
+        visible.push({
+          ...this.events[realIndex],
+          displayIndex: displayIndex,
+          realIndex: realIndex
+        })
+      }
+      return visible
     },
     totalEvents() {
       return this.events.length
     },
     allPagesRead() {
-      return this.currentPageIndex === this.totalEvents && this.totalEvents > 0
+      return false // 循环模式下永远不会读完
     },
     progressPercentage() {
       if (this.totalEvents === 0) return 0
-      return (this.currentPageIndex / this.totalEvents) * 100
+      const normalizedIndex = ((this.currentPageIndex % this.totalEvents) + this.totalEvents) % this.totalEvents
+      return (normalizedIndex / this.totalEvents) * 100
     },
     canGoForward() {
-      return this.enableLoop || this.currentPageIndex < this.totalEvents
+      return true // 循环模式下永远可以向前
     },
     canGoBack() {
-      return this.enableLoop || this.currentPageIndex > 0
+      return true // 循环模式下永远可以向后
     }
   },
   async mounted() {
@@ -208,18 +205,16 @@ export default {
         const result = await response.json()
         const data = result.data || []
         this.events = data.sort((a, b) => a.sort_order - b.sort_order)
-        
-        console.log(`✅ 加载了 ${this.events.length} 个时间线事件`)
       } catch (error) {
-        console.error('❌ 加载时间线事件失败:', error)
+        console.error('加载时间线事件失败:', error)
         this.events = []
       } finally {
         this.loading = false
       }
     },
     
-    getPageStyle(index) {
-      const offset = index - this.currentPageIndex
+    getPageStyle(displayIndex) {
+      const offset = displayIndex - this.currentPageIndex
       
       // 上一页（已翻过，但可以拖回来）
       if (offset === -1) {
@@ -237,7 +232,8 @@ export default {
           zIndex: 10 + offset,
           transform: `translateY(0px) scale(1) rotateX(180deg)`,
           opacity: 0,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          display: 'none'
         }
       }
       
@@ -249,7 +245,8 @@ export default {
       return {
         zIndex,
         transform: `translateY(${translateY}px) scale(${scale})`,
-        opacity: offset > 2 ? 0 : 1
+        opacity: offset > 2 ? 0 : 1,
+        display: offset > 2 ? 'none' : 'block'
       }
     },
     
@@ -418,11 +415,6 @@ export default {
       
       setTimeout(() => {
         this.currentPageIndex++
-        
-        // 循环逻辑
-        if (this.enableLoop && this.currentPageIndex >= this.totalEvents) {
-          this.currentPageIndex = 0
-        }
       }, 250)
     },
     
@@ -433,11 +425,6 @@ export default {
       
       setTimeout(() => {
         this.currentPageIndex--
-        
-        // 循环逻辑
-        if (this.enableLoop && this.currentPageIndex < 0) {
-          this.currentPageIndex = this.totalEvents - 1
-        }
       }, 250)
     },
     
@@ -504,125 +491,23 @@ export default {
   height: min(600px, 70vh);
   perspective: 1600px;
   position: relative;
-  padding-top: 50px;
-}
-
-/* 日历式旋转轴 */
-.calendar-binding {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 50px;
-  z-index: 100;
-  pointer-events: none;
-}
-
-.binding-spiral {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-.spiral-ring {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #a8a8a8 100%);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 2px rgba(255, 255, 255, 0.5),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-
-.spiral-ring::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 70%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.binding-shadow {
-  position: absolute;
-  top: 35px;
-  left: 0;
-  width: 100%;
-  height: 15px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.05) 50%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  filter: blur(3px);
 }
 
 /* 页面样式 */
 .page {
   position: absolute;
   left: 0;
-  top: 50px;
+  top: 0;
   width: 100%;
-  height: calc(100% - 50px);
+  height: 100%;
   transform-style: preserve-3d;
   transform-origin: top center;
   transition: transform 420ms cubic-bezier(.2, .9, .3, 1), box-shadow 300ms, opacity 300ms;
   cursor: grab;
   user-select: none;
   touch-action: none;
-  border-radius: 0 0 16px 16px;
+  border-radius: 16px;
   will-change: transform, opacity;
-}
-
-.page::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 10px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
-  z-index: -1;
-}
-
-/* 装订孔 */
-.binding-holes {
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 30px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.hole {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #d0d0d0 0%, #f5f5f5 40%, #fff 100%);
-  box-shadow: 
-    inset 0 1px 2px rgba(0, 0, 0, 0.3),
-    0 1px 1px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .page:active {
@@ -868,47 +753,6 @@ export default {
 
 .page.dragging .page-shadow {
   opacity: 0.85;
-}
-
-/* 循环提示 */
-.loop-message {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(102, 126, 234, 0.9);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 50;
-  animation: slideUp 0.5s ease-out;
-}
-
-.loop-message i {
-  font-size: 16px;
-  animation: rotate 2s linear infinite;
-}
-
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* 加载状态 */
