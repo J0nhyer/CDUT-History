@@ -4,13 +4,12 @@
     <div class="book-wrap" ref="bookWrap">
       <!-- 页面堆栈 -->
       <div
-        v-for="event in visibleEvents"
-        :key="`${event.event_id}-${event.displayIndex}`"
-        :class="['page', `page-${event.displayIndex}`]"
-        :data-index="event.displayIndex"
-        :data-real-index="event.realIndex"
-        :style="getPageStyle(event.displayIndex)"
-        @pointerdown="onPointerDown($event, event.displayIndex)"
+        v-for="(event, index) in visibleEvents"
+        :key="event.event_id"
+        :class="['page', `page-${index}`]"
+        :data-index="index"
+        :style="getPageStyle(index)"
+        @pointerdown="onPointerDown($event, index)"
       >
         <!-- 正面 -->
         <div class="face front">
@@ -91,6 +90,12 @@
         <div class="page-shadow"></div>
       </div>
 
+      <!-- 循环提示 -->
+      <div v-if="allPagesRead && enableLoop" class="loop-message">
+        <i class="fas fa-sync-alt"></i>
+        <span>已阅读所有事件，继续翻页可循环浏览</span>
+      </div>
+
       <!-- 加载提示 -->
       <div v-if="loading" class="loading-overlay">
         <div class="spinner"></div>
@@ -104,7 +109,8 @@
         <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
       </div>
       <div class="progress-text">
-        <span>第 {{ ((currentPageIndex % totalEvents) + totalEvents) % totalEvents + 1 }} 页 / 共 {{ totalEvents }} 页（循环）</span>
+        <span v-if="currentPageIndex < totalEvents">第 {{ currentPageIndex + 1 }} 页 / 共 {{ totalEvents }} 页</span>
+        <span v-else>已浏览完所有事件（支持循环）</span>
       </div>
     </div>
 
@@ -146,50 +152,38 @@ export default {
       dragDirection: 0, // 1: 向前, -1: 向后
       
       // 配置
-      flipThresholdAngle: 60,
+      flipThresholdAngle: 120,  // 360度翻转需要更大的阈值（原来180度用60，现在360度用120）
       minFlipDistance: 24,
       enableLoop: true // 启用循环
     }
   },
   computed: {
     visibleEvents() {
-      if (this.totalEvents === 0) return []
-      
-      // 为循环翻页准备可见的页面（当前页前后各2页）
-      const visible = []
-      for (let i = -2; i <= 2; i++) {
-        const displayIndex = this.currentPageIndex + i
-        // 使用模运算确保索引在有效范围内（支持负数）
-        let realIndex = ((displayIndex % this.totalEvents) + this.totalEvents) % this.totalEvents
-        
-        visible.push({
-          ...this.events[realIndex],
-          displayIndex: displayIndex,
-          realIndex: realIndex
-        })
-      }
-      return visible
+      console.log('🔍 visibleEvents computed, events count:', this.events.length)
+      return this.events
     },
     totalEvents() {
       return this.events.length
     },
     allPagesRead() {
-      return false // 循环模式下永远不会读完
+      return this.currentPageIndex === this.totalEvents && this.totalEvents > 0
     },
     progressPercentage() {
       if (this.totalEvents === 0) return 0
-      const normalizedIndex = ((this.currentPageIndex % this.totalEvents) + this.totalEvents) % this.totalEvents
-      return (normalizedIndex / this.totalEvents) * 100
+      return (this.currentPageIndex / this.totalEvents) * 100
     },
     canGoForward() {
-      return true // 循环模式下永远可以向前
+      return this.enableLoop || this.currentPageIndex < this.totalEvents
     },
     canGoBack() {
-      return true // 循环模式下永远可以向后
+      return this.enableLoop || this.currentPageIndex > 0
     }
   },
   async mounted() {
+    console.log('📦 TimelineFlipBook mounted, personId:', this.personId)
     await this.loadEvents()
+    console.log('✅ Events loaded:', this.events.length, 'events')
+    console.log('📋 First event:', this.events[0])
     this.attachEvents()
   },
   beforeUnmount() {
@@ -205,35 +199,36 @@ export default {
         const result = await response.json()
         const data = result.data || []
         this.events = data.sort((a, b) => a.sort_order - b.sort_order)
+        
+        console.log(`✅ 加载了 ${this.events.length} 个时间线事件`)
       } catch (error) {
-        console.error('加载时间线事件失败:', error)
+        console.error('❌ 加载时间线事件失败:', error)
         this.events = []
       } finally {
         this.loading = false
       }
     },
     
-    getPageStyle(displayIndex) {
-      const offset = displayIndex - this.currentPageIndex
+    getPageStyle(index) {
+      const offset = index - this.currentPageIndex
       
-      // 上一页（已翻过，但可以拖回来）
+      // 上一页（已翻过360度，隐藏在下方，但可以拖回来）
       if (offset === -1) {
         return {
           zIndex: 25,
-          transform: `translateY(0px) scale(1) rotateX(180deg)`,
-          opacity: 0.5,
+          transform: `translateY(0px) scale(1) rotateX(0deg)`,  // 360度后回到0度
+          opacity: 0.3,  // 降低透明度
           pointerEvents: 'auto'
         }
       }
       
-      // 更早的页面
+      // 更早的页面（完全隐藏）
       if (offset < -1) {
         return {
           zIndex: 10 + offset,
-          transform: `translateY(0px) scale(1) rotateX(180deg)`,
+          transform: `translateY(0px) scale(0.95) rotateX(0deg)`,
           opacity: 0,
-          pointerEvents: 'none',
-          display: 'none'
+          pointerEvents: 'none'
         }
       }
       
@@ -244,9 +239,8 @@ export default {
       
       return {
         zIndex,
-        transform: `translateY(${translateY}px) scale(${scale})`,
-        opacity: offset > 2 ? 0 : 1,
-        display: offset > 2 ? 'none' : 'block'
+        transform: `translateY(${translateY}px) scale(${scale}) rotateX(0deg)`,
+        opacity: offset > 2 ? 0 : 1
       }
     },
     
@@ -308,19 +302,19 @@ export default {
       
       // 判断拖动方向
       if (this.activeIndex === this.currentPageIndex) {
-        // 拖动当前页：向上翻到下一页
+        // 拖动当前页：向上翻到下一页（360度翻转）
         if (dy < 0 && this.canGoForward) {
           const distance = Math.max(0, Math.min(h, -dy))
-          let angle = (distance / h) * 180
+          let angle = (distance / h) * 360  // 改为360度完整翻转
           this.dragDirection = 1
           this.lastAngle = angle
           this.applyAngle(this.active, angle)
         }
       } else if (this.activeIndex === this.currentPageIndex - 1) {
-        // 拖动上一页：向下翻回上一页
+        // 拖动上一页：向下翻回上一页（360度翻转）
         if (dy > 0 && this.canGoBack) {
           const distance = Math.max(0, Math.min(h, dy))
-          let angle = 180 - (distance / h) * 180
+          let angle = -360 + (distance / h) * 360  // 从-360度翻回到0度
           this.dragDirection = -1
           this.lastAngle = angle
           this.applyAngle(this.active, angle)
@@ -343,15 +337,15 @@ export default {
       const angleAbs = Math.abs(this.lastAngle)
       
       if (this.dragDirection === 1) {
-        // 向前翻页
+        // 向前翻页（0到360度）
         if (this.lastAngle >= this.flipThresholdAngle) {
           this.finishFlipForward(this.active)
         } else {
           this.resetPage(this.active)
         }
       } else if (this.dragDirection === -1) {
-        // 向后翻页
-        if (this.lastAngle <= 180 - this.flipThresholdAngle) {
+        // 向后翻页（-360到0度）
+        if (this.lastAngle <= -this.flipThresholdAngle) {
           this.finishFlipBackward(this.active)
         } else {
           this.resetPage(this.active)
@@ -369,6 +363,14 @@ export default {
       const index = parseInt(page.dataset.index)
       const offset = index - this.currentPageIndex
       
+      // 动态调整z-index：翻过180度后移到最底层（优化：只在跨越临界点时改变）
+      const currentZIndex = parseInt(page.style.zIndex) || 50
+      const targetZIndex = Math.abs(angle) >= 180 ? 5 : 50
+      
+      if (currentZIndex !== targetZIndex) {
+        page.style.zIndex = targetZIndex
+      }
+      
       // 对于已翻过的页面（上一页），保持在原位
       if (offset === -1) {
         page.style.transform = `translateY(0px) scale(1) rotateX(${angle}deg)`
@@ -381,7 +383,8 @@ export default {
       
       const shadow = page.querySelector('.page-shadow')
       if (shadow) {
-        const opacity = Math.min(1, Math.abs(angle) / 90)
+        // 360度翻转，阴影在180度时最大
+        const opacity = Math.min(1, Math.abs(angle) / 180)
         shadow.style.opacity = (opacity * 0.9).toFixed(3)
       }
     },
@@ -394,38 +397,83 @@ export default {
       const offset = index - this.currentPageIndex
       
       if (offset === -1) {
-        // 重置上一页回到180度
-        this.applyAngle(page, 180)
+        // 重置上一页回到0度（360度翻完后）
+        this.applyAngle(page, 0)
       } else {
         // 重置当前页回到0度
         this.applyAngle(page, 0)
       }
       
+      // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
-        page.style.transition = ''
-        const shadow = page.querySelector('.page-shadow')
-        if (shadow) shadow.style.opacity = 0
-      }, 430)
+        requestAnimationFrame(() => {
+          page.style.transition = 'none'
+          page.style.transform = ''
+          page.style.zIndex = ''
+          const shadow = page.querySelector('.page-shadow')
+          if (shadow) shadow.style.opacity = 0
+        })
+      }, 420)
     },
     
     finishFlipForward(page) {
       page.classList.remove('dragging')
       page.style.transition = 'transform 420ms cubic-bezier(.2,.9,.3,1), opacity 300ms'
-      this.applyAngle(page, 180)
+      this.applyAngle(page, 360)  // 改为360度，完整翻转一圈
       
+      // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
-        this.currentPageIndex++
-      }, 250)
+        requestAnimationFrame(() => {
+          // 先更新索引（Vue响应式）
+          this.currentPageIndex++
+          
+          // 循环逻辑
+          if (this.enableLoop && this.currentPageIndex >= this.totalEvents) {
+            this.currentPageIndex = 0
+          }
+          
+          // 在下一帧清除样式，避免卡顿
+          requestAnimationFrame(() => {
+            page.style.transition = 'none'
+            page.style.transform = ''
+            page.style.zIndex = ''
+            
+            // 清除阴影
+            const shadow = page.querySelector('.page-shadow')
+            if (shadow) shadow.style.opacity = 0
+          })
+        })
+      }, 420)
     },
     
     finishFlipBackward(page) {
       page.classList.remove('dragging')
       page.style.transition = 'transform 420ms cubic-bezier(.2,.9,.3,1), opacity 300ms'
-      this.applyAngle(page, 0)
+      this.applyAngle(page, -360)  // 向后翻转也是360度（负方向）
       
+      // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
-        this.currentPageIndex--
-      }, 250)
+        requestAnimationFrame(() => {
+          // 先更新索引（Vue响应式）
+          this.currentPageIndex--
+          
+          // 循环逻辑
+          if (this.enableLoop && this.currentPageIndex < 0) {
+            this.currentPageIndex = this.totalEvents - 1
+          }
+          
+          // 在下一帧清除样式，避免卡顿
+          requestAnimationFrame(() => {
+            page.style.transition = 'none'
+            page.style.transform = ''
+            page.style.zIndex = ''
+            
+            // 清除阴影
+            const shadow = page.querySelector('.page-shadow')
+            if (shadow) shadow.style.opacity = 0
+          })
+        })
+      }, 420)
     },
     
     attachEvents() {
@@ -502,7 +550,7 @@ export default {
   height: 100%;
   transform-style: preserve-3d;
   transform-origin: top center;
-  transition: transform 420ms cubic-bezier(.2, .9, .3, 1), box-shadow 300ms, opacity 300ms;
+  transition: none; /* 移除默认transition，避免翻页后的额外动画 */
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -748,11 +796,52 @@ export default {
   border-radius: 16px;
   box-shadow: 0 20px 50px rgba(3, 9, 25, 0.55);
   opacity: 0;
-  transition: opacity 250ms;
+  transition: none; /* 移除transition，避免额外动画 */
 }
 
 .page.dragging .page-shadow {
   opacity: 0.85;
+}
+
+/* 循环提示 */
+.loop-message {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+  animation: slideUp 0.5s ease-out;
+}
+
+.loop-message i {
+  font-size: 16px;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 加载状态 */

@@ -24,6 +24,27 @@
         }"
       ></div>
       
+      <!-- 多个弹跳的不规则变换线条图形（物理引擎 + 混沌系统控制） -->
+      <svg 
+        v-for="shape in shapes"
+        :key="shape.id"
+        class="bouncing-shape" 
+        width="150" 
+        height="150" 
+        viewBox="0 0 150 150"
+        :style="{
+          left: shape.x + 'px',
+          top: shape.y + 'px',
+          transform: `translate(-50%, -50%) rotate(${shape.rotation}deg) scale(${shape.scale})`,
+          opacity: shape.opacity
+        }">
+        <path class="morphing-path"
+              :d="shape.path" 
+              fill="transparent" 
+              stroke-linecap="round"
+              stroke-linejoin="round" />
+      </svg>
+      
       <!-- 顶部Logo和标题 -->
       <div class="header">
       <div class="logo-section">
@@ -159,6 +180,13 @@ const nextBackgroundImage = ref('')
 const backgroundOpacity = ref(1) // layer-1的透明度
 const backgroundTimer = ref(null)
 const SLIDE_INTERVAL = 6000 // 每张图片显示6秒（包括过渡时间）
+
+// 物理引擎 - 多个弹跳图形
+const shapes = ref([]) // 存储多个图形
+const minShapes = 3 // 最少保持3个图形
+const maxShapes = 6 // 最多6个图形
+const shapeSize = 150 // 图形尺寸
+const bounceAnimationId = ref(null)
 
 // 图片映射配置（前端本地资源）
 const imageMapping = {
@@ -639,6 +667,232 @@ const preloadAllImages = async () => {
   }
 }
 
+// 创建单个图形对象
+const createShape = (x = null, y = null) => {
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  
+  // 随机位置（如果没有指定）
+  const posX = x !== null ? x : Math.random() * (vw - shapeSize) + shapeSize / 2
+  const posY = y !== null ? y : Math.random() * (vh - shapeSize) + shapeSize / 2
+  
+  // 随机速度
+  const speed = 1.5 + Math.random() * 2
+  const angle = Math.random() * Math.PI * 2
+  
+  const numPoints = 3 + Math.floor(Math.random() * 10) // 3-12个顶点
+  const points = []
+  const phases = []
+  
+  for (let i = 0; i < numPoints; i++) {
+    const pointAngle = (i / numPoints) * Math.PI * 2
+    const radius = 50 + Math.random() * 20
+    points.push({
+      angle: pointAngle,
+      radius: radius,
+      baseRadius: radius,
+      radiusSpeed: 0.3 + Math.random() * 0.5,
+      angleSpeed: 0.01 + Math.random() * 0.02,
+      chaosX: Math.random() * 10 - 5,
+      chaosY: Math.random() * 10 - 5,
+      chaosSpeedX: (Math.random() - 0.5) * 0.3,
+      chaosSpeedY: (Math.random() - 0.5) * 0.3
+    })
+    phases.push(Math.random() * Math.PI * 2)
+  }
+  
+  return {
+    id: Date.now() + Math.random(),
+    x: posX,
+    y: posY,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    rotation: Math.random() * 360,
+    rotationSpeed: 1 + Math.random() * 2,
+    scale: 0.8 + Math.random() * 0.5,
+    scaleSpeed: 0.005 + Math.random() * 0.01,
+    opacity: 0.5 + Math.random() * 0.3,
+    numPoints: numPoints,
+    points: points,
+    phases: phases,
+    path: '',
+    lifetime: 10000 + Math.random() * 20000, // 10-30秒生命周期
+    createdAt: Date.now()
+  }
+}
+
+// 更新单个图形的路径 - 混沌变化
+const updateShapePath = (shape) => {
+  const centerX = 75
+  const centerY = 75
+  
+  // 更新每个点的位置（混沌变化）
+  shape.points.forEach((point, i) => {
+    // 相位更新
+    shape.phases[i] += point.angleSpeed
+    
+    // 半径振荡（类似摆动）
+    point.radius = point.baseRadius + Math.sin(shape.phases[i]) * 15
+    
+    // 角度微调（产生扭曲）
+    point.angle += point.angleSpeed * 0.5
+    
+    // 混沌偏移更新
+    point.chaosX += point.chaosSpeedX
+    point.chaosY += point.chaosSpeedY
+    
+    // 混沌偏移边界（避免偏移太大）
+    if (Math.abs(point.chaosX) > 15) point.chaosSpeedX *= -1
+    if (Math.abs(point.chaosY) > 15) point.chaosSpeedY *= -1
+    
+    // 随机扰动（增加混沌感）
+    if (Math.random() > 0.98) {
+      point.chaosSpeedX += (Math.random() - 0.5) * 0.2
+      point.chaosSpeedY += (Math.random() - 0.5) * 0.2
+    }
+  })
+  
+  // 随机改变顶点数量（3到12之间）
+  if (Math.random() > 0.995) {
+    const newNumPoints = 3 + Math.floor(Math.random() * 10)
+    const newPoints = []
+    const newPhases = []
+    
+    for (let i = 0; i < newNumPoints; i++) {
+      const pointAngle = (i / newNumPoints) * Math.PI * 2
+      const radius = 50 + Math.random() * 20
+      newPoints.push({
+        angle: pointAngle,
+        radius: radius,
+        baseRadius: radius,
+        radiusSpeed: 0.3 + Math.random() * 0.5,
+        angleSpeed: 0.01 + Math.random() * 0.02,
+        chaosX: Math.random() * 10 - 5,
+        chaosY: Math.random() * 10 - 5,
+        chaosSpeedX: (Math.random() - 0.5) * 0.3,
+        chaosSpeedY: (Math.random() - 0.5) * 0.3
+      })
+      newPhases.push(Math.random() * Math.PI * 2)
+    }
+    
+    shape.numPoints = newNumPoints
+    shape.points = newPoints
+    shape.phases = newPhases
+  }
+  
+  // 生成SVG路径
+  let path = ''
+  shape.points.forEach((point, i) => {
+    const x = centerX + Math.cos(point.angle) * point.radius + point.chaosX
+    const y = centerY + Math.sin(point.angle) * point.radius + point.chaosY
+    
+    if (i === 0) {
+      path += `M ${x},${y}`
+    } else {
+      path += ` L ${x},${y}`
+    }
+  })
+  path += ' Z' // 闭合路径
+  
+  shape.path = path
+}
+
+// 物理引擎 - 更新所有弹跳图形
+const updateBouncingShape = () => {
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const now = Date.now()
+  const halfSize = shapeSize / 2
+  
+  // 更新每个图形
+  shapes.value.forEach((shape) => {
+    // 更新位置
+    shape.x += shape.vx
+    shape.y += shape.vy
+    
+    // 左右边界反弹
+    if (shape.x - halfSize <= 0) {
+      shape.x = halfSize
+      shape.vx = Math.abs(shape.vx)
+      shape.rotationSpeed *= -1
+    } else if (shape.x + halfSize >= vw) {
+      shape.x = vw - halfSize
+      shape.vx = -Math.abs(shape.vx)
+      shape.rotationSpeed *= -1
+    }
+    
+    // 上下边界反弹
+    if (shape.y - halfSize <= 0) {
+      shape.y = halfSize
+      shape.vy = Math.abs(shape.vy)
+      shape.rotationSpeed *= -1
+    } else if (shape.y + halfSize >= vh) {
+      shape.y = vh - halfSize
+      shape.vy = -Math.abs(shape.vy)
+      shape.rotationSpeed *= -1
+    }
+    
+    // 更新旋转
+    shape.rotation += shape.rotationSpeed
+    
+    // 更新缩放
+    shape.scale += shape.scaleSpeed
+    if (shape.scale >= 1.3 || shape.scale <= 0.7) {
+      shape.scaleSpeed *= -1
+    }
+    
+    // 更新透明度
+    if (Math.random() > 0.95) {
+      shape.opacity = 0.5 + Math.random() * 0.3
+    }
+    
+    // 更新形状路径
+    updateShapePath(shape)
+  })
+  
+  // 管理图形数量：移除过期的图形
+  shapes.value = shapes.value.filter(shape => {
+    const age = now - shape.createdAt
+    return age < shape.lifetime
+  })
+  
+  // 确保至少有minShapes个图形
+  while (shapes.value.length < minShapes) {
+    shapes.value.push(createShape())
+  }
+  
+  // 随机添加新图形（如果少于maxShapes）
+  if (shapes.value.length < maxShapes && Math.random() > 0.99) {
+    shapes.value.push(createShape())
+  }
+  
+  // 继续动画
+  bounceAnimationId.value = requestAnimationFrame(updateBouncingShape)
+}
+
+// 启动物理引擎
+const startBounceAnimation = () => {
+  if (bounceAnimationId.value) {
+    cancelAnimationFrame(bounceAnimationId.value)
+  }
+  
+  // 初始化最少数量的图形
+  shapes.value = []
+  for (let i = 0; i < minShapes; i++) {
+    shapes.value.push(createShape())
+  }
+  
+  updateBouncingShape()
+}
+
+// 停止物理引擎
+const stopBounceAnimation = () => {
+  if (bounceAnimationId.value) {
+    cancelAnimationFrame(bounceAnimationId.value)
+    bounceAnimationId.value = null
+  }
+}
+
 // 窗口大小变化处理
 let resizeHandler = null
 
@@ -657,11 +911,15 @@ onMounted(async () => {
   
   // 然后预加载所有图片
   preloadAllImages()
+  
+  // 启动物理引擎
+  startBounceAnimation()
 })
 
 onUnmounted(() => {
   stopAutoScroll()
   stopBackgroundSlide()
+  stopBounceAnimation()
   // 清理窗口大小监听
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler)
@@ -730,9 +988,9 @@ onUnmounted(() => {
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
-  /* 轻微模糊 + 适度降低亮度 + 保留色彩 */
-  filter: brightness(0.5) blur(1px) saturate(0.7);
-  opacity: 0.7;
+  /* 轻微模糊 + 大幅降低亮度 + 保留色彩 */
+  filter: brightness(0.3) blur(1px) saturate(0.6);
+  opacity: 0.6;
 }
 
 .background-layer-1 {
@@ -1485,5 +1743,54 @@ onUnmounted(() => {
   overflow-wrap: break-word;
   white-space: normal;
   word-break: break-word;
+}
+
+/* 弹跳的不规则变换线条图形（物理引擎控制） */
+.bouncing-shape {
+  position: fixed;
+  width: 150px;
+  height: 150px;
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  transition: none; /* 移除过渡，物理引擎直接控制 */
+}
+
+/* 添加线条宽度和透明度随机变化 */
+.morphing-path {
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 3px;
+  animation: stroke-variations 7s ease-in-out infinite;
+}
+
+@keyframes stroke-variations {
+  0%, 100% { 
+    stroke-width: 3px; 
+    stroke: rgba(0, 0, 0, 0.6); 
+  }
+  15% { 
+    stroke-width: 2px; 
+    stroke: rgba(0, 0, 0, 0.7); 
+  }
+  30% { 
+    stroke-width: 4px; 
+    stroke: rgba(0, 0, 0, 0.5); 
+  }
+  45% { 
+    stroke-width: 2.5px; 
+    stroke: rgba(0, 0, 0, 0.8); 
+  }
+  60% { 
+    stroke-width: 3.5px; 
+    stroke: rgba(0, 0, 0, 0.55); 
+  }
+  75% { 
+    stroke-width: 2.8px; 
+    stroke: rgba(0, 0, 0, 0.65); 
+  }
+  90% { 
+    stroke-width: 3.2px; 
+    stroke: rgba(0, 0, 0, 0.7); 
+  }
 }
 </style>
