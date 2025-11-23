@@ -12,11 +12,13 @@ CREATE TABLE IF NOT EXISTS `person` (
     `awards` TEXT COMMENT '奖项成就（JSON数组，包含奖项、称号、专利、著作等）',
     `data_status` VARCHAR(20) DEFAULT 'draft' COMMENT '数据状态：completed/pending/draft',
     `last_verified` DATE COMMENT '最后验证日期',
+    `is_visible` TINYINT(1) DEFAULT 1 COMMENT '是否可见：1可见，0不可见',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX `idx_person_id` (`person_id`),
     INDEX `idx_name` (`name`),
-    INDEX `idx_data_status` (`data_status`)
+    INDEX `idx_data_status` (`data_status`),
+    INDEX `idx_visible` (`is_visible`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='人物基本信息表';
 
 -- 2. 人物生平传记表

@@ -1186,7 +1186,7 @@ export default {
 
 .card-image {
   position: relative;
-  height: 380px;
+  height: 330px;
   overflow: hidden;
   width: 100%;
 }
@@ -1233,7 +1233,7 @@ export default {
 }
 
 .card-info {
-  padding: 25px;
+  padding: 8px 25px 25px 25px;
   position: relative;
 }
 
@@ -1267,7 +1267,7 @@ export default {
 
 .card-info h4 {
   font-size: 1.5rem;
-  margin: 10px 0 5px 0;
+  margin: 3px 0 5px 0;
   color: #2c3e50;
 }
 
@@ -1678,7 +1678,7 @@ export default {
 }
 
 .grid-card-info {
-  padding: 25px;
+  padding: 12px 25px 25px 25px;
   min-height: 100px; /* 固定最小高度，避免内容长短不一导致跳动 */
 }
 
