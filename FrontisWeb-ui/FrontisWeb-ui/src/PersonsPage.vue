@@ -53,7 +53,6 @@
                       <div class="card-overlay">
                         <div class="overlay-content">
                           <h3>{{ person.name }}</h3>
-                          <p>{{ person.period }}</p>
                         </div>
                       </div>
                     </div>
@@ -230,7 +229,6 @@
                   <div class="grid-card-hover-overlay">
                     <div class="hover-content">
                       <h3>{{ person.name }}</h3>
-                      <p>{{ person.period }}</p>
                       <div class="hover-tags">
                         <span v-for="tag in person.tags" :key="tag">{{ tag }}</span>
                       </div>
@@ -280,7 +278,6 @@
                     <span class="list-item-badge" :class="person.badgeClass">{{ person.badge }}</span>
                   </div>
                   <p class="list-item-title">{{ person.title }}</p>
-                  <p class="list-item-period">{{ person.period }}</p>
                   <div class="list-item-tags">
                     <span v-for="tag in person.tags" :key="tag" class="tag">{{ tag }}</span>
                   </div>

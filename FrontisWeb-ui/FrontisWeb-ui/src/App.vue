@@ -11,32 +11,26 @@
       <router-view></router-view>
     </main>
 
-    <ChatWindow v-if="showAI" @close="showAI = false" />
   </div>
   
 </template>
 
 <script>
-import ChatWindow from './components/ChatWindow.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 
 export default {
   name: 'App',
   components: { 
-    ChatWindow,
     LoadingScreen
   },
   data() {
     return { 
-      showAI: false,
       isLoading: true,
       loadingProgress: 0,
       loadingText: '正在加载资源'
     }
   },
   methods: {
-    toggleAI() { this.showAI = !this.showAI },
-    
     // 预加载图片资源
     async preloadImages() {
       // 动态导入图片资源

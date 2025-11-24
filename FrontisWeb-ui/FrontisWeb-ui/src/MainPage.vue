@@ -222,34 +222,29 @@
             </div>
           </section>
 
-          <!-- 第 3 页：学校发展历程 -->
+          <!-- 第 3 页：历史时钟 -->
           <section class="page-section third-section">
-            <div class="grid-container">
-              <div class="grid-box milestone-card milestone-1">
-                <div class="milestone-year">1956</div>
-                <h3>成都地质勘探学院成立</h3>
-                <p class="milestone-intro">以重庆大学地质系等为基础建校,开启成理历史新篇章</p>
-              </div>
-              <div class="grid-box milestone-card milestone-2">
-                <div class="milestone-year">1993</div>
-                <h3>更名成都理工学院</h3>
-                <p class="milestone-intro">由地质矿产部划归四川省管理,进入发展新阶段</p>
-              </div>
-              <div class="grid-box milestone-card milestone-3">
-                <div class="milestone-year">2001</div>
-                <h3>组建成都理工大学</h3>
-                <p class="milestone-intro">经教育部批准,成为以理工为主的多科性大学</p>
-              </div>
-              <div class="grid-box milestone-card milestone-4">
-                <div class="milestone-year">2017</div>
-                <h3>进入国家"双一流"建设</h3>
-                <p class="milestone-intro">地质学入选世界一流学科建设名单,开启新征程</p>
-              </div>
-            </div>
+            <HistoryClock />
           </section>
 
-          <!-- 第 4 页：空白 -->
+          <!-- 第 4 页：斜线分割 -->
           <section class="page-section fourth-section">
+            <div class="split-container">
+              <!-- 左侧部分 -->
+              <router-link to="/universe" class="split-section left-section">
+                <div class="split-content">
+                  <h2>学科星河</h2>
+                </div>
+              </router-link>
+              <!-- 右侧部分 -->
+              <router-link to="/keyword-rain" class="split-section right-section">
+                <div class="split-content">
+                  <h2>词林雨露</h2>
+                </div>
+              </router-link>
+              <!-- 斜线 -->
+              <div class="diagonal-line"></div>
+            </div>
           </section>
 
           <!-- 第 5 页：空白 -->
@@ -299,6 +294,7 @@
     <div
       class="ai-assistant"
       ref="aiContainer"
+      :class="{ 'direction-down': aiPopupDirection === 'down' }"
       :style="{
         top: aiPopupPosition.top + 'px',
         left: aiPopupPosition.left + 'px'
@@ -309,7 +305,9 @@
         <div v-if="aiWindowOpen" class="ai-popup" ref="aiPopup">
           <div class="ai-popup-header" @pointerdown.stop.prevent="startAIDrag">
             <div class="ai-header-info">
-              <img :src="aiAvatar" alt="AI助手" class="ai-header-avatar" />
+              <video autoplay loop muted playsinline class="ai-header-avatar">
+                <source src="@/assets/ai/sit.webm" type="video/webm">
+              </video>
               <div class="ai-header-text">
                 <div class="ai-header-title">成理 · AI 学术助手</div>
                 <div class="ai-header-subtitle">和你一起探索成都理工的故事</div>
@@ -329,7 +327,9 @@
                 :class="msg.role === 'user' ? 'is-user' : 'is-assistant'"
               >
                 <div class="ai-message-avatar" v-if="msg.role === 'assistant'">
-                  <img :src="aiAvatar" alt="AI助手" />
+                  <video autoplay loop muted playsinline class="ai-message-video">
+                    <source src="@/assets/ai/sit.webm" type="video/webm">
+                  </video>
                 </div>
                 <div class="ai-message-avatar user" v-else>
                   <i class="fas fa-user"></i>
@@ -381,7 +381,9 @@
         @click="handleFabClick"
       >
         <div class="ai-fab-avatar-wrap">
-          <img :src="aiAvatar" alt="AI助手" class="ai-fab-avatar" />
+          <video autoplay loop muted playsinline class="ai-fab-avatar">
+            <source src="@/assets/ai/sit.webm" type="video/webm">
+          </video>
         </div>
         <div class="ai-fab-text">
           <span class="ai-fab-title">AI 助手</span>
@@ -397,6 +399,7 @@ import cdutLogo from '@/assets/CDUT.png'
 import defaultAvatar from '@/assets/default-avatar.png'
 import AuthModal from '@/components/AuthModal.vue'
 import MediaLightbox from '@/components/MediaLightbox.vue'
+import HistoryClock from '@/components/HistoryClock.vue'
 import { getAllPersonProfiles } from '@/services/personDataService'
 import { getPersonImage } from '@/utils/imageLoader'
 import HomeOilGasLab1990 from '@/components/home/HomeOilGasLab1990.vue'
@@ -431,6 +434,7 @@ export default {
   components: {
     AuthModal,
     MediaLightbox,
+    HistoryClock,
     HomeOilGasLab1990,
     HomeRename1993
   },
@@ -475,7 +479,6 @@ export default {
       aiWindowOpen: false,
       aiInput: '',
       aiLoading: false,
-      aiAvatar: defaultAvatar,
       aiMessages: [
         {
           role: 'assistant',
@@ -485,9 +488,10 @@ export default {
         }
       ],
       aiPopupPosition: {
-        top: typeof window !== 'undefined' ? window.innerHeight - 450 : 100,
-        left: typeof window !== 'undefined' ? window.innerWidth - 420 : 100
+        top: 100,
+        left: 100
       },
+      aiPopupDirection: 'up',
       aiDragging: false,
       aiDragStartX: 0,
       aiDragStartY: 0,
@@ -747,8 +751,86 @@ export default {
     toggleAIWindow() {
       this.aiWindowOpen = !this.aiWindowOpen
       if (this.aiWindowOpen) {
-        this.scrollAIMessagesToBottom()
+        this.$nextTick(() => {
+          this.adjustAIPopupPosition()
+          this.scrollAIMessagesToBottom()
+        })
       }
+    },
+    adjustAIPopupPosition() {
+      if (!this.aiWindowOpen) return
+      
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const popupWidth = 400
+      const popupHeight = 350
+      const fabHeight = 74
+      const gap = 12
+      const margin = 20
+      
+      let containerTop = this.aiPopupPosition.top
+      let containerLeft = this.aiPopupPosition.left
+      
+      // 先根据当前方向计算按钮的实际位置
+      let fabTop
+      if (this.aiPopupDirection === 'up') {
+        // 向上展开：容器顶部是弹窗顶部，按钮在下方
+        fabTop = containerTop + popupHeight + gap
+      } else {
+        // 向下展开：容器顶部是按钮顶部
+        fabTop = containerTop
+      }
+      
+      const fabBottom = fabTop + fabHeight
+      const spaceAbove = fabTop - margin
+      const spaceBelow = vh - fabBottom - margin
+      
+      // 判断最佳展开方向
+      let bestDirection
+      if (spaceAbove >= popupHeight + gap) {
+        bestDirection = 'up'
+      } else if (spaceBelow >= popupHeight + gap) {
+        bestDirection = 'down'
+      } else {
+        bestDirection = spaceAbove > spaceBelow ? 'up' : 'down'
+      }
+      
+      // 根据最佳方向重新计算容器位置
+      const totalHeight = popupHeight + gap + fabHeight
+      
+      if (bestDirection === 'up') {
+        // 向上展开：容器top = 弹窗top，确保整体不超出屏幕
+        let newTop = fabTop - popupHeight - gap
+        if (newTop < margin) {
+          newTop = margin
+        }
+        if (newTop + totalHeight > vh - margin) {
+          newTop = vh - totalHeight - margin
+        }
+        containerTop = newTop
+      } else {
+        // 向下展开：容器top = 按钮top，确保整体不超出屏幕
+        let newTop = fabTop
+        if (newTop < margin) {
+          newTop = margin
+        }
+        if (newTop + totalHeight > vh - margin) {
+          newTop = vh - totalHeight - margin
+        }
+        containerTop = newTop
+      }
+      
+      // 确保不超出左右边界
+      if (containerLeft + popupWidth > vw - margin) {
+        containerLeft = vw - popupWidth - margin
+      }
+      if (containerLeft < margin) {
+        containerLeft = margin
+      }
+      
+      this.aiPopupDirection = bestDirection
+      this.aiPopupPosition.left = containerLeft
+      this.aiPopupPosition.top = containerTop
     },
     handleFabClick() {
       if (this.aiDragMoved) {
@@ -876,6 +958,13 @@ export default {
       }
     },
 
+    // 窗口大小变化处理
+    handleWindowResize() {
+      if (this.aiWindowOpen) {
+        this.adjustAIPopupPosition()
+      }
+    },
+
     // AI 拖拽
     startAIDrag(e) {
       const container = this.$refs.aiContainer
@@ -923,6 +1012,13 @@ export default {
       this.aiDragging = false
       window.removeEventListener('pointermove', this.onAIDrag)
       window.removeEventListener('pointerup', this.endAIDrag)
+      
+      // 拖拽结束后，如果弹窗是展开状态，重新计算展开方向
+      if (this.aiWindowOpen) {
+        this.$nextTick(() => {
+          this.adjustAIPopupPosition()
+        })
+      }
     },
 
     // 人物数据（逻辑保留）
@@ -1077,12 +1173,17 @@ export default {
       if (typeof window !== 'undefined') {
         const vw = window.innerWidth
         const vh = window.innerHeight
-        const popupWidth = 220
-        const totalHeight = 120
-        const margin = 10
+        const popupWidth = 400
+        const popupHeight = 350
+        const fabHeight = 74
+        const gap = 12
+        const margin = 20
 
-        this.aiPopupPosition.left = vw - popupWidth - margin
-        this.aiPopupPosition.top = vh - totalHeight - margin
+        // 默认放在右下角，方向为up（弹窗在按钮上方）
+        const totalHeight = popupHeight + gap + fabHeight
+        this.aiPopupPosition.left = Math.max(margin, vw - popupWidth - margin)
+        this.aiPopupPosition.top = Math.max(margin, vh - totalHeight - margin)
+        this.aiPopupDirection = 'up'
       }
 
       if (this.aiMessages.length > 0 && !this.aiMessages[0].time) {
@@ -1097,6 +1198,9 @@ export default {
           console.error('[MainPage] 预加载人物数据失败:', preloadError)
         }
       })()
+
+      // 监听窗口大小变化，重新计算AI弹窗位置
+      window.addEventListener('resize', this.handleWindowResize)
     } catch (error) {
       console.error('MainPage mounted error:', error)
     }
@@ -1106,6 +1210,7 @@ export default {
     try {
       this.stopBackgroundSlider()
       document.removeEventListener('click', this.handleClickOutside)
+      window.removeEventListener('resize', this.handleWindowResize)
       this.endAIDrag()
       this.cancelAIStream()
     } catch (error) {
@@ -1696,7 +1801,7 @@ export default {
 
 .grid-box {
   position: relative;
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.15);
@@ -1941,12 +2046,255 @@ export default {
   border-color: rgba(34, 197, 94, 0.5);
 }
 
-/* 第三页内容（左下角） */
+/* 科研卡片样式 */
+.research-card {
+  gap: 20px;
+}
+
+.research-icon {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+.research-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+.research-intro {
+  font-size: 0.95rem !important;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85) !important;
+  line-height: 1.7 !important;
+}
+
+.research-1 {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.research-1:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(220, 38, 38, 0.25));
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.research-2 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.15));
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.research-2:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(37, 99, 235, 0.25));
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.research-3 {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.15));
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.research-3:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(147, 51, 234, 0.25));
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.research-4 {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(202, 138, 4, 0.15));
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.research-4:hover {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(202, 138, 4, 0.25));
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+/* 第三页内容 */
 .third-section {
   z-index: 1;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 第四页内容 - 斜线分割 */
+.fourth-section {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 分割容器 */
+.split-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+/* 分割区域 */
+.split-section {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* 确保router-link样式一致 */
+a.split-section {
+  color: inherit;
+}
+
+/* 左侧区域 - 使用clip-path创建斜线分割 */
+.left-section {
+  clip-path: polygon(0 0, 60% 0, 40% 100%, 0 100%);
+}
+
+/* 左侧背景图层（使用伪元素避免文字模糊） */
+.left-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('@/assets/mainpage/xinghe.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0.85) blur(3px);
+  z-index: -1;
+}
+
+/* 右侧区域 */
+.right-section {
+  clip-path: polygon(60% 0, 100% 0, 100% 100%, 40% 100%);
+}
+
+/* 右侧背景图层（使用伪元素避免文字模糊） */
+.right-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('@/assets/mainpage/yuling.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0.85) blur(3px);
+  z-index: -1;
+}
+
+/* 斜线分割线 */
+.diagonal-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+
+/* 悬停效果 - 左侧 */
+.left-section:hover {
+  z-index: 5;
+  backdrop-filter: blur(0px);
+  transform: translateX(-10px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* 悬停效果 - 右侧 */
+.right-section:hover {
+  z-index: 5;
+  backdrop-filter: blur(0px);
+  transform: translateX(10px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* 当左侧悬停时，虚化右侧 */
+.split-container:has(.left-section:hover) .right-section {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* 当右侧悬停时，虚化左侧 */
+.split-container:has(.right-section:hover) .left-section {
+  backdrop-filter: blur(8px);
+}
+
+/* 左侧添加遮罩层用于虚化效果 */
+.left-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* 右侧添加遮罩层 */
+.right-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.split-container:has(.right-section:hover) .left-section::before {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.split-container:has(.left-section:hover) .right-section::before {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* 内容样式 */
+.split-content {
+  text-align: center;
+  color: #ffffff;
+  z-index: 2;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+/* 左侧内容在左半边的1/4位置 */
+.left-section .split-content {
+  margin-right: 25%;
+  margin-left: -25%;
+}
+
+/* 右侧内容在右半边的1/4位置 */
+.right-section .split-content {
+  margin-left: 25%;
+  margin-right: -25%;
+}
+
+.split-section:hover .split-content {
+  transform: scale(1.1);
+}
+
+.split-content h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.1em;
+}
+
+.split-content p {
+  font-size: 1.5rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.05em;
 }
 
 .third-inner {
@@ -2051,6 +2399,11 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
+}
+
+/* 向下展开时调整顺序 */
+.ai-assistant.direction-down {
+  flex-direction: column-reverse;
 }
 
 /* 浮动按钮 */
@@ -2228,10 +2581,12 @@ export default {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.ai-message-avatar img {
+.ai-message-avatar img,
+.ai-message-avatar video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .ai-message-avatar.user {

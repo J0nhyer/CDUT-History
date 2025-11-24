@@ -20,38 +20,39 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 插入人物基本信息
 -- display_order字段控制显示顺序：数字越小优先级越高，9999表示默认顺序
-INSERT INTO `person` (`person_id`, `name`, `subtitle`, `image_url`, `key_tags`, `awards`, `data_status`, `last_verified`, `is_visible`, `display_order`) VALUES
+-- 注意：awards 字段已迁移到 person_awards 表，请执行 person_awards_data.sql 插入荣誉数据
+INSERT INTO `person` (`person_id`, `name`, `subtitle`, `image_url`, `key_tags`, `data_status`, `last_verified`, `is_visible`, `display_order`) VALUES
   -- 按照前端界面顺序排列
-  ('liubaojun', '刘宝珺', '中国科学院院士 · 沉积地质学家 · 成都理工大学名誉校长', '@/assets/persons/liubaojun.png', '["地质学","20世纪中","院士","奖项人"]', '["中国科学院院士（1991年）", "成都理工大学名誉校长", "李四光地质科学奖（1989年）", "国际斯潘迪亚罗夫奖（1996年，首位中国科学家）", "国家级有突出贡献的中青年专家（1986年）", "全国优秀科技工作者（1997年）"]', 'completed', '2025-11-24', 1, 5),
-  ('zhangzhuoyuan', '张倬元', '中国著名工程地质学家 · 成都理工大学奠基者', '@/assets/persons/zhangzhuoyuan.png', '["地质学","工程学","20世纪初","教授","奖项人"]', '["中国工程地质学奠基人", "成都地质学院院长（1983-1988年）", "国家重点学科创建人", "地质灾害防治与地质环境保护国家重点实验室创建者", "国家科技进步一等奖", "李四光地质科学奖", "五一劳动奖章"]', 'completed', '2025-11-24', 1, 3),
-  ('huangrunqiu', '黄润秋', '中国工程院院士 · 生态环境部部长 · 地质灾害防治专家', '@/assets/persons/huangrunqiu.png', '["地质学","环境","20世纪中","院士"]', '["中国工程院院士", "生态环境部部长", "地质灾害防治专家", "国家级教学名师"]', 'completed', '2025-11-19', 1, 20),
-  ('wangchengshan', '王成善', '中国科学院院士 · 沉积地质学家', '@/assets/persons/wangchengshan.png', '["地质学","20世纪中","院士"]', '["中国科学院院士（2013年）", "地质学博士（2012年）", "李四光地质科学奖", "全国优秀博士学位论文", "国际古地理奖", "北京大学教授"]', 'completed', '2025-11-19', 1, 21),
-  ('duoji', '多吉', '中国工程院院士 · 地质矿产专家', '@/assets/persons/duoji.png', '["地质学","20世纪中","院士"]', '["中国工程院院士（第一位藏族院士）", "羊八井地热田勘查主要完成人", "西藏地热资源开发专家", "成都理工大学杰出校友"]', 'completed', '2025-11-19', 1, 22),
-  ('zengyunfu', '曾允孚', '沉积地质学家 · 成都理工大学五大学科奠基人之一 · 教授', '@/assets/persons/zengyunfu.png', '["地质学","20世纪初","教授"]', '["沉积地质学科奠基人", "沉积地质研究所首任所长", "主编《沉积岩石学》等教材", "国家科技进步二等奖", "全国优秀教师", "四川省首批学术和技术带头人"]', 'completed', '2025-11-24', 1, 7),
-  ('jinjingfu', '金景福', '放射性地质学家·铀矿地质学家·成都理工大学五大学科奠基人之一', '@/assets/persons/jinjingfu.png', '["地质学","20世纪中","教授","奖项人"]', '["中国放射性地质大师", "三系系主任", "李四光地质科学奖", "中国铀业功勋人物", "主编《铀矿床学》教材", "享受国务院政府特殊津贴专家"]', 'completed', '2025-11-24', 1, 8),
-  ('luozhetan', '罗蛰潭', '石油地质学家·石油工程教育家·成都理工大学五大学科奠基人之一', '@/assets/persons/luozhetan.png', '["石油","地质学","20世纪初","教授"]', '["新中国石油事业拓荒者", "油气藏地质及开发工程国家重点实验室创建者", "成都地质学院副院长", "九三学社第七届中央委员", "第六届全国人大代表", "稠油火驱开采奠基者"]', 'completed', '2025-11-24', 1, 9),
-  ('wuzongyue', '邬宗岳', '国家登山队副政委 · 攀登英雄 · 烈士', '@/assets/persons/wuzongyue.png', '["其他","20世纪中"]', '["1960年参加国家登山队", "1964年登顶慕士塔格峰英雄纪录", "1975年攀登珠峰时英勇牺牲", "追授革命烈士"]', 'completed', '2025-11-19', 1, 9999),
-  ('chenyuntai', '陈运泰', '中国科学院院士 · 地球物理学家 · 地震学专家', '@/assets/persons/chenyuntai.png', '["地质学","20世纪中","院士"]', '["中国科学院院士（1991年）", "第三世界科学院院士（1999年）", "中国地震局地球物理研究所所长", "全国科学大会奖（1978年）", "中国地震学会理事长"]', 'completed', '2025-11-19', 1, 23),
-  ('liuqinyou', '刘清友', '成都理工大学党委书记 · 石油钻头专家 · 长江学者', '@/assets/persons/liuqingyou.png', '["石油","工程学","20世纪中","教授"]', '["成都理工大学党委书记", "教育部长江学者特聘教授", "院士有效候选人（2017、2019年）", "国家科技进步特等奖1项、二等奖2项", "何梁何利基金科学与技术进步奖"]', 'completed', '2025-11-19', 1, 9999),
-  ('changlongqing', '常隆庆', '地质学家·古生物学家·攀枝花之父·成都地质学院八大教授之一', '@/assets/persons/changlongqing.png', '["地质学","20世纪初","教授","奖项人"]', '["攀枝花钒钛磁铁矿发现者（1936年）", "宝鼎煤矿发现者", "赵亚曾纪念奖获得者", "干城奖章、光华勋章获得者", "编写我国第一部《中国地质学》中专教材", "成都地质学院建校初期八大教授之一", "四川100名历史文化名人"]', 'completed', '2025-11-19', 1, 14),
-  ('lichengsan', '李承三', '地质学家·地理学家·河流地貌学奠基人·成都地质学院首任教务长', '@/assets/persons/lichengsan.png', '["石油","地质学","20世纪初","教授","奖项人"]', '["中国河流地貌学奠基人之一", "第四纪冰川研究先驱", "创办我国第一个石油地质专业（1950年）", "成都地质学院首任教务长", "编制四川第一幅1:100万大地构造图", "发现莱子沟铁矿、松潘漳腊冰川式砂金矿"]', 'completed', '2025-11-19', 1, 15),
-  ('litangbi', '李唐泌', '地质学家·金属矿床学专家·成都地质学院八大教授之一', '@/assets/persons/litangbi.png', '["地质学","20世纪初","教授","奖项人"]', '["金属矿床学奠基人", "主编《矿床学》教材", "《国外地质》创刊者", "优秀地质工作者", "找矿系主任、副教务长", "成都地质学院建校初期八大教授之一", "1956年全国先进生产者代表"]', 'completed', '2025-11-24', 1, 16),
-  ('wuyansheng', '吴燕生', '第四纪冰川研究专家·找矿勘探专家·成都地质学院八大教授之一', '@/assets/persons/wuyansheng.png', '["地质学","20世纪初","教授"]', '["我国第四纪冰川研究开拓者", "地下水调查先驱", "四川盆地油气普查先行者", "成都地质学院建校初期八大教授之一", "中国地质学会会员", "九三学社社员"]', 'completed', '2025-11-24', 1, 17),
-  ('lizhichang', '李之常', '古生物学家·微体古生物专家·成都地质学院八大教授之一', '@/assets/persons/lizhichang.png', '["地质学","20世纪初","教授"]', '["古生物学与地史学先驱", "哥伦比亚大学硕士", "主编《普通古生物学》等教材", "成都地质学院建校初期八大教授之一", "地史古生物教研室主任", "陈列馆馆长"]', 'completed', '2025-11-24', 1, 18),
-  ('zhouxiaohe', '周晓和', '地质学家·地层古生物学家·成都地质学院八大教授之一', '@/assets/persons/zhouxiaohe.png', '["地质学","20世纪初","教授"]', '["四川地质古生物学开拓者", "法国蒙彼利埃大学、里昂大学", "少年中国学会成员", "叠溪地震地质调查", "荣县恐龙化石考察", "成都地质学院建校初期八大教授之一"]', 'completed', '2025-11-24', 1, 19),
-  ('liuzuyi', '刘祖彝', '地质学家·金矿地质专家·成都地质学院八大教授之一', '@/assets/persons/liuzuyi.png', '["地质学","20世纪初","教授"]', '["中国金矿地质先行者", "宁乡式铁矿发现人", "筹建重庆大学地质系", "著有《中国金矿概论》", "成都地质学院建校初期八大教授之一", "中国地质学会重庆分会理事长"]', 'completed', '2025-11-24', 1, 20),
-  ('zhangyansen', '张言森', '铁路工程测量专家·成都地质学院八大教授之一', '@/assets/persons/zhangyansen.png', '["地质学","工程学","20世纪初","教授"]', '["同济大学土木科", "早期铁路与水利工程测量专家", "成都地质学院建校初期八大教授之一", "捐资设立工程地质奖学金", "地质测量及找矿学科带头人"]', 'completed', '2025-11-24', 1, 21),
-  ('xuqiang', '许强', '成都理工大学校长 · 地质灾害防治专家 · 国家杰青', '@/assets/persons/xuqiang.png', '["地质学","环境","20世纪中","教授"]', '["成都理工大学校长", "国家杰出青年科学基金获得者", "教育部长江学者特聘教授", "国家科技进步一等奖2项、二等奖1项", "全国杰出专业技术人才"]', 'completed', '2025-11-19', 1, 1),
-  ('tuoxianguo', '庹先国', '核技术专家 · 国家杰青 · 教授', '@/assets/persons/tuoxianguo.png', '["工程学","20世纪中","教授"]', '["国家杰出青年科学基金获得者", "核探测技术专家", "核技术与自动化工程学院院长", "国家科技进步奖获得者"]', 'completed', '2025-11-19', 1, 9999),
-  ('fanxuanmei', '范宣梅', '国际交流合作处长 · 国家杰青 · 地质灾害专家', '@/assets/persons/fanxuanmei.png', '["地质学","环境","21世纪","教授"]', '["国家杰出青年科学基金获得者（2021年）", "百千万人才工程入选者", "国际交流与合作处处长", "国家重点实验室副主任", "成功预警上百起大型地质灾害"]', 'completed', '2025-11-19', 1, 9999),
-  ('lichao', '李超', '沉积地质研究院院长 · 国家杰青 · Nature首发', '@/assets/persons/lichao.png', '["地质学","21世纪","教授","奖项人"]', '["瓦尔特奖章获得者（2024年，首位中国科学家）", "国家杰出青年科学基金获得者（2018年）", "国家万人计划科技创新领军人才", "沉积地质研究院院长", "Nature等顶级期刊发表论文"]', 'completed', '2025-11-19', 1, 9999),
-  ('pengqiang', '彭强', '材料与化学化工学院教授 · 国家杰青 · 博士生导师', '@/assets/persons/pengqiang.png', '["工程学","21世纪","教授"]', '["国家杰出青年科学基金获得者", "功能材料专家", "高水平论文发表", "产学研合作成果"]', 'completed', '2025-11-19', 1, 9999),
-  ('huwei', '胡伟', '二级教授 · 国家杰青 · 地质灾害专家', '@/assets/persons/huiwei.png', '["地质学","环境","20世纪中","教授"]', '["国家杰出青年科学基金获得者（2022年）", "国家优秀青年科学基金获得者（2018年）", "国际大滑坡协会秘书长", "国家科技进步奖二等奖（2019年）", "Engineering Geology编委"]', 'completed', '2025-11-19', 1, 9999),
-  ('liushugen', '刘树根', '百千万人才工程 · 油气地质学家 · 教授', '@/assets/persons/liushugen.png', '["石油","地质学","20世纪中","教授"]', '["国家百千万人才工程人选", "油气地质学家", "国家科技进步奖获得者", "能源学院学科带头人"]', 'completed', '2025-11-19', 1, 9999),
-  ('tangchuan', '唐川', '教授 · 泥石流专家 · 地质灾害防治', '@/assets/persons/tangchuan.png', '["地质学","环境","20世纪中","教授"]', '["国家百千万人才工程人选", "地质灾害风险评估专家", "省部级科技奖励获得者", "环境与土木工程学院学科带头人"]', 'completed', '2025-11-19', 1, 9999),
+  ('liubaojun', '刘宝珺', '中国科学院院士 · 沉积地质学家 · 成都理工大学名誉校长', '@/assets/persons/liubaojun.png', '["院士","五大学科奠基人","奖项人","地质学","20世纪中"]', 'completed', '2025-11-24', 1, 5),
+  ('zhangzhuoyuan', '张倬元', '中国著名工程地质学家 · 成都理工大学奠基者', '@/assets/persons/zhangzhuoyuan.png', '["五大学科奠基人","奖项人","教授","地质学","工程学","20世纪初"]', 'completed', '2025-11-24', 1, 3),
+  ('huangrunqiu', '黄润秋', '中国工程院院士 · 生态环境部部长 · 地质灾害防治专家', '@/assets/persons/huangrunqiu.png', '["院士","地质学","环境","20世纪中"]', 'completed', '2025-11-19', 1, 19),
+  ('wangchengshan', '王成善', '中国科学院院士 · 沉积地质学家', '@/assets/persons/wangchengshan.png', '["院士","地质学","20世纪中"]', 'completed', '2025-11-19', 1, 20),
+  ('duoji', '多吉', '中国工程院院士 · 地质矿产专家', '@/assets/persons/duoji.png', '["院士","地质学","20世纪中"]', 'completed', '2025-11-19', 1, 21),
+  ('zengyunfu', '曾允孚', '沉积地质学家 · 成都理工大学五大学科奠基人之一 · 教授', '@/assets/persons/zengyunfu.png', '["五大学科奠基人","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 7),
+  ('jinjingfu', '金景福', '放射性地质学家·铀矿地质学家·成都理工大学五大学科奠基人之一', '@/assets/persons/jinjingfu.png', '["五大学科奠基人","奖项人","教授","地质学","20世纪中"]', 'completed', '2025-11-24', 1, 8),
+  ('luozhetan', '罗蛰潭', '石油地质学家·石油工程教育家·成都理工大学五大学科奠基人之一', '@/assets/persons/luozhetan.png', '["五大学科奠基人","教授","石油","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 9),
+  ('wuzongyue', '邬宗岳', '国家登山队副政委 · 攀登英雄 · 烈士', '@/assets/persons/wuzongyue.png', '["其他","20世纪中"]', 'completed', '2025-11-19', 1, 18),
+  ('chenyuntai', '陈运泰', '中国科学院院士 · 地球物理学家 · 地震学专家', '@/assets/persons/chenyuntai.png', '["院士","地质学","20世纪中"]', 'completed', '2025-11-19', 1, 22),
+  ('liuqinyou', '刘清友', '成都理工大学党委书记 · 石油钻头专家 · 长江学者', '@/assets/persons/liuqingyou.png', '["教授","石油","工程学","20世纪中"]', 'completed', '2025-11-19', 1, 9999),
+  ('changlongqing', '常隆庆', '地质学家·古生物学家·攀枝花之父·成都地质学院八大教授之一', '@/assets/persons/changlongqing.png', '["八大教授","奖项人","教授","地质学","20世纪初"]', 'completed', '2025-11-19', 1, 10),
+  ('lichengsan', '李承三', '地质学家·地理学家·河流地貌学奠基人·成都地质学院首任教务长', '@/assets/persons/lichengsan.png', '["八大教授","奖项人","教授","石油","地质学","20世纪初"]', 'completed', '2025-11-19', 1, 11),
+  ('litangbi', '李唐泌', '地质学家·金属矿床学专家·成都地质学院八大教授之一', '@/assets/persons/litangbi.png', '["八大教授","奖项人","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 12),
+  ('wuyansheng', '吴燕生', '第四纪冰川研究专家·找矿勘探专家·成都地质学院八大教授之一', '@/assets/persons/wuyansheng.png', '["八大教授","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 13),
+  ('lizhichang', '李之常', '古生物学家·微体古生物专家·成都地质学院八大教授之一', '@/assets/persons/lizhichang.png', '["八大教授","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 14),
+  ('zhouxiaohe', '周晓和', '地质学家·地层古生物学家·成都地质学院八大教授之一', '@/assets/persons/zhouxiaohe.png', '["八大教授","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 15),
+  ('liuzuyi', '刘祖彝', '地质学家·金矿地质专家·成都地质学院八大教授之一', '@/assets/persons/liuzuyi.png', '["八大教授","教授","地质学","20世纪初"]', 'completed', '2025-11-24', 1, 16),
+  ('zhangyansen', '张言森', '铁路工程测量专家·成都地质学院八大教授之一', '@/assets/persons/zhangyansen.png', '["八大教授","教授","地质学","工程学","20世纪初"]', 'completed', '2025-11-24', 1, 17),
+  ('xuqiang', '许强', '成都理工大学校长 · 地质灾害防治专家 · 国家杰青 · 全国人大代表', '@/assets/persons/xuqiang.png', '["校长","奖项人","教授","地质学","环境","20世纪中"]', 'completed', '2025-11-24', 1, 1),
+  ('tuoxianguo', '庹先国', '核技术专家 · 国家杰青 · 教授', '@/assets/persons/tuoxianguo.png', '["教授","工程学","20世纪中"]', 'completed', '2025-11-19', 1, 9999),
+  ('fanxuanmei', '范宣梅', '国际交流合作处长 · 国家杰青 · 地质灾害专家', '@/assets/persons/fanxuanmei.png', '["教授","地质学","环境","21世纪"]', 'completed', '2025-11-19', 1, 9999),
+  ('lichao', '李超', '沉积地质研究院院长 · 国家杰青 · Nature首发', '@/assets/persons/lichao.png', '["奖项人","教授","地质学","21世纪"]', 'completed', '2025-11-19', 1, 9999),
+  ('pengqiang', '彭强', '材料与化学化工学院教授 · 国家杰青 · 博士生导师', '@/assets/persons/pengqiang.png', '["教授","工程学","21世纪"]', 'completed', '2025-11-19', 1, 9999),
+  ('huwei', '胡伟', '二级教授 · 国家杰青 · 地质灾害专家', '@/assets/persons/huiwei.png', '["教授","地质学","环境","20世纪中"]', 'completed', '2025-11-19', 1, 9999),
+  ('liushugen', '刘树根', '百千万人才工程 · 油气地质学家 · 教授', '@/assets/persons/liushugen.png', '["教授","石油","地质学","20世纪中"]', 'completed', '2025-11-19', 1, 9999),
+  ('tangchuan', '唐川', '教授 · 泥石流专家 · 地质灾害防治', '@/assets/persons/tangchuan.png', '["教授","地质学","环境","20世纪中"]', 'completed', '2025-11-19', 1, 9999),
   -- 其他人物（保持字母顺序）
-  ('tangjuxing', '唐菊兴', '中国科学院院士 · 矿产资源勘查专家 · 教授', '@/assets/persons/tangjuxing.png', '["地质学","20世纪中","教授"]', '["中国科学院院士", "青藏高原矿产资源勘查专家", "国家科技进步奖获得者", "斑岩型铜矿勘查理论创建者"]', 'completed', '2025-11-19', 1, 24),
-  ('xiongshengqing', '熊盛青', '中国工程院院士 · 航空地球物理领域学科带头人 · 国家卓越工程师', '@/assets/persons/xiongshengqing.png', '["地质学","20世纪中","院士","奖项人"]', '["中国工程院院士（2025年）", "国家卓越工程师", "中国地质学会会士", "国家工程师奖", "全国创新争先奖", "全国杰出专业技术人才", "国家科技进步特等奖1项、二等奖2项", "中国自然资源航空物探遥感中心首席科学家"]', 'completed', '2025-11-24', 1, 2)
+  ('tangjuxing', '唐菊兴', '中国科学院院士 · 矿产资源勘查专家 · 教授', '@/assets/persons/tangjuxing.png', '["院士","教授","地质学","20世纪中"]', 'completed', '2025-11-19', 1, 23),
+  ('xiongshengqing', '熊盛青', '中国工程院院士 · 航空地球物理领域学科带头人 · 国家卓越工程师', '@/assets/persons/xiongshengqing.png', '["院士","奖项人","地质学","20世纪中"]', 'completed', '2025-11-24', 1, 2)
 ON DUPLICATE KEY UPDATE
   `name` = VALUES(`name`),
   `subtitle` = VALUES(`subtitle`),
@@ -391,10 +392,22 @@ INSERT INTO `person_biography` (`person_id`, `title`, `content`, `tags`, `media_
 <p>1960年他参加了中国登山队首次攀登珠峰，和负责后勤的队友们将氧气和物资运送到珠峰8500米的高度，有力地保障了队友们的攀登。1964年在攀登8012米的希夏邦马峰时，有一个队友不慎掉入冰缝，邬宗岳奋不顾身地将绳子绑在腰上，只身下到冰缝中，在其他队友的协助下，将遇难的同志背出了冰缝。</p>
 <p>1975年5月，身为国家登山队副政委、突击队队长的邬宗岳带领突击队攀登珠峰。为了拍摄好冲顶的珍贵资料，他冒着极大的危险解开与队员相连的结绳。正当他将沉重的摄像机和照相机放进背包准备前行时，一失足从8200米处滑坠山崖，被千古积雪掩埋，英勇牺牲，终年42岁。</p>
 <p>邬宗岳将自己年轻宝贵的生命献给了人类勇攀高峰的光荣事业，为祖国争得了莫大的荣誉。国家为邬宗岳同志追记特等功，追认他为烈士。成都理工将他的雕塑永久地安放在橘颂园内。</p>', '["详细介绍"]', NULL, NULL, 0, 2),
-  ('xuqiang', '详细介绍', '<p>许强（1968年6月-），四川南江人，博士，教授，博士生导师，成都理工大学校长（2023年10月任职），地质灾害防治应急专家，国家杰出青年科学基金获得者，教育部长江学者特聘教授。</p>
-<p>许强在重大滑坡灾害成因机理与监测预警方面具有深厚的学术造诣和多项创新性科研成果。他提出的地质灾害早期识别方法和预警技术，在汶川地震、芦山地震、九寨沟地震等重大地质灾害的防治中发挥了重要作用，有效减少了人员伤亡和财产损失。他主持完成国家重点研发计划项目、国家973计划课题，国家自然科学基金重大项目课题、重点项目、杰出青年科学基金等科研项目60余项，发表学术论文500余篇、其中被SCIE数据库收录260余篇。</p>
-<p>作为张倬元教授的得意弟子，许强继承了工程地质学的优良传统，同时不断拓展研究领域，将地质灾害防治与现代信息技术相结合，开创了新的研究方向。他提出的地质灾害"天-空-地"一体化监测技术，为地质灾害监测预警提供了新的技术手段。作为核心成员完成的科研成果获国家科技进步一等奖2项（第2、第7）、二等奖1项（第1），省部级科技成果一等奖7项、二等奖4项。</p>
-<p>许强历任地质灾害防治与地质环境保护国家重点实验室常务副主任、成都理工大学副校长、九三学社四川省副主任委员。2023年10月，任成都理工大学校长。他是第十二、十三届全国政协委员，第十四届全国人大代表。</p>', '["详细介绍"]', NULL, NULL, 0, 0),
+  ('xuqiang', '早年经历', '<p>许强（1968年6月-），四川南江人，男，汉族，九三学社社员，博士，教授，博士生导师。</p>
+<p>1988年9月至1992年7月在成都地质学院水文地质与工程地质专业本科学习，1992年7月至1994年7月在成都理工学院工程地质专业硕士研究生学习，1994年7至1997年7月在成都理工学院水文地质与工程地质专业学习，获博士学位。1997年7月起在成都理工学院任教。</p>', '["早年经历"]', 'image', '@/assets/persons/xuqiang.png', 0, 0),
+  ('xuqiang', '详细介绍', '<p>许强（1968年6月-），四川南江人，男，汉族，九三学社社员，博士，教授，博士生导师。主持并负责学校行政全面工作。</p>
+<p>1997年7月起在成都理工学院任教，2002年1月至2004年1月担任成都理工大学环境与土木工程学院副院长（主持工作），2004年1月至2014年3月担任成都理工大学环境与土木工程学院院长，2014年3月起担任地质灾害防治与地质环境保护国家重点实验室（成都理工大学）常务副主任，2019年5月至2023年10月担任成都理工大学副校长，2022年4月起担任九三学社四川省副主任委员，2023年10月起担任成都理工大学校长。</p>
+<p>主要从事地质灾害防治的教学和科研工作。主持国家重点研发计划项目、国家973计划课题，国家自然科学基金重大项目课题、重点项目、杰出青年科学基金、面上和青年基金等科研项目60余项，发表学术论文500余篇、其中被SCIE数据库收录260余篇，出版专著16部，授权发明专利20余项，编写行业规范和指南3部。作为核心成员完成的科研成果获国家科技进步一等奖2项（第2、第7）、二等奖1项（第1），省部级科技成果一等奖7项、二等奖4项，国家一级学会科技进步一等奖2项。一直从事斜坡变形破坏理论与防治技术研究，在滑坡成因机理、早期识别与监测预警方面取得了系统的、创造性学术成就。曾作为国务院、自然资源部和四川省人民政府核心专家，参与了我国数十起重大地质灾害的应急处置工作。</p>
+<p>第十二、十三届全国政协委员，第十四届全国人大代表，九三学社中央委员。2023年8月，入选"中国科学院院士增选有效候选人名单"。</p>', '["详细介绍"]', NULL, NULL, 0, 1),
+  ('xuqiang', '主要成就', '<ul>
+<li><strong>国家科技进步奖：</strong>作为核心成员完成的科研成果获国家科技进步一等奖2项（第2、第7）、二等奖1项（第1），省部级科技成果一等奖7项、二等奖4项，国家一级学会科技进步一等奖2项</li>
+<li><strong>学术荣誉：</strong>全国杰出专业技术人才、全国五一劳动奖章、国务院特殊津贴专家、李四光地质科学奖、中国地质学会首批会士</li>
+<li><strong>人才项目：</strong>国家杰出青年科学基金获得者（2012年）、新世纪百千万人才工程国家级人选（2006年）、四川省学术和技术带头人（2013年）、国土资源部科技创新领军人才、天府万人计划天府杰出科学家</li>
+<li><strong>学术任职：</strong>国务院第八届学科评议组成员、教育部创新团队带头人、教育部高校教学指导委员会委员、国家减灾委员会第四届专家委员会委员</li>
+<li><strong>科研成果：</strong>主持国家重点研发计划项目、国家973计划课题，国家自然科学基金重大项目课题、重点项目、杰出青年科学基金等科研项目60余项，发表学术论文500余篇（SCIE收录260余篇），出版专著16部，授权发明专利20余项，编写行业规范和指南3部</li>
+<li><strong>地质灾害防治贡献：</strong>一直从事斜坡变形破坏理论与防治技术研究，在滑坡成因机理、早期识别与监测预警方面取得了系统的、创造性学术成就。曾作为国务院、自然资源部和四川省人民政府核心专家，参与了我国数十起重大地质灾害的应急处置工作</li>
+<li><strong>政治荣誉：</strong>第十二、十三届全国政协委员，第十四届全国人大代表，九三学社中央委员、九三学社四川省副主任委员，中国科协抗震救灾先进个人</li>
+<li><strong>院士候选：</strong>2023年8月，入选"中国科学院院士增选有效候选人名单"</li>
+</ul>', '["成就"]', NULL, NULL, 0, 2),
   ('zhangzhuoyuan', '详细介绍', '<p>张倬元（1926-2022），中国著名工程地质学家，中国工程地质学学科的奠基人之一，成都理工大学发展史上的重要人物。张倬元先生1948年考入清华大学地质系，1952年毕业后响应国家号召来到成都地质学院任教，从此与学校结下了不解之缘。</p>
 <p>张倬元先生是中国工程地质学学科体系的创建者之一。他深入研究了工程地质学的基础理论，特别是在地质灾害防治、边坡稳定性分析、岩体力学等领域取得了突破性进展。他主编的《工程地质分析原理》被誉为中国工程地质学的奠基之作，至今仍是该领域的权威教材。</p>
 <p>1983年至1988年，张倬元先生担任成都地质学院院长，期间为学校的发展做出了卓越贡献。最令人感动的是，他在一次手术后，不顾医生劝阻，用担架抬着前往北京参加国家重点学科答辩，最终成功为学校争取到了工程地质学国家重点学科，这一壮举成为学校历史上的佳话，体现了老一辈学者对教育事业的无私奉献精神。</p>
@@ -481,7 +494,7 @@ ON DUPLICATE KEY UPDATE
 -- ============================================
 
 -- 张倬元 (zhangzhuoyuan): 13个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhangzhuoyuan-1926', 'zhangzhuoyuan', '张倬元', '1926', '出生', '12月出生于直隶（今河北省）乐亭县', 'birth', 'medium', '["张倬元"]', '人物时间轴', 19261201),
 ('person-zhangzhuoyuan-1946', 'zhangzhuoyuan', '张倬元', '1946', '考入清华大学', '在北京育英中学完成高中课程后考入清华大学地质系', 'education', 'high', '["张倬元"]', '人物时间轴', 19460101),
 ('person-zhangzhuoyuan-1951', 'zhangzhuoyuan', '张倬元', '1951', '清华大学毕业', '从清华大学地质系毕业，加入中国科学院西藏工作队', 'education', 'high', '["张倬元"]', '人物时间轴', 19510701),
@@ -497,7 +510,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-zhangzhuoyuan-2022', 'zhangzhuoyuan', '张倬元', '2022', '逝世', '3月18日在成都逝世，享年96岁', 'death', 'high', '["张倬元"]', '人物时间轴', 20220318);
 
 -- 黄润秋 (huangrunqiu): 6个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-huangrunqiu-1963', 'huangrunqiu', '黄润秋', '1963', '出生', '出生于四川省成都市', 'birth', 'medium', '["黄润秋"]', '人物时间轴', 19630101),
 ('person-huangrunqiu-1978', 'huangrunqiu', '黄润秋', '1978', '考入成都地质学院', '考入成都地质学院（现成都理工大学）工程地质专业', 'education', 'high', '["黄润秋"]', '人物时间轴', 19780101),
 ('person-huangrunqiu-1988', 'huangrunqiu', '黄润秋', '1988', '攻读博士学位', '师从张倬元教授，攻读工程地质学博士学位', 'education', 'high', '["黄润秋"]', '人物时间轴', 19880101),
@@ -506,7 +519,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-huangrunqiu-2020', 'huangrunqiu', '黄润秋', '2020', '任生态环境部部长', '担任中华人民共和国生态环境部部长', 'career', 'high', '["黄润秋"]', '人物时间轴', 20200101);
 
 -- 王成善 (wangchengshan): 6个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-wangchengshan-1951', 'wangchengshan', '王成善', '1951', '出生', '出生于辽宁省', 'birth', 'medium', '["王成善"]', '人物时间轴', 19510101),
 ('person-wangchengshan-1977', 'wangchengshan', '王成善', '1977', '考入成都地质学院', '考入成都地质学院（现成都理工大学）地质学专业', 'education', 'high', '["王成善"]', '人物时间轴', 19770101),
 ('person-wangchengshan-1981', 'wangchengshan', '王成善', '1981', '获得硕士学位', '师从刘宝珺院士，获得沉积地质学硕士学位', 'education', 'high', '["王成善"]', '人物时间轴', 19810101),
@@ -515,7 +528,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-wangchengshan-2017', 'wangchengshan', '王成善', '2017', '担任国际古地理学会主席', '当选为国际古地理学会主席，提升中国在该领域的国际影响力', 'career', 'high', '["王成善"]', '人物时间轴', 20170101);
 
 -- 多吉 (duoji): 6个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-duoji-1953', 'duoji', '多吉', '1953', '出生', '出生于西藏自治区', 'birth', 'medium', '["多吉"]', '人物时间轴', 19530101),
 ('person-duoji-1974', 'duoji', '多吉', '1974', '就读成都地质学院', '考入成都地质学院（现成都理工大学）地质学专业', 'education', 'high', '["多吉"]', '人物时间轴', 19740101),
 ('person-duoji-1978', 'duoji', '多吉', '1978', '毕业返回西藏', '从成都地质学院毕业，返回西藏从事地质工作', 'education', 'high', '["多吉"]', '人物时间轴', 19780101),
@@ -524,7 +537,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-duoji-2005', 'duoji', '多吉', '2005', '担任西藏地质勘查局局长', '担任西藏自治区地质勘查局局长，继续为西藏地质事业发展贡献力量', 'career', 'high', '["多吉"]', '人物时间轴', 20050101);
 
 -- 曾允孚 (zengyunfu): 13个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zengyunfu-1927', 'zengyunfu', '曾允孚', '1927', '出生', '1月27日出生于重庆市铜梁县', 'birth', 'medium', '["曾允孚"]', '人物时间轴', 19270127),
 ('person-zengyunfu-1939', 'zengyunfu', '曾允孚', '1939-1942', '铜梁县立中学', '在铜梁县立中学完成初中学业', 'education', 'high', '["曾允孚"]', '人物时间轴', 19390101),
 ('person-zengyunfu-1942', 'zengyunfu', '曾允孚', '1942-1945', '北碚兼善中学', '在重庆北碚兼善中学读高中', 'education', 'high', '["曾允孚"]', '人物时间轴', 19420101),
@@ -540,7 +553,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-zengyunfu-2013', 'zengyunfu', '曾允孚', '2013', '逝世', '5月26日因病在成都逝世，享年86岁', 'death', 'high', '["曾允孚"]', '人物时间轴', 20130526);
 
 -- 罗蛰潭 (luozhetan): 15个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-luozhetan-1919', 'luozhetan', '罗蛰潭', '1919', '出生', '11月出生于四川乐山', 'birth', 'medium', '["罗蛰潭"]', '人物时间轴', 19191101),
 ('person-luozhetan-1942', 'luozhetan', '罗蛰潭', '1942', '中央大学毕业', '毕业于中央大学地质系', 'education', 'high', '["罗蛰潭"]', '人物时间轴', 19420101),
 ('person-luozhetan-1944', 'luozhetan', '罗蛰潭', '1944', '重庆大学毕业', '毕业于重庆大学矿冶系', 'education', 'high', '["罗蛰潭"]', '人物时间轴', 19440101),
@@ -558,7 +571,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-luozhetan-2009', 'luozhetan', '罗蛰潭', '2009', '逝世', '10月1日在成都逝世，享年90岁', 'death', 'high', '["罗蛰潭"]', '人物时间轴', 20091001);
 
 -- 金景福 (jinjingfu): 14个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-jinjingfu-1932', 'jinjingfu', '金景福', '1932', '出生', '6月18日出生于吉林省和龙县', 'birth', 'medium', '["金景福"]', '人物时间轴', 19320618),
 ('person-jinjingfu-1948', 'jinjingfu', '金景福', '1948', '赴朝鲜留学', '赴朝鲜平壤金日成大学地质系留学', 'education', 'high', '["金景福"]', '人物时间轴', 19480101),
 ('person-jinjingfu-1950', 'jinjingfu', '金景福', '1950', '参加抗美援朝', '主动报名参军，加入中国人民志愿军奔赴抗美援朝战场', 'career', 'high', '["金景福"]', '人物时间轴', 19500101),
@@ -575,7 +588,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-jinjingfu-2003', 'jinjingfu', '金景福', '2003', '逝世', '6月26日在成都逝世，享年71岁', 'death', 'high', '["金景福"]', '人物时间轴', 20030626);
 
 -- 刘宝珺 (liubaojun): 12个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liubaojun-1931', 'liubaojun', '刘宝珺', '1931', '出生', '9月13日出生于天津市', 'birth', 'medium', '["刘宝珺"]', '人物时间轴', 19310913),
 ('person-liubaojun-1950', 'liubaojun', '刘宝珺', '1950', '考入清华大学', '放弃保送燕京大学机会，以优异成绩考入清华大学地质系', 'education', 'high', '["刘宝珺"]', '人物时间轴', 19500101),
 ('person-liubaojun-1953', 'liubaojun', '刘宝珺', '1953', '本科毕业', '从北京地质学院（院系调整后）本科毕业', 'education', 'high', '["刘宝珺"]', '人物时间轴', 19530101),
@@ -590,7 +603,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-liubaojun-academic', 'liubaojun', '刘宝珺', '学术生涯', '学术贡献', '主编《沉积岩石学》等教材，出版专著近二十部，发表论文百余篇，推动中国沉积学走向世界前沿', 'achievement', 'high', '["刘宝珺"]', '人物时间轴', 19800101);
 
 -- 邬宗岳 (wuzongyue): 5个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-wuzongyue-1933', 'wuzongyue', '邬宗岳', '1933', '出生', '出生于四川省', 'birth', 'medium', '["邬宗岳"]', '人物时间轴', 19330101),
 ('person-wuzongyue-1956', 'wuzongyue', '邬宗岳', '1956', '考入成都地质学院', '考入成都地质学院（现成都理工大学）地质学专业', 'education', 'high', '["邬宗岳"]', '人物时间轴', 19560101),
 ('person-wuzongyue-1960', 'wuzongyue', '邬宗岳', '1960', '毕业参加工作', '从成都地质学院毕业，参加地质工作', 'education', 'medium', '["邬宗岳"]', '人物时间轴', 19600101),
@@ -598,7 +611,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-wuzongyue-1975-sacrifice', 'wuzongyue', '邬宗岳', '1975', '攀登珠峰时牺牲', '在攀登珠穆朗玛峰过程中，为保护队友而英勇牺牲', 'death', 'high', '["邬宗岳"]', '人物时间轴', 19750501);
 
 -- 陈运泰 (chenyuntai): 5个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-chenyuntai-1940', 'chenyuntai', '陈运泰', '1940', '出生', '出生于广东省', 'birth', 'medium', '["陈运泰"]', '人物时间轴', 19400101),
 ('person-chenyuntai-1962', 'chenyuntai', '陈运泰', '1962', '毕业于北京大学', '毕业于北京大学地球物理学专业', 'education', 'high', '["陈运泰"]', '人物时间轴', 19620101),
 ('person-chenyuntai-1966', 'chenyuntai', '陈运泰', '1966', '任教于成都地质学院', '任教于成都地质学院（现成都理工大学），从事地球物理学教学和科研', 'career', 'high', '["陈运泰"]', '人物时间轴', 19660101),
@@ -606,7 +619,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-chenyuntai-2000', 'chenyuntai', '陈运泰', '2000', '担任中国地震学会理事长', '担任中国地震学会理事长，推动我国地震学研究发展', 'career', 'high', '["陈运泰"]', '人物时间轴', 20000101);
 
 -- 刘清友 (liuqingyou): 6个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liuqingyou-1963', 'liuqingyou', '刘清友', '1963', '出生', '1963年6月出生于四川', 'birth', 'medium', '["刘清友"]', '人物时间轴', 19630101),
 ('person-liuqingyou-1982', 'liuqingyou', '刘清友', '1982', '本科毕业', '获工学学士学位', 'education', 'high', '["刘清友"]', '人物时间轴', 19820101),
 ('person-liuqingyou-2002', 'liuqingyou', '刘清友', '2002', '硕士毕业', '获工学硕士学位', 'education', 'high', '["刘清友"]', '人物时间轴', 20020101),
@@ -615,7 +628,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-liuqingyou-2023', 'liuqingyou', '刘清友', '2023', '担任党委书记', '2023年10月任成都理工大学党委书记', 'career', 'high', '["刘清友"]', '人物时间轴', 20230101);
 
 -- 张言森 (zhangyansen): 9个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhangyansen-1896', 'zhangyansen', '张言森', '1896', '出生', '出生于福建省福州市', 'birth', 'medium', '["张言森"]', '人物时间轴', 18960101),
 ('person-zhangyansen-1910s', 'zhangyansen', '张言森', '1910年代', '同济大学', '考入同济大学土木科学习', 'education', 'high', '["张言森"]', '人物时间轴', 19100101),
 ('person-zhangyansen-1920', 'zhangyansen', '张言森', '1920年前后', '同济大学毕业', '从同济大学土木科毕业，成为最早一批系统接受现代工程教育的土木工程技术人才', 'education', 'high', '["张言森"]', '人物时间轴', 19200101),
@@ -627,7 +640,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-zhangyansen-legacy', 'zhangyansen', '张言森', '生平', '教育家精神', '以严谨的工程素养和朴素的品格影响几代学子，被尊为"老工程师、好老师"', 'achievement', 'high', '["张言森"]', '人物时间轴', 19500101);
 
 -- 刘祖彝 (liuzuyi): 14个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liuzuyi-1900', 'liuzuyi', '刘祖彝', '1900', '出生', '出生于湖南省宁乡县', 'birth', 'medium', '["刘祖彝"]', '人物时间轴', 19000701),
 ('person-liuzuyi-1927', 'liuzuyi', '刘祖彝', '1927', '北京大学毕业', '从北京大学地质系毕业', 'education', 'high', '["刘祖彝"]', '人物时间轴', 19270101),
 ('person-liuzuyi-1933', 'liuzuyi', '刘祖彝', '1933-1935', '湖南地质调查所', '任湖南地质调查所技正，负责湖南中部多个县的地质普查工作', 'career', 'high', '["刘祖彝"]', '人物时间轴', 19330101),
@@ -644,7 +657,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-liuzuyi-1985', 'liuzuyi', '刘祖彝', '1985', '逝世', '9月在成都逝世，享年85岁', 'death', 'high', '["刘祖彝"]', '人物时间轴', 19850901);
 
 -- 周晓和 (zhouxiaohe): 13个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhouxiaohe-1892', 'zhouxiaohe', '周晓和', '1892', '出生', '出生于四川成都', 'birth', 'medium', '["周晓和"]', '人物时间轴', 18920101),
 ('person-zhouxiaohe-1910s', 'zhouxiaohe', '周晓和', '1910年代', '成都高等师范', '赴成都高等师范英语本科深造，系统学习英文和近代科学知识', 'education', 'high', '["周晓和"]', '人物时间轴', 19100101),
 ('person-zhouxiaohe-society', 'zhouxiaohe', '周晓和', '五四前后', '少年中国学会', '是"少年中国学会"成都分会的中坚成员，在《少年中国》杂志发表文章', 'achievement', 'high', '["周晓和"]', '人物时间轴', 19190101),
@@ -660,7 +673,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-zhouxiaohe-papers', 'zhouxiaohe', '周晓和', '科研成果', '论文与译文', '在《地质论评》《古生物学报》《古生物译报》等刊物发表论文与译文', 'achievement', 'high', '["周晓和"]', '人物时间轴', 19400101);
 
 -- 李之常 (lizhichang): 13个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-lizhichang-1900', 'lizhichang', '李之常', '1900', '出生', '出生于湖北省沔阳县（今湖北省仙桃市）', 'birth', 'medium', '["李之常"]', '人物时间轴', 19000101),
 ('person-lizhichang-1922', 'lizhichang', '李之常', '1922', '北京大学毕业', '从北京大学地质系毕业', 'education', 'high', '["李之常"]', '人物时间轴', 19220101),
 ('person-lizhichang-1923', 'lizhichang', '李之常', '1923', '赴美留学', '赴美国哥伦比亚大学研究院地质系，主修地质学和古生物学', 'education', 'high', '["李之常"]', '人物时间轴', 19230701),
@@ -676,7 +689,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-lizhichang-1969', 'lizhichang', '李之常', '1969', '逝世', '在工作岗位上逝世，享年69岁', 'death', 'high', '["李之常"]', '人物时间轴', 19690101);
 
 -- 吴燕生 (wuyansheng): 12个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-wuyansheng-1905', 'wuyansheng', '吴燕生', '1905', '出生', '出生于江苏金坛县', 'birth', 'medium', '["吴燕生"]', '人物时间轴', 19050101),
 ('person-wuyansheng-1932', 'wuyansheng', '吴燕生', '1932', '北京大学毕业', '从北京大学地质系毕业', 'education', 'high', '["吴燕生"]', '人物时间轴', 19320101),
 ('person-wuyansheng-1933', 'wuyansheng', '吴燕生', '1933', '中央研究院地质研究所', '进入国民政府中央研究院地质研究所工作', 'career', 'high', '["吴燕生"]', '人物时间轴', 19330101),
@@ -691,7 +704,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-wuyansheng-1964', 'wuyansheng', '吴燕生', '1964', '逝世', '在成都病逝', 'death', 'high', '["吴燕生"]', '人物时间轴', 19640101);
 
 -- 李唐泌 (litangbi): 13个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-litangbi-1909', 'litangbi', '李唐泌', '1909', '出生', '出生于山西省徐沟县（今清徐县）东南坊村', 'birth', 'medium', '["李唐泌"]', '人物时间轴', 19090101),
 ('person-litangbi-1934', 'litangbi', '李唐泌', '1934', '清华大学毕业', '从清华大学地质系毕业，获理学学士学位', 'education', 'high', '["李唐泌"]', '人物时间轴', 19340101),
 ('person-litangbi-1935', 'litangbi', '李唐泌', '1935', '赴美留学', '赴美国耶鲁大学研究生院深造，专攻矿床学与经济地质学', 'education', 'high', '["李唐泌"]', '人物时间轴', 19350101),
@@ -707,7 +720,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-litangbi-journal', 'litangbi', '李唐泌', '教学生涯', '创办《国外地质》', '参与创立并推动《国外地质》刊物发展', 'achievement', 'high', '["李唐泌"]', '人物时间轴', 19600101);
 
 -- 常隆庆 (changlongqing): 16个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-changlongqing-1904', 'changlongqing', '常隆庆', '1904', '出生', '出生于四川省江安县泥溪村', 'birth', 'medium', '["常隆庆"]', '人物时间轴', 19040101),
 ('person-changlongqing-1922', 'changlongqing', '常隆庆', '1922', '考入北京大学', '考入北京大学理科预科', 'education', 'high', '["常隆庆"]', '人物时间轴', 19220101),
 ('person-changlongqing-1924', 'changlongqing', '常隆庆', '1924', '转入地质系', '转入北京大学地质系学习，师从葛利普、丁文江等著名地质学家', 'education', 'high', '["常隆庆"]', '人物时间轴', 19240101),
@@ -726,7 +739,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-changlongqing-1979', 'changlongqing', '常隆庆', '1979', '逝世', '7月21日因积劳成疾突发脑出血逝世，终年75岁', 'death', 'high', '["常隆庆"]', '人物时间轴', 19790721);
 
 -- 李承三 (lichengsan): 14个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-lichengsan-1899', 'lichengsan', '李承三', '1899', '出生', '出生于河北省涉县一个贫苦农家', 'birth', 'medium', '["李承三"]', '人物时间轴', 18990101),
 ('person-lichengsan-1928', 'lichengsan', '李承三', '1928', '毕业于河南大学', '毕业于河南大学理科，获理学学士学位', 'education', 'high', '["李承三"]', '人物时间轴', 19280101),
 ('person-lichengsan-1931', 'lichengsan', '李承三', '1931', '赴德国留学', '赴德国柏林大学地质系留学，师从施蒂勒教授', 'education', 'high', '["李承三"]', '人物时间轴', 19310801),
@@ -743,7 +756,7 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-lichengsan-1967', 'lichengsan', '李承三', '1967', '逝世', '因病逝世，终年六十八岁。成理慧园建承三亭纪念', 'death', 'high', '["李承三"]', '人物时间轴', 19670101);
 
 -- 许强 (xuqiang): 10个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-xuqiang-1968', 'xuqiang', '许强', '1968', '出生', '1968年6月出生于四川南江', 'birth', 'medium', '["许强"]', '人物时间轴', 19680101),
 ('person-xuqiang-1988_1992', 'xuqiang', '许强', '1988-1992', '本科学习', '在成都地质学院水文地质与工程地质专业攻读本科', 'education', 'high', '["许强"]', '人物时间轴', 19880101),
 ('person-xuqiang-1992_1994', 'xuqiang', '许强', '1992-1994', '硕士学习', '在成都理工学院工程地质专业攻读硕士研究生', 'education', 'high', '["许强"]', '人物时间轴', 19920101),
@@ -756,182 +769,182 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-xuqiang-2023', 'xuqiang', '许强', '2023', '担任校长', '2023年10月任成都理工大学校长', 'career', 'high', '["许强"]', '人物时间轴', 20230101);
 
 -- 李天斌 (litianbin): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-litianbin-任职', 'litianbin', '李天斌', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得其他国家院士称号', 'education', 'high', '["李天斌"]', '人物时间轴', 19560101);
 
 -- 庹先国 (tuoxianguo): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-tuoxianguo-任职', 'tuoxianguo', '庹先国', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得国家杰出青年科学基金', 'education', 'high', '["庹先国"]', '人物时间轴', 19560101);
 
 -- 范宣梅 (fanxuanmei): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-fanxuanmei-任职', 'fanxuanmei', '范宣梅', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得国家杰出青年科学基金', 'education', 'high', '["范宣梅"]', '人物时间轴', 19560101);
 
 -- 李超 (lichao): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-lichao-任职', 'lichao', '李超', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得国家杰出青年科学基金', 'education', 'high', '["李超"]', '人物时间轴', 19560101);
 
 -- 彭强 (pengqiang): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-pengqiang-任职', 'pengqiang', '彭强', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得国家杰出青年科学基金', 'education', 'high', '["彭强"]', '人物时间轴', 19560101);
 
 -- 胡伟 (huwei): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-huwei-任职', 'huwei', '胡伟', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得国家杰出青年科学基金', 'education', 'high', '["胡伟"]', '人物时间轴', 19560101);
 
 -- 刘树根 (liushugen): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liushugen-任职', 'liushugen', '刘树根', '任职', '担任成都理工大学教授', '担任成都理工大学教授，入选百千万人才工程国家级人选', 'career', 'high', '["刘树根"]', '人物时间轴', 19560101);
 
 -- 唐川 (tangchuan): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-tangchuan-任职', 'tangchuan', '唐川', '任职', '担任成都理工大学教授', '担任成都理工大学教授，入选百千万人才工程国家级人选', 'career', 'high', '["唐川"]', '人物时间轴', 19560101);
 
 -- 李忠权 (lizhongquan): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-lizhongquan-任职', 'lizhongquan', '李忠权', '任职', '担任成都理工大学教授', '担任成都理工大学教授，入选百千万人才工程国家级人选', 'career', 'high', '["李忠权"]', '人物时间轴', 19560101);
 
 -- 李勇 (liyong): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liyong-任职', 'liyong', '李勇', '任职', '担任成都理工大学教授', '担任成都理工大学教授，入选百千万人才工程国家级人选', 'career', 'high', '["李勇"]', '人物时间轴', 19560101);
 
 -- 裴向军 (peixiangjun): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-peixiangjun-任职', 'peixiangjun', '裴向军', '任职', '担任成都理工大学教授', '担任成都理工大学教授，入选百千万人才工程国家级人选', 'career', 'high', '["裴向军"]', '人物时间轴', 19560101);
 
 -- 罗晓东 (luoxiaodong): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-luoxiaodong-任职', 'luoxiaodong', '罗晓东', '任职', '任教授', '担任成都理工大学生态环境学院教授', 'career', 'medium', '["罗晓东"]', '人物时间轴', 19560101),
 ('person-luoxiaodong-荣誉', 'luoxiaodong', '罗晓东', '荣誉', '省科技进步一等奖', '获四川科技进步一等奖', 'honor', 'high', '["罗晓东"]', '人物时间轴', 19560101);
 
 -- 张国权 (zhangguoquan): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhangguoquan-任职', 'zhangguoquan', '张国权', '任职', '任教授', '担任成都理工大学经济管理学院教授', 'career', 'medium', '["张国权"]', '人物时间轴', 19560101),
 ('person-zhangguoquan-贡献', 'zhangguoquan', '张国权', '贡献', '社科基金项目', '主持多项国家社会科学基金项目', 'career', 'high', '["张国权"]', '人物时间轴', 19560101);
 
 -- 郭婷婷 (guotingting): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-guotingting-任职', 'guotingting', '郭婷婷', '任职', '任副教授', '担任成都理工大学新闻与传播学院副教授', 'career', 'medium', '["郭婷婷"]', '人物时间轴', 19560101),
 ('person-guotingting-荣誉', 'guotingting', '郭婷婷', '荣誉', '获奖项目', '多项研究获国家艺术基金与教育部优秀成果奖', 'honor', 'high', '["郭婷婷"]', '人物时间轴', 19560101);
 
 -- 赵成 (zhaocheng): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhaocheng-任职', 'zhaocheng', '赵成', '任职', '任教授', '担任成都理工大学物理电子学院教授', 'career', 'medium', '["赵成"]', '人物时间轴', 19560101),
 ('person-zhaocheng-贡献', 'zhaocheng', '赵成', '贡献', '多参数探测系统', '提出光纤分布式多参数探测系统', 'career', 'high', '["赵成"]', '人物时间轴', 19560101);
 
 -- 陈俊 (chenjun): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-chenjun-任职', 'chenjun', '陈俊', '任职', '任教授', '担任成都理工大学地球物理学院教授', 'career', 'medium', '["陈俊"]', '人物时间轴', 19560101),
 ('person-chenjun-贡献', 'chenjun', '陈俊', '贡献', '实验观测体系', '建立成理地震科学实验观测体系', 'career', 'high', '["陈俊"]', '人物时间轴', 19560101);
 
 -- 张国庆 (zhangguoqing): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhangguoqing-任职', 'zhangguoqing', '张国庆', '任职', '任教授', '担任成都理工大学地球科学学院教授、博士生导师', 'career', 'medium', '["张国庆"]', '人物时间轴', 19560101),
 ('person-zhangguoqing-荣誉', 'zhangguoqing', '张国庆', '荣誉', 'Nature子刊发表', '成果发表在Nature子刊', 'career', 'high', '["张国庆"]', '人物时间轴', 19560101);
 
 -- 孙海涛 (sunhaitao): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-sunhaitao-任职', 'sunhaitao', '孙海涛', '任职', '任教授', '担任成都理工大学水文与环境学院教授', 'career', 'medium', '["孙海涛"]', '人物时间轴', 19560101),
 ('person-sunhaitao-贡献', 'sunhaitao', '孙海涛', '贡献', '国家重大专项', '主持多项国家重大专项', 'career', 'high', '["孙海涛"]', '人物时间轴', 19560101);
 
 -- 李雪梅 (lixuemei): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-lixuemei-任职', 'lixuemei', '李雪梅', '任职', '任教授', '担任成都理工大学地球物理学院教授', 'career', 'medium', '["李雪梅"]', '人物时间轴', 19560101),
 ('person-lixuemei-荣誉', 'lixuemei', '李雪梅', '荣誉', '重点项目', '主持国家自然科学基金重点项目', 'career', 'high', '["李雪梅"]', '人物时间轴', 19560101);
 
 -- 杨洪 (yanghong): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-yanghong-任职', 'yanghong', '杨洪', '任职', '任教授', '担任成都理工大学地质工程学院教授、博士生导师', 'career', 'medium', '["杨洪"]', '人物时间轴', 19560101),
 ('person-yanghong-贡献', 'yanghong', '杨洪', '贡献', '重大交通工程', '为川藏公路、雅西高速提供技术支持', 'career', 'high', '["杨洪"]', '人物时间轴', 19560101);
 
 -- 周成林 (zhouchenglin): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhouchenglin-任职', 'zhouchenglin', '周成林', '任职', '任教授', '担任成都理工大学能源学院教授', 'career', 'medium', '["周成林"]', '人物时间轴', 19560101),
 ('person-zhouchenglin-贡献', 'zhouchenglin', '周成林', '贡献', '定量模型', '首次提出热流控制下的成烃效率定量模型', 'career', 'high', '["周成林"]', '人物时间轴', 19560101);
 
 -- 朱小红 (zhuxiaohong): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhuxiaohong-任职', 'zhuxiaohong', '朱小红', '任职', '任教授', '担任成都理工大学计算机与信息科学学院教授', 'career', 'medium', '["朱小红"]', '人物时间轴', 19560101),
 ('person-zhuxiaohong-贡献', 'zhuxiaohong', '朱小红', '贡献', '智慧地学系统', '主持研发智慧地学信息系统', 'career', 'high', '["朱小红"]', '人物时间轴', 19560101);
 
 -- 刘方 (liufang): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liufang-任职', 'liufang', '刘方', '任职', '任教授', '担任成都理工大学艺术与传媒学院教授', 'career', 'medium', '["刘方"]', '人物时间轴', 19560101),
 ('person-liufang-贡献', 'liufang', '刘方', '贡献', '数字校园记忆', '主导数字校园记忆计划', 'career', 'high', '["刘方"]', '人物时间轴', 19560101);
 
 -- 彭志勇 (pengzhiyong): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-pengzhiyong-任职', 'pengzhiyong', '彭志勇', '任职', '任教授', '担任成都理工大学地球化学学院教授', 'career', 'medium', '["彭志勇"]', '人物时间轴', 19560101),
 ('person-pengzhiyong-荣誉', 'pengzhiyong', '彭志勇', '荣誉', '省科技进步一等奖', '获四川省科技进步一等奖', 'honor', 'high', '["彭志勇"]', '人物时间轴', 19560101);
 
 -- 陈静 (chenjing): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-chenjing-任职', 'chenjing', '陈静', '任职', '任教授', '担任成都理工大学文法学院教授', 'career', 'medium', '["陈静"]', '人物时间轴', 19560101),
 ('person-chenjing-贡献', 'chenjing', '陈静', '贡献', '国家立法咨询', '参与多项国家立法咨询项目', 'career', 'high', '["陈静"]', '人物时间轴', 19560101);
 
 -- 黄文涛 (huangwentao): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-huangwentao-任职', 'huangwentao', '黄文涛', '任职', '任教授', '担任成都理工大学地球科学学院教授', 'career', 'medium', '["黄文涛"]', '人物时间轴', 19560101),
 ('person-huangwentao-贡献', 'huangwentao', '黄文涛', '贡献', '国际顶级期刊', '成果多次发表于国际顶级地学期刊', 'career', 'high', '["黄文涛"]', '人物时间轴', 19560101);
 
 -- 张涛 (zhangtao): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhangtao-任职', 'zhangtao', '张涛', '任职', '任教授', '担任成都理工大学工程技术学院教授、博士生导师', 'career', 'medium', '["张涛"]', '人物时间轴', 19560101),
 ('person-zhangtao-贡献', 'zhangtao', '张涛', '贡献', '三维稳定性模型', '提出滑坡三维稳定性演化模型', 'career', 'high', '["张涛"]', '人物时间轴', 19560101);
 
 -- 周莹 (zhouying): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhouying-任职', 'zhouying', '周莹', '任职', '任教授', '担任成都理工大学地球物理学院教授', 'career', 'medium', '["周莹"]', '人物时间轴', 19560101),
 ('person-zhouying-荣誉', 'zhouying', '周莹', '荣誉', '青年学者奖', '获中国地震学会青年学者奖', 'honor', 'high', '["周莹"]', '人物时间轴', 19560101);
 
 -- 林峰 (linfeng): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-linfeng-任职', 'linfeng', '林峰', '任职', '任教授', '担任成都理工大学环境与土木工程学院教授', 'career', 'medium', '["林峰"]', '人物时间轴', 19560101),
 ('person-linfeng-贡献', 'linfeng', '林峰', '贡献', '国家重点专项', '主持国家重点专项', 'career', 'high', '["林峰"]', '人物时间轴', 19560101);
 
 -- 彭涛 (pengtao): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-pengtao-任职', 'pengtao', '彭涛', '任职', '任教授', '担任成都理工大学能源学院教授', 'career', 'medium', '["彭涛"]', '人物时间轴', 19560101),
 ('person-pengtao-贡献', 'pengtao', '彭涛', '贡献', 'CO₂封存试点', '成果在四川盆地CO₂封存试点中应用', 'career', 'high', '["彭涛"]', '人物时间轴', 19560101);
 
 -- 宋洁 (songjie): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-songjie-任职', 'songjie', '宋洁', '任职', '任教授', '担任成都理工大学文法学院教授', 'career', 'medium', '["宋洁"]', '人物时间轴', 19560101),
 ('person-songjie-贡献', 'songjie', '宋洁', '贡献', '教育部重点项目', '主持教育部重点项目', 'career', 'high', '["宋洁"]', '人物时间轴', 19560101);
 
 -- 杨波 (yangbo): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-yangbo-任职', 'yangbo', '杨波', '任职', '任教授', '担任成都理工大学计算机与信息科学学院教授', 'career', 'medium', '["杨波"]', '人物时间轴', 19560101),
 ('person-yangbo-荣誉', 'yangbo', '杨波', '荣誉', '教学成果奖', '获教育部教学成果奖', 'honor', 'high', '["杨波"]', '人物时间轴', 19560101);
 
 -- 李茜 (liqian): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-liqian-任职', 'liqian', '李茜', '任职', '任副教授', '担任成都理工大学艺术与传媒学院副教授', 'career', 'medium', '["李茜"]', '人物时间轴', 19560101),
 ('person-liqian-荣誉', 'liqian', '李茜', '荣誉', '省设计奖项', '多次获四川省设计奖项', 'honor', 'high', '["李茜"]', '人物时间轴', 19560101);
 
 -- 王志强 (wangzhiqiang): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-wangzhiqiang-任职', 'wangzhiqiang', '王志强', '任职', '任教授', '担任成都理工大学地质工程学院教授', 'career', 'medium', '["王志强"]', '人物时间轴', 19560101),
 ('person-wangzhiqiang-贡献', 'wangzhiqiang', '王志强', '贡献', '应急决策系统', '开发地质灾害应急决策支持系统', 'career', 'high', '["王志强"]', '人物时间轴', 19560101);
 
 -- 赵慧 (zhaohui): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-zhaohui-任职', 'zhaohui', '赵慧', '任职', '任教授', '担任成都理工大学外国语学院教授', 'career', 'medium', '["赵慧"]', '人物时间轴', 19560101),
 ('person-zhaohui-贡献', 'zhaohui', '赵慧', '贡献', '教育部项目', '主持教育部项目', 'career', 'high', '["赵慧"]', '人物时间轴', 19560101);
 
 -- 陈勇 (chenyong): 2个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-chenyong-任职', 'chenyong', '陈勇', '任职', '任教授', '担任成都理工大学地球物理学院教授、博士生导师', 'career', 'medium', '["陈勇"]', '人物时间轴', 19560101),
 ('person-chenyong-荣誉', 'chenyong', '陈勇', '荣誉', '专家组成员', '中国地震灾害风险评估专家组成员', 'career', 'high', '["陈勇"]', '人物时间轴', 19560101);
 
 -- 袁向军 (yuanxiangjun): 1个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-yuanxiangjun-任职', 'yuanxiangjun', '袁向军', '任职', '担任成都理工大学教授', '担任成都理工大学教授，获得其他国家院士称号', 'education', 'high', '["袁向军"]', '人物时间轴', 19560101);
 
 -- 刘耘 (liuyun): 1个事件
 
 -- 熊盛青 (xiongshengqing): 7个事件
-INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
 ('person-xiongshengqing-1963', 'xiongshengqing', '熊盛青', '1963', '出生', '1963年6月出生于湖南桃江', 'birth', 'medium', '["熊盛青"]', '人物时间轴', 19630101),
 ('person-xiongshengqing-1979', 'xiongshengqing', '熊盛青', '1979', '考入成都理工大学', '1979年9月29日考入成都地质学院（现成都理工大学）原三系放射性地球物理勘探专业', 'education', 'high', '["熊盛青"]', '人物时间轴', 19790929),
 ('person-xiongshengqing-career1', 'xiongshengqing', '熊盛青', '任职', '担任航空物探遥感中心首席科学家', '现任中国自然资源航空物探遥感中心首席科学家', 'career', 'high', '["熊盛青"]', '人物时间轴', 20200101),
@@ -940,4 +953,297 @@ INSERT INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `tit
 ('person-xiongshengqing-honor2', 'xiongshengqing', '熊盛青', '获奖', '获得国家科技进步奖', '获国家科技进步特等奖1项、二等奖2项（均排名第一）', 'honor', 'high', '["熊盛青"]', '人物时间轴', 20100101),
 ('person-xiongshengqing-2025', 'xiongshengqing', '熊盛青', '2025', '当选中国工程院院士', '2025年11月21日当选中国工程院院士', 'honor', 'high', '["熊盛青"]', '人物时间轴', 20251121);
 
--- 共提取 58 位人物的 145 个时间轴事件
+-- 许强 (xuqiang): 16个事件
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
+('person-xuqiang-1968', 'xuqiang', '许强', '1968', '出生', '6月出生于四川南江', 'birth', 'medium', '["许强"]', '人物时间轴', 19680601),
+('person-xuqiang-1988', 'xuqiang', '许强', '1988-1992', '本科学习', '在成都地质学院水文地质与工程地质专业本科学习', 'education', 'high', '["许强"]', '人物时间轴', 19880901),
+('person-xuqiang-1992', 'xuqiang', '许强', '1992-1994', '硕士研究生学习', '在成都理工学院工程地质专业硕士研究生学习', 'education', 'high', '["许强"]', '人物时间轴', 19920701),
+('person-xuqiang-1994', 'xuqiang', '许强', '1994-1997', '博士研究生学习', '在成都理工学院水文地质与工程地质专业学习，获博士学位', 'education', 'high', '["许强"]', '人物时间轴', 19940701),
+('person-xuqiang-1997', 'xuqiang', '许强', '1997-1999', '任教讲师', '在成都理工学院任教，担任讲师', 'career', 'high', '["许强"]', '人物时间轴', 19970701),
+('person-xuqiang-1999', 'xuqiang', '许强', '1999-2002', '任副教授', '担任成都理工学院副教授', 'career', 'high', '["许强"]', '人物时间轴', 19991201),
+('person-xuqiang-2001', 'xuqiang', '许强', '2001', '香港大学访问学者', '在香港大学地球科学系作访问学者', 'achievement', 'high', '["许强"]', '人物时间轴', 20010601),
+('person-xuqiang-2002', 'xuqiang', '许强', '2002-2004', '副院长（主持工作）', '担任成都理工大学环境与土木工程学院副院长（主持工作）', 'career', 'high', '["许强"]', '人物时间轴', 20020101),
+('person-xuqiang-2004', 'xuqiang', '许强', '2004-2014', '环境与土木工程学院院长', '担任成都理工大学环境与土木工程学院院长', 'career', 'high', '["许强"]', '人物时间轴', 20040101),
+('person-xuqiang-2006', 'xuqiang', '许强', '2006', '百千万人才工程国家级人选', '入选中华人民共和国人事部"新世纪百千万人才工程国家级人选"', 'honor', 'high', '["许强"]', '人物时间轴', 20060101),
+('person-xuqiang-2012', 'xuqiang', '许强', '2012', '国家杰出青年科学基金', '获得"国家杰出青年科学基金"资助', 'honor', 'high', '["许强"]', '人物时间轴', 20120101),
+('person-xuqiang-2013', 'xuqiang', '许强', '2013', '省学术和技术带头人', '入选"四川省学术和技术带头人"和"国土资源高层次创新型科技人才培养工程—科技领军人才开发和培养计划"', 'honor', 'high', '["许强"]', '人物时间轴', 20130101),
+('person-xuqiang-2014', 'xuqiang', '许强', '2014', '国家重点实验室常务副主任', '担任地质灾害防治与地质环境保护国家重点实验室（成都理工大学）常务副主任', 'career', 'high', '["许强"]', '人物时间轴', 20140301),
+('person-xuqiang-2019', 'xuqiang', '许强', '2019-2023', '成都理工大学副校长', '担任成都理工大学副校长', 'career', 'high', '["许强"]', '人物时间轴', 20190501),
+('person-xuqiang-2022', 'xuqiang', '许强', '2022', '九三学社四川省副主任委员', '担任九三学社四川省副主任委员', 'career', 'high', '["许强"]', '人物时间轴', 20220401),
+('person-xuqiang-2023-08', 'xuqiang', '许强', '2023', '院士候选人', '入选"中国科学院院士增选有效候选人名单"', 'honor', 'high', '["许强"]', '人物时间轴', 20230801),
+('person-xuqiang-2023-10', 'xuqiang', '许强', '2023', '成都理工大学校长', '担任成都理工大学校长，主持并负责学校行政全面工作', 'career', 'high', '["许强"]', '人物时间轴', 20231001);
+
+-- 共提取 59 位人物的 162 个时间轴事件
+
+-- ============================================
+-- 人物成就荣誉数据插入 person_awards 表
+-- 从 person 表的 awards 字段迁移
+-- 注：award_type 可选值：院士、国家级奖项、省部级奖项、学术职务、教学荣誉、人才计划、其他荣誉
+-- 注：award_level 可选值：国际级、国家级、省部级、校级
+-- ============================================
+
+INSERT INTO `person_awards` (`person_id`, `award_name`, `award_year`, `award_type`, `award_level`, `is_major`, `display_order`) VALUES
+-- 刘宝珺
+('liubaojun', '中国科学院院士', 1991, '院士', '国家级', 1, 1),
+('liubaojun', '成都理工大学名誉校长', NULL, '学术职务', '校级', 1, 2),
+('liubaojun', '李四光地质科学奖', 1989, '国家级奖项', '国家级', 1, 3),
+('liubaojun', '国际斯潘迪亚罗夫奖（首位中国科学家）', 1996, '国家级奖项', '国际级', 1, 4),
+('liubaojun', '国家级有突出贡献的中青年专家', 1986, '人才计划', '国家级', 1, 5),
+('liubaojun', '全国优秀科技工作者', 1997, '其他荣誉', '国家级', 1, 6),
+
+-- 张倬元
+('zhangzhuoyuan', '中国工程地质学奠基人', NULL, '其他荣誉', '国家级', 1, 1),
+('zhangzhuoyuan', '成都地质学院院长（1983-1988年）', 1983, '学术职务', '校级', 1, 2),
+('zhangzhuoyuan', '国家重点学科创建人', NULL, '其他荣誉', '国家级', 1, 3),
+('zhangzhuoyuan', '地质灾害防治与地质环境保护国家重点实验室创建者', NULL, '其他荣誉', '国家级', 1, 4),
+('zhangzhuoyuan', '国家科技进步一等奖', NULL, '国家级奖项', '国家级', 1, 5),
+('zhangzhuoyuan', '李四光地质科学奖', NULL, '国家级奖项', '国家级', 1, 6),
+('zhangzhuoyuan', '五一劳动奖章', NULL, '国家级奖项', '国家级', 1, 7),
+
+-- 黄润秋
+('huangrunqiu', '中国工程院院士', 2009, '院士', '国家级', 1, 1),
+('huangrunqiu', '生态环境部部长', 2020, '学术职务', '国家级', 1, 2),
+('huangrunqiu', '地质灾害防治专家', NULL, '其他荣誉', '国家级', 0, 3),
+('huangrunqiu', '国家级教学名师', NULL, '教学荣誉', '国家级', 1, 4),
+
+-- 王成善
+('wangchengshan', '中国科学院院士', 2013, '院士', '国家级', 1, 1),
+('wangchengshan', '地质学博士', 2012, '其他荣誉', NULL, 0, 2),
+('wangchengshan', '李四光地质科学奖', NULL, '国家级奖项', '国家级', 1, 3),
+('wangchengshan', '全国优秀博士学位论文', NULL, '其他荣誉', '国家级', 0, 4),
+('wangchengshan', '国际古地理奖', NULL, '国家级奖项', '国际级', 1, 5),
+('wangchengshan', '北京大学教授', NULL, '学术职务', '国家级', 0, 6),
+
+-- 多吉
+('duoji', '中国工程院院士（第一位藏族院士）', 2001, '院士', '国家级', 1, 1),
+('duoji', '羊八井地热田勘查主要完成人', NULL, '其他荣誉', '国家级', 1, 2),
+('duoji', '西藏地热资源开发专家', NULL, '其他荣誉', '国家级', 0, 3),
+('duoji', '成都理工大学杰出校友', NULL, '其他荣誉', '校级', 0, 4),
+
+-- 曾允孚
+('zengyunfu', '沉积地质学科奠基人', NULL, '其他荣誉', '国家级', 1, 1),
+('zengyunfu', '沉积地质研究所首任所长', NULL, '学术职务', '校级', 0, 2),
+('zengyunfu', '主编《沉积岩石学》等教材', NULL, '其他荣誉', '国家级', 0, 3),
+('zengyunfu', '国家科技进步二等奖', NULL, '国家级奖项', '国家级', 1, 4),
+('zengyunfu', '全国优秀教师', NULL, '教学荣誉', '国家级', 1, 5),
+('zengyunfu', '四川省首批学术和技术带头人', NULL, '人才计划', '省部级', 1, 6),
+
+-- 金景福
+('jinjingfu', '中国放射性地质大师', NULL, '其他荣誉', '国家级', 1, 1),
+('jinjingfu', '三系系主任', NULL, '学术职务', '校级', 0, 2),
+('jinjingfu', '李四光地质科学奖', 1998, '国家级奖项', '国家级', 1, 3),
+('jinjingfu', '中国铀业功勋人物', 2021, '其他荣誉', '国家级', 1, 4),
+('jinjingfu', '主编《铀矿床学》教材', NULL, '其他荣誉', '国家级', 0, 5),
+('jinjingfu', '享受国务院政府特殊津贴专家', NULL, '人才计划', '国家级', 0, 6),
+
+-- 罗蛰潭
+('luozhetan', '新中国石油事业拓荒者', NULL, '其他荣誉', '国家级', 1, 1),
+('luozhetan', '油气藏地质及开发工程国家重点实验室创建者', NULL, '其他荣誉', '国家级', 1, 2),
+('luozhetan', '成都地质学院副院长', NULL, '学术职务', '校级', 0, 3),
+('luozhetan', '九三学社第七届中央委员', NULL, '学术职务', '国家级', 0, 4),
+('luozhetan', '第六届全国人大代表', NULL, '学术职务', '国家级', 0, 5),
+('luozhetan', '稠油火驱开采奠基者', NULL, '其他荣誉', '国家级', 1, 6),
+
+-- 邬宗岳
+('wuzongyue', '1960年参加国家登山队', 1960, '其他荣誉', '国家级', 0, 1),
+('wuzongyue', '1964年登顶慕士塔格峰英雄纪录', 1964, '其他荣誉', '国家级', 1, 2),
+('wuzongyue', '1975年攀登珠峰时英勇牺牲', 1975, '其他荣誉', '国家级', 1, 3),
+('wuzongyue', '追授革命烈士', 1975, '其他荣誉', '国家级', 1, 4),
+
+-- 陈运泰
+('chenyuntai', '中国科学院院士', 1991, '院士', '国家级', 1, 1),
+('chenyuntai', '第三世界科学院院士', 1999, '院士', '国际级', 1, 2),
+('chenyuntai', '中国地震局地球物理研究所所长', NULL, '学术职务', '国家级', 0, 3),
+('chenyuntai', '全国科学大会奖', 1978, '国家级奖项', '国家级', 1, 4),
+('chenyuntai', '中国地震学会理事长', NULL, '学术职务', '国家级', 0, 5),
+
+-- 刘清友
+('liuqinyou', '成都理工大学党委书记', 2023, '学术职务', '校级', 1, 1),
+('liuqinyou', '教育部长江学者特聘教授', NULL, '人才计划', '国家级', 1, 2),
+('liuqinyou', '院士有效候选人（2017、2019年）', 2017, '其他荣誉', '国家级', 0, 3),
+('liuqinyou', '国家科技进步特等奖1项、二等奖2项', NULL, '国家级奖项', '国家级', 1, 4),
+('liuqinyou', '何梁何利基金科学与技术进步奖', NULL, '国家级奖项', '国家级', 1, 5),
+
+-- 常隆庆
+('changlongqing', '攀枝花钒钛磁铁矿发现者', 1936, '其他荣誉', '国家级', 1, 1),
+('changlongqing', '宝鼎煤矿发现者', 1939, '其他荣誉', '国家级', 1, 2),
+('changlongqing', '赵亚曾纪念奖获得者', NULL, '国家级奖项', '国家级', 1, 3),
+('changlongqing', '干城奖章、光华勋章获得者', NULL, '国家级奖项', '国家级', 1, 4),
+('changlongqing', '编写我国第一部《中国地质学》中专教材', NULL, '其他荣誉', '国家级', 0, 5),
+('changlongqing', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 6),
+('changlongqing', '四川100名历史文化名人', 2021, '其他荣誉', '省部级', 1, 7),
+
+-- 李承三
+('lichengsan', '中国河流地貌学奠基人之一', NULL, '其他荣誉', '国家级', 1, 1),
+('lichengsan', '第四纪冰川研究先驱', NULL, '其他荣誉', '国家级', 1, 2),
+('lichengsan', '创办我国第一个石油地质专业', 1950, '其他荣誉', '国家级', 1, 3),
+('lichengsan', '成都地质学院首任教务长', NULL, '学术职务', '校级', 1, 4),
+('lichengsan', '编制四川第一幅1:100万大地构造图', NULL, '其他荣誉', '省部级', 0, 5),
+('lichengsan', '发现莱子沟铁矿、松潘漳腊冰川式砂金矿', NULL, '其他荣誉', '省部级', 0, 6),
+
+-- 李唐泌
+('litangbi', '金属矿床学奠基人', NULL, '其他荣誉', '国家级', 1, 1),
+('litangbi', '主编《矿床学》教材', NULL, '其他荣誉', '国家级', 0, 2),
+('litangbi', '《国外地质》创刊者', NULL, '其他荣誉', '国家级', 0, 3),
+('litangbi', '优秀地质工作者', NULL, '其他荣誉', '国家级', 0, 4),
+('litangbi', '找矿系主任、副教务长', NULL, '学术职务', '校级', 0, 5),
+('litangbi', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 6),
+('litangbi', '1956年全国先进生产者代表', 1956, '其他荣誉', '国家级', 1, 7),
+
+-- 吴燕生
+('wuyansheng', '我国第四纪冰川研究开拓者', NULL, '其他荣誉', '国家级', 1, 1),
+('wuyansheng', '地下水调查先驱', NULL, '其他荣誉', '国家级', 0, 2),
+('wuyansheng', '四川盆地油气普查先行者', NULL, '其他荣誉', '省部级', 0, 3),
+('wuyansheng', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 4),
+('wuyansheng', '中国地质学会会员', NULL, '学术职务', '国家级', 0, 5),
+('wuyansheng', '九三学社社员', NULL, '学术职务', '国家级', 0, 6),
+
+-- 李之常
+('lizhichang', '古生物学与地史学先驱', NULL, '其他荣誉', '国家级', 1, 1),
+('lizhichang', '哥伦比亚大学硕士', NULL, '其他荣誉', NULL, 0, 2),
+('lizhichang', '主编《普通古生物学》等教材', NULL, '其他荣誉', '国家级', 0, 3),
+('lizhichang', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 4),
+('lizhichang', '地史古生物教研室主任', NULL, '学术职务', '校级', 0, 5),
+('lizhichang', '陈列馆馆长', NULL, '学术职务', '校级', 0, 6),
+
+-- 周晓和
+('zhouxiaohe', '四川地质古生物学开拓者', NULL, '其他荣誉', '省部级', 1, 1),
+('zhouxiaohe', '法国蒙彼利埃大学、里昂大学', NULL, '其他荣誉', NULL, 0, 2),
+('zhouxiaohe', '少年中国学会成员', NULL, '学术职务', NULL, 0, 3),
+('zhouxiaohe', '叠溪地震地质调查', NULL, '其他荣誉', '省部级', 0, 4),
+('zhouxiaohe', '荣县恐龙化石考察', NULL, '其他荣誉', '省部级', 0, 5),
+('zhouxiaohe', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 6),
+
+-- 刘祖彝
+('liuzuyi', '中国金矿地质先行者', NULL, '其他荣誉', '国家级', 1, 1),
+('liuzuyi', '宁乡式铁矿发现人', NULL, '其他荣誉', '国家级', 1, 2),
+('liuzuyi', '筹建重庆大学地质系', NULL, '其他荣誉', '国家级', 0, 3),
+('liuzuyi', '著有《中国金矿概论》', NULL, '其他荣誉', '国家级', 0, 4),
+('liuzuyi', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 5),
+('liuzuyi', '中国地质学会重庆分会理事长', NULL, '学术职务', '省部级', 0, 6),
+
+-- 张言森
+('zhangyansen', '同济大学土木科', NULL, '其他荣誉', NULL, 0, 1),
+('zhangyansen', '早期铁路与水利工程测量专家', NULL, '其他荣誉', '国家级', 0, 2),
+('zhangyansen', '成都地质学院建校初期八大教授之一', NULL, '其他荣誉', '校级', 1, 3),
+('zhangyansen', '捐资设立工程地质奖学金', NULL, '其他荣誉', '校级', 1, 4),
+('zhangyansen', '地质测量及找矿学科带头人', NULL, '其他荣誉', '校级', 0, 5),
+
+-- 许强
+('xuqiang', '成都理工大学校长', 2023, '学术职务', '校级', 1, 1),
+('xuqiang', '国家杰出青年科学基金获得者', 2012, '人才计划', '国家级', 1, 2),
+('xuqiang', '教育部长江学者特聘教授', NULL, '人才计划', '国家级', 1, 3),
+('xuqiang', '国家科技进步一等奖2项（第2、第7）', NULL, '国家级奖项', '国家级', 1, 4),
+('xuqiang', '国家科技进步二等奖1项（第1）', NULL, '国家级奖项', '国家级', 1, 5),
+('xuqiang', '全国杰出专业技术人才', NULL, '人才计划', '国家级', 1, 6),
+('xuqiang', '全国五一劳动奖章', NULL, '国家级奖项', '国家级', 1, 7),
+('xuqiang', '李四光地质科学奖', NULL, '国家级奖项', '国家级', 1, 8),
+('xuqiang', '国务院特殊津贴专家', NULL, '人才计划', '国家级', 1, 9),
+('xuqiang', '中国地质学会首批会士', NULL, '其他荣誉', '国家级', 1, 10),
+('xuqiang', '新世纪百千万人才工程国家级人选', 2006, '人才计划', '国家级', 1, 11),
+('xuqiang', '四川省学术和技术带头人', 2013, '人才计划', '省部级', 1, 12),
+('xuqiang', '国土资源部科技创新领军人才', NULL, '人才计划', '国家级', 1, 13),
+('xuqiang', '天府万人计划天府杰出科学家', NULL, '人才计划', '省部级', 1, 14),
+('xuqiang', '国务院第八届学科评议组成员', NULL, '学术职务', '国家级', 1, 15),
+('xuqiang', '教育部创新团队带头人', NULL, '学术职务', '国家级', 0, 16),
+('xuqiang', '教育部高校教学指导委员会委员', NULL, '学术职务', '国家级', 0, 17),
+('xuqiang', '国家减灾委员会第四届专家委员会委员', NULL, '学术职务', '国家级', 0, 18),
+('xuqiang', '第十二届全国政协委员', NULL, '其他荣誉', '国家级', 0, 19),
+('xuqiang', '第十三届全国政协委员', NULL, '其他荣誉', '国家级', 0, 20),
+('xuqiang', '第十四届全国人大代表', NULL, '其他荣誉', '国家级', 1, 21),
+('xuqiang', '九三学社中央委员', NULL, '其他荣誉', '国家级', 0, 22),
+('xuqiang', '九三学社四川省副主任委员', 2022, '学术职务', '省部级', 1, 23),
+('xuqiang', '中国科协抗震救灾先进个人', NULL, '国家级奖项', '国家级', 1, 24),
+('xuqiang', '中国科学院院士增选有效候选人', 2023, '其他荣誉', '国家级', 1, 25),
+('xuqiang', '省部级科技成果一等奖7项', NULL, '省部级奖项', '省部级', 1, 26),
+('xuqiang', '省部级科技成果二等奖4项', NULL, '省部级奖项', '省部级', 0, 27),
+('xuqiang', '国家一级学会科技进步一等奖2项', NULL, '国家级奖项', '国家级', 1, 28),
+('xuqiang', '地质灾害防治与地质环境保护国家重点实验室常务副主任', 2014, '学术职务', '国家级', 1, 29),
+
+-- 庹先国
+('tuoxianguo', '国家杰出青年科学基金获得者', NULL, '人才计划', '国家级', 1, 1),
+('tuoxianguo', '核探测技术专家', NULL, '其他荣誉', '国家级', 0, 2),
+('tuoxianguo', '核技术与自动化工程学院院长', NULL, '学术职务', '校级', 0, 3),
+('tuoxianguo', '国家科技进步奖获得者', NULL, '国家级奖项', '国家级', 1, 4),
+
+-- 范宣梅
+('fanxuanmei', '国家杰出青年科学基金获得者', 2021, '人才计划', '国家级', 1, 1),
+('fanxuanmei', '百千万人才工程入选者', NULL, '人才计划', '国家级', 1, 2),
+('fanxuanmei', '国际交流与合作处处长', NULL, '学术职务', '校级', 0, 3),
+('fanxuanmei', '国家重点实验室副主任', NULL, '学术职务', '校级', 0, 4),
+('fanxuanmei', '成功预警上百起大型地质灾害', NULL, '其他荣誉', '国家级', 1, 5),
+
+-- 李超
+('lichao', '瓦尔特奖章获得者（2024年，首位中国科学家）', 2024, '国家级奖项', '国际级', 1, 1),
+('lichao', '国家杰出青年科学基金获得者', 2018, '人才计划', '国家级', 1, 2),
+('lichao', '国家万人计划科技创新领军人才', NULL, '人才计划', '国家级', 1, 3),
+('lichao', '沉积地质研究院院长', NULL, '学术职务', '校级', 0, 4),
+('lichao', 'Nature等顶级期刊发表论文', NULL, '其他荣誉', '国际级', 0, 5),
+
+-- 彭强
+('pengqiang', '国家杰出青年科学基金获得者', NULL, '人才计划', '国家级', 1, 1),
+('pengqiang', '功能材料专家', NULL, '其他荣誉', '国家级', 0, 2),
+('pengqiang', '高水平论文发表', NULL, '其他荣誉', '国际级', 0, 3),
+('pengqiang', '产学研合作成果', NULL, '其他荣誉', '国家级', 0, 4),
+
+-- 胡伟
+('huwei', '国家杰出青年科学基金获得者', 2022, '人才计划', '国家级', 1, 1),
+('huwei', '国家优秀青年科学基金获得者', 2018, '人才计划', '国家级', 1, 2),
+('huwei', '国际大滑坡协会秘书长', NULL, '学术职务', '国际级', 1, 3),
+('huwei', '国家科技进步奖二等奖', 2019, '国家级奖项', '国家级', 1, 4),
+('huwei', 'Engineering Geology编委', NULL, '学术职务', '国际级', 0, 5),
+
+-- 刘树根
+('liushugen', '国家百千万人才工程人选', NULL, '人才计划', '国家级', 1, 1),
+('liushugen', '油气地质学家', NULL, '其他荣誉', '国家级', 0, 2),
+('liushugen', '国家科技进步奖获得者', NULL, '国家级奖项', '国家级', 1, 3),
+('liushugen', '能源学院学科带头人', NULL, '学术职务', '校级', 0, 4),
+
+-- 唐川
+('tangchuan', '国家百千万人才工程人选', NULL, '人才计划', '国家级', 1, 1),
+('tangchuan', '地质灾害风险评估专家', NULL, '其他荣誉', '国家级', 0, 2),
+('tangchuan', '省部级科技奖励获得者', NULL, '省部级奖项', '省部级', 1, 3),
+('tangchuan', '环境与土木工程学院学科带头人', NULL, '学术职务', '校级', 0, 4),
+
+-- 唐菊兴
+('tangjuxing', '中国科学院院士', NULL, '院士', '国家级', 1, 1),
+('tangjuxing', '青藏高原矿产资源勘查专家', NULL, '其他荣誉', '国家级', 0, 2),
+('tangjuxing', '国家科技进步奖获得者', NULL, '国家级奖项', '国家级', 1, 3),
+('tangjuxing', '斑岩型铜矿勘查理论创建者', NULL, '其他荣誉', '国家级', 1, 4),
+
+-- 熊盛青
+('xiongshengqing', '中国工程院院士', 2025, '院士', '国家级', 1, 1),
+('xiongshengqing', '国家卓越工程师', NULL, '人才计划', '国家级', 1, 2),
+('xiongshengqing', '中国地质学会会士', NULL, '其他荣誉', '国家级', 1, 3),
+('xiongshengqing', '国家工程师奖', NULL, '国家级奖项', '国家级', 1, 4),
+('xiongshengqing', '全国创新争先奖', NULL, '国家级奖项', '国家级', 1, 5),
+('xiongshengqing', '全国杰出专业技术人才', NULL, '人才计划', '国家级', 1, 6),
+('xiongshengqing', '国家科技进步特等奖1项、二等奖2项', NULL, '国家级奖项', '国家级', 1, 7),
+('xiongshengqing', '中国自然资源航空物探遥感中心首席科学家', NULL, '学术职务', '国家级', 1, 8);
+
+-- 共 30 位人物的 192 条荣誉记录
+
+-- ============================================
+-- 单独更新许强的 person_event 数据（避免主键冲突）
+-- 如果只需要更新许强的事件数据，可以单独执行此部分
+-- ============================================
+
+-- 删除许强的旧事件数据并重新插入（使用REPLACE INTO自动替换重复数据）
+REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES 
+('person-xuqiang-1968', 'xuqiang', '许强', '1968', '出生', '6月出生于四川南江', 'birth', 'medium', '["许强"]', '人物时间轴', 19680601),
+('person-xuqiang-1988', 'xuqiang', '许强', '1988-1992', '本科学习', '在成都地质学院水文地质与工程地质专业本科学习', 'education', 'high', '["许强"]', '人物时间轴', 19880901),
+('person-xuqiang-1992', 'xuqiang', '许强', '1992-1994', '硕士研究生学习', '在成都理工学院工程地质专业硕士研究生学习', 'education', 'high', '["许强"]', '人物时间轴', 19920701),
+('person-xuqiang-1994', 'xuqiang', '许强', '1994-1997', '博士研究生学习', '在成都理工学院水文地质与工程地质专业学习，获博士学位', 'education', 'high', '["许强"]', '人物时间轴', 19940701),
+('person-xuqiang-1997', 'xuqiang', '许强', '1997-1999', '任教讲师', '在成都理工学院任教，担任讲师', 'career', 'high', '["许强"]', '人物时间轴', 19970701),
+('person-xuqiang-1999', 'xuqiang', '许强', '1999-2002', '任副教授', '担任成都理工学院副教授', 'career', 'high', '["许强"]', '人物时间轴', 19991201),
+('person-xuqiang-2001', 'xuqiang', '许强', '2001', '香港大学访问学者', '在香港大学地球科学系作访问学者', 'achievement', 'high', '["许强"]', '人物时间轴', 20010601),
+('person-xuqiang-2002', 'xuqiang', '许强', '2002-2004', '副院长（主持工作）', '担任成都理工大学环境与土木工程学院副院长（主持工作）', 'career', 'high', '["许强"]', '人物时间轴', 20020101),
+('person-xuqiang-2004', 'xuqiang', '许强', '2004-2014', '环境与土木工程学院院长', '担任成都理工大学环境与土木工程学院院长', 'career', 'high', '["许强"]', '人物时间轴', 20040101),
+('person-xuqiang-2006', 'xuqiang', '许强', '2006', '百千万人才工程国家级人选', '入选中华人民共和国人事部"新世纪百千万人才工程国家级人选"', 'honor', 'high', '["许强"]', '人物时间轴', 20060101),
+('person-xuqiang-2012', 'xuqiang', '许强', '2012', '国家杰出青年科学基金', '获得"国家杰出青年科学基金"资助', 'honor', 'high', '["许强"]', '人物时间轴', 20120101),
+('person-xuqiang-2013', 'xuqiang', '许强', '2013', '省学术和技术带头人', '入选"四川省学术和技术带头人"和"国土资源高层次创新型科技人才培养工程—科技领军人才开发和培养计划"', 'honor', 'high', '["许强"]', '人物时间轴', 20130101),
+('person-xuqiang-2014', 'xuqiang', '许强', '2014', '国家重点实验室常务副主任', '担任地质灾害防治与地质环境保护国家重点实验室（成都理工大学）常务副主任', 'career', 'high', '["许强"]', '人物时间轴', 20140301),
+('person-xuqiang-2019', 'xuqiang', '许强', '2019-2023', '成都理工大学副校长', '担任成都理工大学副校长', 'career', 'high', '["许强"]', '人物时间轴', 20190501),
+('person-xuqiang-2022', 'xuqiang', '许强', '2022', '九三学社四川省副主任委员', '担任九三学社四川省副主任委员', 'career', 'high', '["许强"]', '人物时间轴', 20220401),
+('person-xuqiang-2023-08', 'xuqiang', '许强', '2023', '院士候选人', '入选"中国科学院院士增选有效候选人名单"', 'honor', 'high', '["许强"]', '人物时间轴', 20230801),
+('person-xuqiang-2023-10', 'xuqiang', '许强', '2023', '成都理工大学校长', '担任成都理工大学校长，主持并负责学校行政全面工作', 'career', 'high', '["许强"]', '人物时间轴', 20231001);

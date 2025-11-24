@@ -171,4 +171,24 @@ public class HistoryController {
         }
         return result;
     }
+    
+    /**
+     * 获取历史时钟展示用的事件（高重要性事件）
+     */
+    @Operation(summary = "获取历史时钟展示事件")
+    @GetMapping("/clock-events")
+    public Map<String, Object> getClockEvents() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<HistoryEvent> events = historyService.getEventsByImportance("high");
+            result.put("success", true);
+            result.put("data", events);
+            result.put("total", events.size());
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取历史时钟事件失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

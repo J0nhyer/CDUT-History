@@ -150,14 +150,6 @@
             <div class="stat-number" :data-count="getTotalCount()">{{ animatedTotalCount }}</div>
             <div class="stat-label">荣誉总数</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number highlight">{{ getHighestLevel() }}</div>
-            <div class="stat-label">最高级别</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ getYearSpan() }}</div>
-            <div class="stat-label">获奖跨度</div>
-          </div>
         </div>
 
         <!-- 筛选栏 -->
@@ -181,6 +173,75 @@
               <option value="time-asc">时间从旧到新</option>
             </select>
           </div>
+        </div>
+
+        <!-- 勋章墙主体 -->
+        <div class="medal-wall-main" v-if="processedAchievements.length > 0">
+          <transition-group 
+            name="medal" 
+            tag="div" 
+            class="medal-grid"
+          >
+            <div 
+              v-for="(achievement, index) in filteredAndSortedAchievements" 
+              :key="achievement.awardId || index"
+              :class="['medal-item', `type-${getTypeClass(achievement.awardType)}`, { hovered: hoveredMedal === achievement.awardId }]"
+              :style="getMedalStyle(achievement)"
+              @mouseenter="onMedalHover(achievement)"
+              @mouseleave="onMedalLeave()"
+              @click="openMedalDetail(achievement)"
+              data-aos="zoom-in"
+              :data-aos-delay="index * 50"
+            >
+              <!-- 勋章外框 -->
+              <div class="medal-frame">
+                <!-- 光晕效果 -->
+                <div class="medal-glow" :class="`glow-${getTypeClass(achievement.awardType)}`"></div>
+                
+                <!-- 勋章主体 -->
+                <div class="medal-body">
+                  <!-- 图标 -->
+                  <div class="medal-icon">
+                    <i :class="getMedalIcon(achievement)"></i>
+                  </div>
+                  
+                  <!-- 绸带装饰(所有等级都有) -->
+                  <div class="medal-ribbon">
+                    <div class="ribbon-left"></div>
+                    <div class="ribbon-right"></div>
+                  </div>
+                </div>
+                
+                <!-- 勋章名称 -->
+                <div class="medal-name">{{ achievement.awardName }}</div>
+              </div>
+
+              <!-- 悬浮提示卡片 -->
+              <transition name="tooltip">
+                <div 
+                  v-if="hoveredMedal === achievement.awardId" 
+                  class="medal-tooltip"
+                  :style="getTooltipPosition(index)"
+                >
+                  <h4 class="tooltip-title">{{ achievement.awardName }}</h4>
+                  <p class="tooltip-desc">{{ achievement.awardDescription || '暂无描述' }}</p>
+                  <div class="tooltip-meta">
+                    <span v-if="achievement.awardYear"><i class="fas fa-calendar"></i> {{ achievement.awardYear }}年</span>
+                    <span v-if="achievement.awardingOrganization"><i class="fas fa-building"></i> {{ achievement.awardingOrganization }}</span>
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </transition-group>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="empty-state">
+          <i class="fas fa-medal"></i>
+          <p>{{ selectedType === 'all' ? '暂无荣誉成就数据' : '该类型暂无荣誉' }}</p>
+          <button v-if="selectedType !== 'all'" @click="filterByType('all')" class="clear-filter-btn">
+            查看全部荣誉
+          </button>
         </div>
 
         <!-- 勋章类型展示区 - 7种类型 -->
@@ -309,75 +370,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- 勋章墙主体 -->
-        <div class="medal-wall-main" v-if="processedAchievements.length > 0">
-          <transition-group 
-            name="medal" 
-            tag="div" 
-            class="medal-grid"
-          >
-            <div 
-              v-for="(achievement, index) in filteredAndSortedAchievements" 
-              :key="achievement.awardId || index"
-              :class="['medal-item', `type-${getTypeClass(achievement.awardType)}`, { hovered: hoveredMedal === achievement.awardId }]"
-              :style="getMedalStyle(achievement)"
-              @mouseenter="onMedalHover(achievement)"
-              @mouseleave="onMedalLeave()"
-              @click="openMedalDetail(achievement)"
-              data-aos="zoom-in"
-              :data-aos-delay="index * 50"
-            >
-              <!-- 勋章外框 -->
-              <div class="medal-frame">
-                <!-- 光晕效果 -->
-                <div class="medal-glow" :class="`glow-${getTypeClass(achievement.awardType)}`"></div>
-                
-                <!-- 勋章主体 -->
-                <div class="medal-body">
-                  <!-- 图标 -->
-                  <div class="medal-icon">
-                    <i :class="getMedalIcon(achievement)"></i>
-                  </div>
-                  
-                  <!-- 绸带装饰(所有等级都有) -->
-                  <div class="medal-ribbon">
-                    <div class="ribbon-left"></div>
-                    <div class="ribbon-right"></div>
-                  </div>
-                </div>
-                
-                <!-- 勋章名称 -->
-                <div class="medal-name">{{ achievement.awardName }}</div>
-              </div>
-
-              <!-- 悬浮提示卡片 -->
-              <transition name="tooltip">
-                <div 
-                  v-if="hoveredMedal === achievement.awardId" 
-                  class="medal-tooltip"
-                  :style="getTooltipPosition(index)"
-                >
-                  <h4 class="tooltip-title">{{ achievement.awardName }}</h4>
-                  <p class="tooltip-desc">{{ achievement.awardDescription || '暂无描述' }}</p>
-                  <div class="tooltip-meta">
-                    <span v-if="achievement.awardYear"><i class="fas fa-calendar"></i> {{ achievement.awardYear }}年</span>
-                    <span v-if="achievement.awardingOrganization"><i class="fas fa-building"></i> {{ achievement.awardingOrganization }}</span>
-                  </div>
-                </div>
-              </transition>
-            </div>
-          </transition-group>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-else class="empty-state">
-          <i class="fas fa-medal"></i>
-          <p>{{ selectedType === 'all' ? '暂无荣誉成就数据' : '该类型暂无荣誉' }}</p>
-          <button v-if="selectedType !== 'all'" @click="filterByType('all')" class="clear-filter-btn">
-            查看全部荣誉
-          </button>
         </div>
       </div>
 
