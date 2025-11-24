@@ -38,6 +38,5 @@ public class AcademicNode {
     
     // 非数据库字段，用于返回完整数据
     private transient List<AcademicMajor> majors;
-    private transient List<AcademicRelation> relations;
 }
 

@@ -483,13 +483,13 @@ export default {
       // 荣誉成就相关
       achievementTypes: [
         { id: 'all', name: '全部', icon: 'fas fa-list' },
-        { id: '院士', name: '院士', icon: 'fas fa-crown' },
-        { id: '国家级奖项', name: '国家级奖项', icon: 'fas fa-trophy' },
-        { id: '省部级奖项', name: '省部级奖项', icon: 'fas fa-medal' },
-        { id: '学术职务', name: '学术职务', icon: 'fas fa-users' },
-        { id: '教学荣誉', name: '教学荣誉', icon: 'fas fa-chalkboard-teacher' },
-        { id: '人才计划', name: '人才计划', icon: 'fas fa-user-graduate' },
-        { id: '其他荣誉', name: '其他', icon: 'fas fa-star' }
+        { id: '院士', name: '院士', icon: 'fas fa-crown' },           // 红色
+        { id: '国家级奖项', name: '国家级奖项', icon: 'fas fa-trophy' },  // 橙色
+        { id: '省部级奖项', name: '省部级奖项', icon: 'fas fa-medal' },   // 黄色
+        { id: '人才计划', name: '人才计划', icon: 'fas fa-user-graduate' }, // 绿色
+        { id: '学术职务', name: '学术职务', icon: 'fas fa-users' },      // 青色
+        { id: '教学荣誉', name: '教学荣誉', icon: 'fas fa-chalkboard-teacher' }, // 蓝色
+        { id: '其他荣誉', name: '其他', icon: 'fas fa-star' }          // 紫色
       ],
       selectedType: 'all',
       sortBy: 'type',
@@ -528,22 +528,36 @@ export default {
     
     // 筛选和排序后的荣誉
     filteredAndSortedAchievements() {
-      let filtered = this.processedAchievements
+      // 创建副本避免修改原数组
+      let filtered = [...this.processedAchievements]
       
       // 按类型筛选
       if (this.selectedType !== 'all') {
         filtered = filtered.filter(a => a.awardType === this.selectedType)
       }
       
-      // 排序
+      // 排序 - 红橙黄绿青蓝紫顺序 (1-7)
+      const typeOrder = { 
+        '院士': 1,        // 1. 红色
+        '国家级奖项': 2,  // 2. 橙色
+        '省部级奖项': 3,  // 3. 黄色
+        '人才计划': 4,    // 4. 绿色
+        '学术职务': 5,    // 5. 青色
+        '教学荣誉': 6,    // 6. 蓝色
+        '其他荣誉': 7     // 7. 紫色
+      }
+      
       if (this.sortBy === 'type') {
         // 按类型排序
-        const typeOrder = { '院士': 0, '国家级奖项': 1, '省部级奖项': 2, '学术职务': 3, '教学荣誉': 4, '人才计划': 5, '其他荣誉': 6 }
-        filtered.sort((a, b) => (typeOrder[a.awardType] || 999) - (typeOrder[b.awardType] || 999))
+        filtered = filtered.sort((a, b) => {
+          const orderA = typeOrder[a.awardType] || 999
+          const orderB = typeOrder[b.awardType] || 999
+          return orderA - orderB
+        })
       } else if (this.sortBy === 'time-desc') {
-        filtered.sort((a, b) => (b.awardYear || 0) - (a.awardYear || 0))
+        filtered = filtered.sort((a, b) => (b.awardYear || 0) - (a.awardYear || 0))
       } else if (this.sortBy === 'time-asc') {
-        filtered.sort((a, b) => (a.awardYear || 0) - (b.awardYear || 0))
+        filtered = filtered.sort((a, b) => (a.awardYear || 0) - (b.awardYear || 0))
       }
       
       return filtered

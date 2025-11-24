@@ -60,20 +60,3 @@ CREATE TABLE IF NOT EXISTS `academic_major` (
     FOREIGN KEY (`node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学术星图专业表';
 
--- 4. 学术星图节点关系表
-CREATE TABLE IF NOT EXISTS `academic_relation` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
-    `source_node_id` VARCHAR(100) NOT NULL COMMENT '源节点ID（关联academic_node.node_id）',
-    `target_node_id` VARCHAR(100) COMMENT '目标节点ID（关联academic_node.node_id，可为空）',
-    `target_name` VARCHAR(500) COMMENT '目标名称（如果target_node_id为空时使用）',
-    `relation_type` VARCHAR(100) NOT NULL COMMENT '关系类型',
-    `description` TEXT COMMENT '关系描述',
-    `sort_order` INT DEFAULT 0 COMMENT '排序顺序',
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    INDEX `idx_source_node_id` (`source_node_id`),
-    INDEX `idx_target_node_id` (`target_node_id`),
-    INDEX `idx_relation_type` (`relation_type`),
-    FOREIGN KEY (`source_node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`target_node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学术星图节点关系表';
-

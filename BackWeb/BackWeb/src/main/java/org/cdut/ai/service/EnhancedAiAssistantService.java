@@ -21,16 +21,16 @@ public class EnhancedAiAssistantService {
 
     private final BailianClient bailianClient;
     private final AliBailianProperties properties;
-    private final TextKnowledgeBaseService textKnowledgeBaseService;
+    private final DatabaseKnowledgeBaseService databaseKnowledgeBaseService;
     private final ChatContextService chatContextService;
 
     public EnhancedAiAssistantService(BailianClient bailianClient,
                                       AliBailianProperties properties,
-                                      TextKnowledgeBaseService textKnowledgeBaseService,
+                                      DatabaseKnowledgeBaseService databaseKnowledgeBaseService,
                                       ChatContextService chatContextService) {
         this.bailianClient = bailianClient;
         this.properties = properties;
-        this.textKnowledgeBaseService = textKnowledgeBaseService;
+        this.databaseKnowledgeBaseService = databaseKnowledgeBaseService;
         this.chatContextService = chatContextService;
     }
 
@@ -58,7 +58,7 @@ public class EnhancedAiAssistantService {
         List<ChatMessage> messages = new ArrayList<>();
         
         // 3.1 添加系统提示词（含知识库）
-        String knowledgeContext = textKnowledgeBaseService.buildKnowledgeContext(request.getQuestion(), 5);
+        String knowledgeContext = databaseKnowledgeBaseService.buildKnowledgeContext(request.getQuestion(), 5);
         String systemPrompt = buildSystemPrompt(knowledgeContext);
         messages.add(new ChatMessage("system", systemPrompt));
         

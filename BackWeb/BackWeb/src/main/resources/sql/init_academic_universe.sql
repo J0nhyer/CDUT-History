@@ -68,28 +68,10 @@ CREATE TABLE IF NOT EXISTS `academic_major` (
     FOREIGN KEY (`node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学术星图专业表';
 
--- 4. 学术星图节点关系表
-CREATE TABLE IF NOT EXISTS `academic_relation` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
-    `source_node_id` VARCHAR(100) NOT NULL COMMENT '源节点ID（关联academic_node.node_id）',
-    `target_node_id` VARCHAR(100) COMMENT '目标节点ID（关联academic_node.node_id，可为空）',
-    `target_name` VARCHAR(500) COMMENT '目标名称（如果target_node_id为空时使用）',
-    `relation_type` VARCHAR(100) NOT NULL COMMENT '关系类型',
-    `description` TEXT COMMENT '关系描述',
-    `sort_order` INT DEFAULT 0 COMMENT '排序顺序',
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    INDEX `idx_source_node_id` (`source_node_id`),
-    INDEX `idx_target_node_id` (`target_node_id`),
-    INDEX `idx_relation_type` (`relation_type`),
-    FOREIGN KEY (`source_node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE,
-    FOREIGN KEY (`target_node_id`) REFERENCES `academic_node`(`node_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学术星图节点关系表';
-
 -- ========== 第二步：清空旧数据（如果需要重新初始化） ==========
 
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE academic_major;
-TRUNCATE TABLE academic_relation;
 TRUNCATE TABLE academic_node;
 TRUNCATE TABLE academic_universe;
 SET FOREIGN_KEY_CHECKS = 1;
@@ -194,13 +176,6 @@ VALUES
   ('u23', 'u23-m2', '国际经济与贸易（中外合作）', '本科', NULL, NULL, 2),
   ('u23', 'u23-m3', '计算机科学与技术（中外合作）', '本科', NULL, NULL, 3);
 
--- 插入关系信息（能源学院示例）
-INSERT INTO academic_relation (source_node_id, target_node_id, target_name, relation_type, description, sort_order)
-VALUES
-  ('u03', NULL, '中国石油', '产学研合作', '', 0),
-  ('u03', NULL, '中国石化', '产学研合作', '', 1),
-  ('u03', 'u01', '油气藏地质及开发工程全国重点实验室（成都理工大学）', '科研协作', '', 2);
-
 -- ========== 第四步：验证数据 ==========
 
 SELECT '===== 初始化完成，数据验证 =====' AS status;
@@ -209,9 +184,7 @@ SELECT '大学信息:' AS table_name, COUNT(*) AS count FROM academic_universe
 UNION ALL
 SELECT '学院/实验室节点:', COUNT(*) FROM academic_node
 UNION ALL
-SELECT '专业信息:', COUNT(*) FROM academic_major
-UNION ALL
-SELECT '关系信息:', COUNT(*) FROM academic_relation;
+SELECT '专业信息:', COUNT(*) FROM academic_major;
 
 SELECT '===== 大学信息详情 =====' AS info;
 SELECT * FROM academic_universe WHERE university_id = 'cdut';

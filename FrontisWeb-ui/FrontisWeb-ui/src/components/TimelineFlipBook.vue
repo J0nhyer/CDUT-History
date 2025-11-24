@@ -31,12 +31,6 @@
               <p>{{ event.description }}</p>
             </div>
             
-            <!-- 重要性标识 -->
-            <div v-if="event.importance === 'high'" class="importance-badge">
-              <i class="fas fa-star"></i>
-              <span>重要事件</span>
-            </div>
-            
             <!-- 底部提示 - 已隐藏 -->
             <!-- <div class="flip-hint" v-if="index === currentPageIndex">
               <i class="fas fa-hand-pointer"></i>
@@ -687,21 +681,6 @@ export default {
 
 .event-description p {
   margin: 0;
-}
-
-/* 重要性标识 */
-.importance-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  width: fit-content;
-  margin-bottom: 16px;
 }
 
 /* 翻页提示 */

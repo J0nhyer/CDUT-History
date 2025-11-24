@@ -55,8 +55,11 @@
           <h3>开设专业</h3>
           <ul class="major-list">
             <li v-for="m in selectedNode.majors" :key="m.id || m.name">
-              <span class="major-name">{{ m.name }}</span>
-              <span class="major-level" v-if="m.level">（{{ m.level }}）</span>
+              <div class="major-header">
+                <span class="major-name">{{ m.name }}</span>
+                <span class="major-level" v-if="m.level">（{{ m.level }}）</span>
+              </div>
+              <div class="major-description" v-if="m.description">{{ m.description }}</div>
             </li>
           </ul>
         </div>
@@ -92,8 +95,7 @@
 
     <!-- 星空标题 -->
     <div class="universe-title">
-      <h1>学术星空</h1>
-      <p>成都理工大学学术传承与发展</p>
+      <h1>学科星河</h1>
     </div>
   </div>
 </template>
@@ -1278,9 +1280,34 @@ function toggleBackground () {
 }
 
 /* ------------------ 窗口/渲染 ------------------ */
+let mouseDownPos = { x: 0, y: 0 }
+let mouseUpPos = { x: 0, y: 0 }
+let mouseDownHandler = null
+let mouseUpHandler = null
+
 function setupEventListeners () {
   window.addEventListener('resize', onResize)
-  renderer.domElement.addEventListener('click', onClick)
+  
+  // 使用mousedown和mouseup来区分点击和拖拽
+  mouseDownHandler = (e) => {
+    mouseDownPos = { x: e.clientX, y: e.clientY }
+  }
+  
+  mouseUpHandler = (e) => {
+    mouseUpPos = { x: e.clientX, y: e.clientY }
+    const dx = mouseUpPos.x - mouseDownPos.x
+    const dy = mouseUpPos.y - mouseDownPos.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    // 只有移动距离小于5像素才算点击
+    if (distance < 5) {
+      onClick(e)
+    }
+  }
+  
+  renderer.domElement.addEventListener('mousedown', mouseDownHandler)
+  renderer.domElement.addEventListener('mouseup', mouseUpHandler)
+  
   // 监听全屏状态变化
   document.addEventListener('fullscreenchange', handleFullscreenChange)
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
@@ -1304,12 +1331,36 @@ function onClick (e) {
     -((e.clientY - rect.top) / rect.height) * 2 + 1
   )
   const ray = new THREE.Raycaster()
+  
+  // 增加点击检测的阈值，让小星球更容易被点击
+  ray.params.Points.threshold = 2
+  ray.params.Line.threshold = 2
+  
   ray.setFromCamera(mouse, camera)
-  const hit = ray.intersectObjects(nodes, false)
+  
+  // 递归检测所有nodes及其子对象
+  const hit = ray.intersectObjects(nodes, true)
+  
   if (hit.length) {
-    const o = hit[0].object
-    if (o.userData.meshType === 'person') {
-      selectNode(o.userData)
+    // 找到第一个有效的学院节点
+    for (let i = 0; i < hit.length; i++) {
+      const obj = hit[i].object
+      
+      // 检查对象本身或其父对象是否是学院节点
+      if (obj.userData && obj.userData.meshType === 'person') {
+        selectNode(obj.userData)
+        return
+      }
+      
+      // 检查父对象
+      let parent = obj.parent
+      while (parent) {
+        if (parent.userData && parent.userData.meshType === 'person') {
+          selectNode(parent.userData)
+          return
+        }
+        parent = parent.parent
+      }
     }
   }
 }
@@ -1415,6 +1466,17 @@ function animate () {
 function cleanup () {
   stopAutoPlay()
   window.removeEventListener('resize', onResize)
+  
+  // 移除鼠标事件监听器
+  if (renderer?.domElement) {
+    if (mouseDownHandler) {
+      renderer.domElement.removeEventListener('mousedown', mouseDownHandler)
+    }
+    if (mouseUpHandler) {
+      renderer.domElement.removeEventListener('mouseup', mouseUpHandler)
+    }
+  }
+  
   // 移除全屏状态监听器
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
   document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
@@ -1739,15 +1801,36 @@ function resumeScene () {
   margin: 0;
   padding-left: 18px;
   color: #000;
-  max-height: 220px;
+  max-height: 400px;
   overflow-y: auto;
 }
+.major-list li {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.major-list li:last-child {
+  border-bottom: none;
+}
+.major-header {
+  margin-bottom: 6px;
+}
 .major-name {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
 }
 .major-level {
   color: #666;
+  font-size: 12px;
+  margin-left: 4px;
+}
+.major-description {
+  color: #555;
   font-size: 13px;
+  line-height: 1.6;
+  margin-top: 6px;
+  padding-left: 0;
+  text-align: justify;
 }
 
 /* 顶部按钮 */

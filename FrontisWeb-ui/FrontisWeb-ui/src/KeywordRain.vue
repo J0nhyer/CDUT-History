@@ -208,8 +208,8 @@ export default {
       // console.log('添加关键词:', keyword.name, '剩余池:', this.availableKeywords.length);
 
       // 随机生成样式参数
-      const duration = 10 + Math.random() * 5; // 动画时长 10-15秒
-      const fontSize = 14 + Math.random() * 8; // 字体大小 14-22px
+      const duration = 6 + Math.random() * 12; // 动画时长 6-18秒
+      const fontSize = 14 + Math.random() * 21; // 字体大小 14-35px
       const opacity = 0.5 + Math.random() * 0.4; // 透明度 0.5-0.9
       
       const style = this.generateKeywordStyle(keyword, duration, fontSize, opacity);
@@ -240,13 +240,16 @@ export default {
       const xPosition = Math.random() * 90; // 水平位置 0-90%
       const drift = (Math.random() - 0.5) * 60; // 左右漂移 -30px到30px
 
-      // 根据类型设置不同颜色
-      const colorMap = {
-        person: '#ffffff',      // 人物 - 白色
-        event: '#ffd700',       // 事件 - 金色
-        institute: '#87ceeb',   // 学院 - 天蓝色
-        major: '#98fb98'        // 专业 - 淡绿色
+      // 根据类型设置不同颜色组，每次随机选择
+      const colorGroups = {
+        person: ['#ffffff', '#f0f8ff', '#fffacd', '#ffe4e1', '#e6e6fa', '#ffefd5'],      // 人物 - 白色系
+        event: ['#ffd700', '#ffb347', '#ffa500', '#ff8c00', '#ffdf00', '#ffc107'],       // 事件 - 金橙色系
+        institute: ['#87ceeb', '#87cefa', '#00bfff', '#5f9ea0', '#4682b4', '#6495ed'],   // 学院 - 蓝色系
+        major: ['#98fb98', '#90ee90', '#00fa9a', '#7fffd4', '#66cdaa', '#3cb371']        // 专业 - 绿色系
       };
+
+      const colors = colorGroups[keyword.type] || colorGroups.person;
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
       return {
         '--duration': `${duration}s`,
@@ -255,7 +258,7 @@ export default {
         fontSize: `${fontSize}px`,
         left: `${xPosition}%`,
         opacity: opacity,
-        color: colorMap[keyword.type] || '#ffffff',
+        color: randomColor,
         animationDuration: `${duration}s`,
         animationDelay: `${delay}s`
       };

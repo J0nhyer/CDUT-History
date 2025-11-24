@@ -294,18 +294,21 @@
     <div
       class="ai-assistant"
       ref="aiContainer"
-      :class="{ 'direction-down': aiPopupDirection === 'down' }"
-      :style="{
-        top: aiPopupPosition.top + 'px',
-        left: aiPopupPosition.left + 'px'
-      }"
     >
       <!-- 聊天窗口 -->
       <transition name="ai-popup-fade">
         <div v-if="aiWindowOpen" class="ai-popup" ref="aiPopup">
-          <div class="ai-popup-header" @pointerdown.stop.prevent="startAIDrag">
+          <div class="ai-popup-header">
             <div class="ai-header-info">
-              <video autoplay loop muted playsinline class="ai-header-avatar">
+              <video 
+                autoplay 
+                loop 
+                muted 
+                playsinline 
+                disablepictureinpicture
+                controlslist="nodownload nofullscreen noremoteplayback"
+                class="ai-header-avatar"
+              >
                 <source src="@/assets/ai/sit.webm" type="video/webm">
               </video>
               <div class="ai-header-text">
@@ -327,7 +330,15 @@
                 :class="msg.role === 'user' ? 'is-user' : 'is-assistant'"
               >
                 <div class="ai-message-avatar" v-if="msg.role === 'assistant'">
-                  <video autoplay loop muted playsinline class="ai-message-video">
+                  <video 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    disablepictureinpicture
+                    controlslist="nodownload nofullscreen noremoteplayback"
+                    class="ai-message-video"
+                  >
                     <source src="@/assets/ai/sit.webm" type="video/webm">
                   </video>
                 </div>
@@ -377,18 +388,20 @@
       <!-- 浮动按钮 -->
       <button
         class="ai-fab"
-        @pointerdown.stop.prevent="startAIDrag"
         @click="handleFabClick"
       >
-        <div class="ai-fab-avatar-wrap">
-          <video autoplay loop muted playsinline class="ai-fab-avatar">
-            <source src="@/assets/ai/sit.webm" type="video/webm">
-          </video>
-        </div>
-        <div class="ai-fab-text">
-          <span class="ai-fab-title">AI 助手</span>
-          <span class="ai-fab-subtitle">问问成理校史</span>
-        </div>
+        <video 
+          :key="aiVideoSrc"
+          autoplay 
+          loop 
+          muted 
+          playsinline 
+          disablepictureinpicture
+          controlslist="nodownload nofullscreen noremoteplayback"
+          class="ai-fab-avatar"
+        >
+          <source :src="aiVideoSrc" type="video/webm">
+        </video>
       </button>
     </div>
   </div>
@@ -412,6 +425,9 @@ import openingCeremonyImageSrc from '@/assets/events/1956年首届开学典礼.j
 import foundingImageSrc from '@/assets/events/1956_01_成都地质勘探学院成立.png'
 import lab1990ImageSrc from '@/assets/events/1990年油气藏重点实验室获批建设.jpg'
 import rename1993ImageSrc from '@/assets/events/1993年学校更名庆祝大会.jpg'
+import aiSitVideoSrc from '@/assets/ai/sit.webm'
+import aiStandVideoSrc from '@/assets/ai/stand.webm'
+import aiBgImage from '@/assets/ai/bg.png'
 
 const resolveApiBase = () => {
   const raw = (import.meta.env.VITE_API_BASE_URL || '').trim()
@@ -479,23 +495,8 @@ export default {
       aiWindowOpen: false,
       aiInput: '',
       aiLoading: false,
-      aiMessages: [
-        {
-          role: 'assistant',
-          content:
-            '你好！我是成理 · AI 学术助手，可以帮助你了解成都理工大学的校史与人物故事。',
-          time: ''
-        }
-      ],
-      aiPopupPosition: {
-        top: 100,
-        left: 100
-      },
-      aiPopupDirection: 'up',
-      aiDragging: false,
-      aiDragStartX: 0,
-      aiDragStartY: 0,
-      aiDragMoved: false,
+      aiVideoSrc: aiSitVideoSrc,
+      aiMessages: [],
       aiAbortController: null,
       aiStreamingIndex: null,
 
@@ -752,95 +753,22 @@ export default {
       this.aiWindowOpen = !this.aiWindowOpen
       if (this.aiWindowOpen) {
         this.$nextTick(() => {
-          this.adjustAIPopupPosition()
           this.scrollAIMessagesToBottom()
         })
       }
     },
-    adjustAIPopupPosition() {
-      if (!this.aiWindowOpen) return
-      
-      const vw = window.innerWidth
-      const vh = window.innerHeight
-      const popupWidth = 400
-      const popupHeight = 350
-      const fabHeight = 74
-      const gap = 12
-      const margin = 20
-      
-      let containerTop = this.aiPopupPosition.top
-      let containerLeft = this.aiPopupPosition.left
-      
-      // 先根据当前方向计算按钮的实际位置
-      let fabTop
-      if (this.aiPopupDirection === 'up') {
-        // 向上展开：容器顶部是弹窗顶部，按钮在下方
-        fabTop = containerTop + popupHeight + gap
-      } else {
-        // 向下展开：容器顶部是按钮顶部
-        fabTop = containerTop
-      }
-      
-      const fabBottom = fabTop + fabHeight
-      const spaceAbove = fabTop - margin
-      const spaceBelow = vh - fabBottom - margin
-      
-      // 判断最佳展开方向
-      let bestDirection
-      if (spaceAbove >= popupHeight + gap) {
-        bestDirection = 'up'
-      } else if (spaceBelow >= popupHeight + gap) {
-        bestDirection = 'down'
-      } else {
-        bestDirection = spaceAbove > spaceBelow ? 'up' : 'down'
-      }
-      
-      // 根据最佳方向重新计算容器位置
-      const totalHeight = popupHeight + gap + fabHeight
-      
-      if (bestDirection === 'up') {
-        // 向上展开：容器top = 弹窗top，确保整体不超出屏幕
-        let newTop = fabTop - popupHeight - gap
-        if (newTop < margin) {
-          newTop = margin
-        }
-        if (newTop + totalHeight > vh - margin) {
-          newTop = vh - totalHeight - margin
-        }
-        containerTop = newTop
-      } else {
-        // 向下展开：容器top = 按钮top，确保整体不超出屏幕
-        let newTop = fabTop
-        if (newTop < margin) {
-          newTop = margin
-        }
-        if (newTop + totalHeight > vh - margin) {
-          newTop = vh - totalHeight - margin
-        }
-        containerTop = newTop
-      }
-      
-      // 确保不超出左右边界
-      if (containerLeft + popupWidth > vw - margin) {
-        containerLeft = vw - popupWidth - margin
-      }
-      if (containerLeft < margin) {
-        containerLeft = margin
-      }
-      
-      this.aiPopupDirection = bestDirection
-      this.aiPopupPosition.left = containerLeft
-      this.aiPopupPosition.top = containerTop
-    },
     handleFabClick() {
-      if (this.aiDragMoved) {
-        this.aiDragMoved = false
-        return
+      // 切换视频
+      if (this.aiWindowOpen) {
+        this.aiVideoSrc = aiSitVideoSrc
+      } else {
+        this.aiVideoSrc = aiStandVideoSrc
       }
       this.toggleAIWindow()
     },
     onCloseAIWindow() {
       this.aiWindowOpen = false
+      this.aiVideoSrc = aiSitVideoSrc
       this.cancelAIStream()
     },
     handleAISend() {
@@ -883,10 +811,12 @@ export default {
           role: msg.role,
           content: msg.content
         })),
-        useKnowledgeBase: true
+        useKnowledgeBase: true,
+        sessionId: null,  // 可以后续实现会话管理
+        userId: null      // 可以后续实现用户识别
       }
 
-      const url = `${this.apiBase}/api/ai/chat`
+      const url = `${this.apiBase}/api/ai/chat-with-context`
       const controller = new AbortController()
       this.aiAbortController = controller
 
@@ -960,65 +890,7 @@ export default {
 
     // 窗口大小变化处理
     handleWindowResize() {
-      if (this.aiWindowOpen) {
-        this.adjustAIPopupPosition()
-      }
-    },
-
-    // AI 拖拽
-    startAIDrag(e) {
-      const container = this.$refs.aiContainer
-      if (!container) return
-
-      this.aiDragging = true
-      this.aiDragMoved = false
-
-      const rect = container.getBoundingClientRect()
-      this.aiDragStartX = e.clientX - rect.left
-      this.aiDragStartY = e.clientY - rect.top
-
-      window.addEventListener('pointermove', this.onAIDrag)
-      window.addEventListener('pointerup', this.endAIDrag)
-    },
-    onAIDrag(e) {
-      if (!this.aiDragging) return
-
-      const container = this.$refs.aiContainer
-      if (!container) return
-
-      const vw = window.innerWidth
-      const vh = window.innerHeight
-      const padding = 8
-      const width = container.offsetWidth
-      const height = container.offsetHeight
-
-      let newLeft = e.clientX - this.aiDragStartX
-      let newTop = e.clientY - this.aiDragStartY
-
-      const dx = e.movementX || 0
-      const dy = e.movementY || 0
-      if (Math.abs(dx) + Math.abs(dy) > 2) {
-        this.aiDragMoved = true
-      }
-
-      newLeft = Math.max(padding, Math.min(vw - width - padding, newLeft))
-      newTop = Math.max(padding, Math.min(vh - height - padding, newTop))
-
-      this.aiPopupPosition.left = newLeft
-      this.aiPopupPosition.top = newTop
-    },
-    endAIDrag() {
-      if (!this.aiDragging) return
-      this.aiDragging = false
-      window.removeEventListener('pointermove', this.onAIDrag)
-      window.removeEventListener('pointerup', this.endAIDrag)
-      
-      // 拖拽结束后，如果弹窗是展开状态，重新计算展开方向
-      if (this.aiWindowOpen) {
-        this.$nextTick(() => {
-          this.adjustAIPopupPosition()
-        })
-      }
+      // 窗口大小变化处理，固定位置无需调整
     },
 
     // 人物数据（逻辑保留）
@@ -1170,26 +1042,6 @@ export default {
         }
       })
 
-      if (typeof window !== 'undefined') {
-        const vw = window.innerWidth
-        const vh = window.innerHeight
-        const popupWidth = 400
-        const popupHeight = 350
-        const fabHeight = 74
-        const gap = 12
-        const margin = 20
-
-        // 默认放在右下角，方向为up（弹窗在按钮上方）
-        const totalHeight = popupHeight + gap + fabHeight
-        this.aiPopupPosition.left = Math.max(margin, vw - popupWidth - margin)
-        this.aiPopupPosition.top = Math.max(margin, vh - totalHeight - margin)
-        this.aiPopupDirection = 'up'
-      }
-
-      if (this.aiMessages.length > 0 && !this.aiMessages[0].time) {
-        this.aiMessages[0].time = this.formatTime()
-      }
-
       ;(async () => {
         try {
           const profiles = await getAllPersonProfiles()
@@ -1211,7 +1063,6 @@ export default {
       this.stopBackgroundSlider()
       document.removeEventListener('click', this.handleClickOutside)
       window.removeEventListener('resize', this.handleWindowResize)
-      this.endAIDrag()
       this.cancelAIStream()
     } catch (error) {
       console.error('MainPage beforeUnmount error:', error)
@@ -2394,75 +2245,34 @@ a.split-section {
 /* AI 助手样式（包含弹窗，整合自第一份代码） */
 .ai-assistant {
   position: fixed;
+  bottom: 20px;
+  right: 20px;
   z-index: 1200;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-end;
-  gap: 12px;
-}
-
-/* 向下展开时调整顺序 */
-.ai-assistant.direction-down {
-  flex-direction: column-reverse;
+  gap: 16px;
 }
 
 /* 浮动按钮 */
 .ai-fab {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-radius: 999px;
+  width: 120px;
+  height: 120px;
+  padding: 0;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  background: radial-gradient(circle at 0% 0%, rgba(140, 170, 255, 0.98), rgba(75, 110, 220, 0.98));
-  color: #fff;
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(240, 244, 255, 0.7);
-  backdrop-filter: blur(16px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-}
-
-.ai-fab:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 22px 55px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.9);
-}
-
-.ai-fab-avatar-wrap {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
+  background: transparent;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: none;
 }
 
 .ai-fab-avatar {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-}
-
-.ai-fab-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.ai-fab-title {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.ai-fab-subtitle {
-  font-size: 11px;
-  opacity: 0.9;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
 }
 
 /* 聊天窗口 */
@@ -2470,7 +2280,10 @@ a.split-section {
   width: 400px;
   height: 350px;
   max-height: 600px;
-  background: rgba(11, 22, 43, 0.96);
+  background-image: url('@/assets/ai/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 18px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(20px);
@@ -2486,7 +2299,7 @@ a.split-section {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.22), rgba(118, 75, 162, 0.18));
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.88), rgba(200, 168, 130, 0.78));
   cursor: move;
 }
 
@@ -2555,6 +2368,25 @@ a.split-section {
   gap: 8px;
 }
 
+/* 聊天框滚动条样式 */
+.ai-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-messages::-webkit-scrollbar-track {
+  background: rgba(80, 60, 45, 0.3);
+  border-radius: 3px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.7), rgba(200, 168, 130, 0.6));
+  border-radius: 3px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.9), rgba(200, 168, 130, 0.8));
+}
+
 .ai-message-row {
   display: flex;
   align-items: flex-end;
@@ -2604,14 +2436,14 @@ a.split-section {
 }
 
 .ai-message-row.is-assistant .ai-message-bubble {
-  background: radial-gradient(circle at 0% 0%, rgba(102, 126, 234, 0.6), rgba(75, 108, 183, 0.65));
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.95), rgba(200, 168, 130, 0.9));
   color: #fff;
   border-bottom-left-radius: 4px;
 }
 
 .ai-message-row.is-user .ai-message-bubble {
-  background: rgba(255, 255, 255, 0.92);
-  color: #111827;
+  background: rgba(245, 237, 228, 0.95);
+  color: #3C2D23;
   border-bottom-right-radius: 4px;
 }
 
@@ -2671,7 +2503,7 @@ a.split-section {
 .ai-popup-footer {
   padding: 8px 10px 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: radial-gradient(circle at 0% 0%, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.94));
+  background: linear-gradient(135deg, rgba(100, 75, 50, 0.98), rgba(80, 60, 45, 0.95));
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2681,23 +2513,23 @@ a.split-section {
   width: 100%;
   resize: none;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(200, 168, 130, 0.6);
+  background: rgba(80, 60, 45, 0.85);
   padding: 6px 8px;
-  color: #e5e7eb;
+  color: #f5ede4;
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .ai-input::placeholder {
-  color: rgba(148, 163, 184, 0.85);
+  color: rgba(200, 168, 130, 0.65);
 }
 
 .ai-input:focus {
-  border-color: rgba(129, 140, 248, 0.9);
-  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.8);
-  background: rgba(15, 23, 42, 0.98);
+  border-color: rgba(166, 116, 71, 0.9);
+  box-shadow: 0 0 0 1px rgba(166, 116, 71, 0.7);
+  background: rgba(80, 60, 45, 0.95);
 }
 
 .ai-footer-actions {
@@ -2709,7 +2541,7 @@ a.split-section {
 
 .ai-hint {
   font-size: 10px;
-  color: rgba(148, 163, 184, 0.92);
+  color: rgba(200, 168, 130, 0.85);
 }
 
 .ai-send-btn {
@@ -2719,12 +2551,12 @@ a.split-section {
   padding: 6px 10px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #A67447, #C8A882);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(55, 65, 81, 0.8);
+  box-shadow: 0 8px 24px rgba(100, 70, 45, 0.6);
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
@@ -2740,7 +2572,7 @@ a.split-section {
 
 .ai-send-btn:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(55, 65, 81, 0.9);
+  box-shadow: 0 10px 30px rgba(100, 70, 45, 0.8);
 }
 
 .ai-popup-fade-enter-active,

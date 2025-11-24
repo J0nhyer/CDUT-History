@@ -2,8 +2,12 @@ package org.cdut.ai.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.cdut.ai.mapper.*;
-import org.cdut.ai.model.*;
+import org.cdut.ai.mapper.AcademicUniverseMapper;
+import org.cdut.ai.mapper.AcademicNodeMapper;
+import org.cdut.ai.mapper.AcademicMajorMapper;
+import org.cdut.ai.model.AcademicUniverse;
+import org.cdut.ai.model.AcademicNode;
+import org.cdut.ai.model.AcademicMajor;
 import org.cdut.ai.service.AcademicUniverseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +28,6 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
     
     @Autowired
     private AcademicMajorMapper majorMapper;
-    
-    @Autowired
-    private AcademicRelationMapper relationMapper;
 
     @Override
     public Map<String, Object> getUniverseData() {
@@ -170,15 +171,6 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
                 }
             }
             
-            // 4. 保存关系
-            if (node.getRelations() != null) {
-                for (int i = 0; i < node.getRelations().size(); i++) {
-                    AcademicRelation relation = node.getRelations().get(i);
-                    relation.setSourceNodeId(node.getNodeId());
-                    relation.setSortOrder(i);
-                    relationMapper.insert(relation);
-                }
-            }
             
             return true;
         } catch (Exception e) {
@@ -207,7 +199,7 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
     }
     
     /**
-     * 填充节点的关联数据（专业和关系）
+     * 填充节点的关联数据（专业）
      */
     private void fillNodeDetails(AcademicNode node) {
         String nodeId = node.getNodeId();
@@ -215,10 +207,6 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
         // 查询专业
         List<AcademicMajor> majors = majorMapper.findByNodeId(nodeId);
         node.setMajors(majors);
-        
-        // 查询关系
-        List<AcademicRelation> relations = relationMapper.findBySourceNodeId(nodeId);
-        node.setRelations(relations);
     }
     
     /**
@@ -227,9 +215,6 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
     private void deleteNodeRelatedData(String nodeId) {
         majorMapper.delete(new LambdaQueryWrapper<AcademicMajor>()
             .eq(AcademicMajor::getNodeId, nodeId));
-        
-        relationMapper.delete(new LambdaQueryWrapper<AcademicRelation>()
-            .eq(AcademicRelation::getSourceNodeId, nodeId));
     }
     
     /**
@@ -281,27 +266,14 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
                         // 如果没有设置颜色，使用节点颜色
                         majorMap.put("color", parseColorToInt(node.getColor() != null ? node.getColor() : "0xffaa00"));
                     }
+                    // 添加专业描述字段
+                    if (major.getDescription() != null && !major.getDescription().isEmpty()) {
+                        majorMap.put("description", major.getDescription());
+                    }
                     return majorMap;
                 })
                 .collect(Collectors.toList());
             nodeMap.put("majors", majorsList);
-        }
-        
-        // relations数组
-        if (node.getRelations() != null && !node.getRelations().isEmpty()) {
-            List<Map<String, Object>> relationsList = node.getRelations().stream()
-                .map(relation -> {
-                    Map<String, Object> relationMap = new HashMap<>();
-                    relationMap.put("type", relation.getRelationType());
-                    relationMap.put("target", relation.getTargetName() != null ? 
-                        relation.getTargetName() : relation.getTargetNodeId());
-                    if (relation.getDescription() != null) {
-                        relationMap.put("description", relation.getDescription());
-                    }
-                    return relationMap;
-                })
-                .collect(Collectors.toList());
-            nodeMap.put("relations", relationsList);
         }
         
         return nodeMap;
@@ -373,21 +345,6 @@ public class AcademicUniverseServiceImpl extends ServiceImpl<AcademicUniverseMap
                 majors.add(major);
             }
             node.setMajors(majors);
-        }
-        
-        // relations数组
-        List<Map<String, Object>> relationsList = (List<Map<String, Object>>) map.get("relations");
-        if (relationsList != null) {
-            List<AcademicRelation> relations = new ArrayList<>();
-            for (Map<String, Object> relationMap : relationsList) {
-                AcademicRelation relation = new AcademicRelation();
-                relation.setRelationType((String) relationMap.get("type"));
-                String target = (String) relationMap.get("target");
-                relation.setTargetName(target);
-                relation.setDescription((String) relationMap.getOrDefault("description", ""));
-                relations.add(relation);
-            }
-            node.setRelations(relations);
         }
         
         return node;
