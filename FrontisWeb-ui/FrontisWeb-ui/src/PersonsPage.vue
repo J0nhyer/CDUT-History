@@ -466,34 +466,10 @@ export default {
         return searchMatch && subjectMatch && eraMatch && achievementMatch;
       });
       
-      // 按照指定顺序排序：许强校长 -> 五大学科奠基人 -> 八大教授 -> 其他人物
-      const personOrder = [
-        // 许强校长
-        'xuqiang',
-        // 五大学科奠基人
-        'zhangzhuoyuan', 'luozhetan', 'liubaojun', 'jinjingfu', 'zengyunfu',
-        // 八大教授
-        'zhangyanseng', 'liuzuyi', 'zhouxiaohe', 'lizhichang', 
-        'wuyansheng', 'litangmi', 'changlongqing', 'lichengsan'
-      ];
-      
-      // 创建优先级映射
-      const priorityMap = new Map();
-      personOrder.forEach((id, index) => {
-        priorityMap.set(id, index);
-      });
-      
-      // 排序：优先级人物在前，其他人物保持原顺序在后
-      return filtered.sort((a, b) => {
-        const aPriority = priorityMap.has(a.id) ? priorityMap.get(a.id) : 9999;
-        const bPriority = priorityMap.has(b.id) ? priorityMap.get(b.id) : 9999;
-        
-        // 如果都有优先级或都没有优先级，保持原顺序
-        if (aPriority === bPriority) return 0;
-        
-        // 否则按照优先级排序
-        return aPriority - bPriority;
-      });
+      // ⭐ 直接返回筛选结果，保持后端传来的顺序（由display_order控制）
+      // 后端已经按 display_order ASC, name ASC 排序
+      // 不再需要前端硬编码排序逻辑
+      return filtered;
     },
     
     // 分页后的数据
@@ -518,34 +494,16 @@ export default {
         this.allPersonsData = await getAllPersonProfiles()
         console.log('[PersonsPage] 原始数据:', this.allPersonsData)
         
-        // 转换数据格式并选择前9个重要人物作为轮播
+        // 转换数据格式并选择前面重要人物作为轮播
         const allPersonsList = Object.values(this.allPersonsData).map(personData => 
           this.mapPersonToDisplayFormat(personData)
         )
         
         console.log('[PersonsPage] 转换后的数据列表:', allPersonsList)
         
-        // 按照特定顺序排列轮播人物：许强校长在中间，然后是五大学科奠基人，然后是八大教授
-        const personOrder = [
-          // 许强校长
-          'xuqiang',
-          // 五大学科奠基人
-          'zhangzhuoyuan', 'luozhetan', 'liubaojun', 'jinjingfu', 'zengyunfu',
-          // 八大教授
-          'zhangyanseng', 'liuzuyi', 'zhouxiaohe', 'lizhichang', 
-          'wuyansheng', 'litangmi', 'changlongqing', 'lichengsan'
-        ]
-        
-        // 创建ID到人物的映射
-        const personMap = new Map()
-        allPersonsList.forEach(person => {
-          personMap.set(person.id, person)
-        })
-        
-        // 按照指定顺序排列人物
-        this.persons = personOrder
-          .map(id => personMap.get(id))
-          .filter(person => person !== undefined) // 过滤掉不存在的人物
+        // ⭐ 名人堂轮播只显示前15个重要人物（display_order最小的）
+        // 后端已按 display_order ASC 排序，直接取前15个
+        this.persons = allPersonsList.slice(0, 15)
         
         // 如果persons为空，使用默认图片
         this.persons.forEach(person => {

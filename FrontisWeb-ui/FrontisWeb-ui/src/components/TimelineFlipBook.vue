@@ -37,11 +37,11 @@
               <span>重要事件</span>
             </div>
             
-            <!-- 底部提示 -->
-            <div class="flip-hint" v-if="index === currentPageIndex">
+            <!-- 底部提示 - 已隐藏 -->
+            <!-- <div class="flip-hint" v-if="index === currentPageIndex">
               <i class="fas fa-hand-pointer"></i>
               <span>👆向上翻页 👇向下返回</span>
-            </div>
+            </div> -->
           </div>
           
           <!-- 背景装饰 -->
@@ -78,11 +78,11 @@
               </div>
             </div>
             
-            <!-- 继续提示 -->
-            <div class="continue-hint">
+            <!-- 继续提示 - 已隐藏 -->
+            <!-- <div class="continue-hint">
               <i class="fas fa-arrow-up"></i>
               <span>继续向上翻阅下一页</span>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -118,12 +118,13 @@
     <div class="hint-panel">
       <div class="hint-item">
         <i class="fas fa-hand-pointer"></i>
-        <span>拖动翻页（支持双向）</span>
+        <span>拖动翻页</span>
       </div>
-      <div class="hint-item">
+      <!-- 键盘翻页功能已移除，不再显示键盘提示 -->
+      <!-- <div class="hint-item">
         <i class="fas fa-keyboard"></i>
         <span>↑/↓键翻页（循环）</span>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -234,7 +235,7 @@ export default {
       
       // 当前及后续页面
       const zIndex = 30 - offset
-      const translateY = offset * 8
+      const translateY = offset * 4  // 减少Y偏移，从8px改为4px，减少层级间隙
       const scale = 1 - offset * 0.006
       
       return {
@@ -376,9 +377,12 @@ export default {
         page.style.transform = `translateY(0px) scale(1) rotateX(${angle}deg)`
       } else {
         // 当前及后续页面的堆叠效果
-        const translateY = offset * 8
+        const translateY = offset * 4  // 与getPageStyle保持一致，从8改为4
         const scale = 1 - offset * 0.006
-        page.style.transform = `translateY(${translateY}px) scale(${scale}) rotateX(${angle}deg)`
+        
+        // 在旋转时添加轻微的translateZ，让页面远离视角，减少突起
+        const translateZ = Math.abs(angle) > 0 ? -Math.abs(Math.sin(angle * Math.PI / 180)) * 30 : 0
+        page.style.transform = `translateY(${translateY}px) translateZ(${translateZ}px) scale(${scale}) rotateX(${angle}deg)`
       }
       
       const shadow = page.querySelector('.page-shadow')
@@ -396,22 +400,23 @@ export default {
       const index = parseInt(page.dataset.index)
       const offset = index - this.currentPageIndex
       
-      if (offset === -1) {
-        // 重置上一页回到0度（360度翻完后）
-        this.applyAngle(page, 0)
-      } else {
-        // 重置当前页回到0度
-        this.applyAngle(page, 0)
-      }
+      // 重置回到0度，使用平滑动画
+      this.applyAngle(page, 0)
       
       // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
         requestAnimationFrame(() => {
-          page.style.transition = 'none'
+          // 清除inline样式，让Vue的getPageStyle接管
+          page.style.transition = ''
           page.style.transform = ''
           page.style.zIndex = ''
+          
+          // 清除阴影
           const shadow = page.querySelector('.page-shadow')
           if (shadow) shadow.style.opacity = 0
+          
+          // 强制Vue重新应用正确的样式
+          this.$forceUpdate()
         })
       }, 420)
     },
@@ -419,7 +424,11 @@ export default {
     finishFlipForward(page) {
       page.classList.remove('dragging')
       page.style.transition = 'transform 420ms cubic-bezier(.2,.9,.3,1), opacity 300ms'
-      this.applyAngle(page, 360)  // 改为360度，完整翻转一圈
+      
+      // 使用requestAnimationFrame确保transition先生效，再设置transform，触发动画
+      requestAnimationFrame(() => {
+        this.applyAngle(page, 360)  // 改为360度，完整翻转一圈
+      })
       
       // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
@@ -434,13 +443,17 @@ export default {
           
           // 在下一帧清除样式，避免卡顿
           requestAnimationFrame(() => {
-            page.style.transition = 'none'
+            // 清除inline样式，让Vue的getPageStyle接管
+            page.style.transition = ''
             page.style.transform = ''
             page.style.zIndex = ''
             
             // 清除阴影
             const shadow = page.querySelector('.page-shadow')
             if (shadow) shadow.style.opacity = 0
+            
+            // 强制Vue重新应用正确的样式
+            this.$forceUpdate()
           })
         })
       }, 420)
@@ -449,7 +462,11 @@ export default {
     finishFlipBackward(page) {
       page.classList.remove('dragging')
       page.style.transition = 'transform 420ms cubic-bezier(.2,.9,.3,1), opacity 300ms'
-      this.applyAngle(page, -360)  // 向后翻转也是360度（负方向）
+      
+      // 使用requestAnimationFrame确保transition先生效，再设置transform，触发动画
+      requestAnimationFrame(() => {
+        this.applyAngle(page, -360)  // 向后翻转也是360度（负方向）
+      })
       
       // 使用requestAnimationFrame避免卡顿
       setTimeout(() => {
@@ -464,13 +481,17 @@ export default {
           
           // 在下一帧清除样式，避免卡顿
           requestAnimationFrame(() => {
-            page.style.transition = 'none'
+            // 清除inline样式，让Vue的getPageStyle接管
+            page.style.transition = ''
             page.style.transform = ''
             page.style.zIndex = ''
             
             // 清除阴影
             const shadow = page.querySelector('.page-shadow')
             if (shadow) shadow.style.opacity = 0
+            
+            // 强制Vue重新应用正确的样式
+            this.$forceUpdate()
           })
         })
       }, 420)
@@ -480,31 +501,31 @@ export default {
       window.addEventListener('pointermove', this.onPointerMove, { passive: false })
       window.addEventListener('pointerup', this.onPointerUp)
       window.addEventListener('pointercancel', this.onPointerUp)
-      document.addEventListener('keydown', this.onKeyDown)
+      // document.addEventListener('keydown', this.onKeyDown)  // 已禁用键盘交互
     },
     
     detachEvents() {
       window.removeEventListener('pointermove', this.onPointerMove)
       window.removeEventListener('pointerup', this.onPointerUp)
       window.removeEventListener('pointercancel', this.onPointerUp)
-      document.removeEventListener('keydown', this.onKeyDown)
+      // document.removeEventListener('keydown', this.onKeyDown)  // 已禁用键盘交互
     },
     
-    onKeyDown(e) {
-      if (e.key === 'ArrowUp' && this.canGoForward) {
-        // 向前翻页
-        const currentPage = this.$refs.bookWrap.querySelector(`.page-${this.currentPageIndex}`)
-        if (currentPage) {
-          this.finishFlipForward(currentPage)
-        }
-      } else if (e.key === 'ArrowDown' && this.canGoBack) {
-        // 向后翻页
-        const prevPage = this.$refs.bookWrap.querySelector(`.page-${this.currentPageIndex - 1}`)
-        if (prevPage) {
-          this.finishFlipBackward(prevPage)
-        }
-      }
-    },
+    // onKeyDown(e) {
+    //   if (e.key === 'ArrowUp' && this.canGoForward) {
+    //     // 向前翻页
+    //     const currentPage = this.$refs.bookWrap.querySelector(`.page-${this.currentPageIndex}`)
+    //     if (currentPage) {
+    //       this.finishFlipForward(currentPage)
+    //     }
+    //   } else if (e.key === 'ArrowDown' && this.canGoBack) {
+    //     // 向后翻页
+    //     const prevPage = this.$refs.bookWrap.querySelector(`.page-${this.currentPageIndex - 1}`)
+    //     if (prevPage) {
+    //       this.finishFlipBackward(prevPage)
+    //     }
+    //   }
+    // },
     
     resetBook() {
       this.currentPageIndex = 0
@@ -523,21 +544,22 @@ export default {
 /* 容器样式 */
 .timeline-flip-book {
   width: 100%;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #0f1724 0%, #071022 100%);
+  min-height: 100vh; /* 保持100vh，让页面居中显示 */
+  background: #000000; /* 纯黑色背景 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 30px 20px; /* 从40px改为30px，适度减少间距 */
   position: relative;
 }
 
 /* 翻页容器 */
 .book-wrap {
   width: min(720px, 90vw);
-  height: min(600px, 70vh);
-  perspective: 1600px;
+  height: min(480px, 55vh); /* 调小高度：600px→480px，70vh→55vh */
+  perspective: 2000px; /* 增大透视距离，减少变形 */
+  perspective-origin: 50% 80%; /* 调整视角到更低的位置，减少突起 */
   position: relative;
 }
 
@@ -549,7 +571,7 @@ export default {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transform-origin: top center;
+  transform-origin: 50% 0%; /* 精确定位到顶部边缘中心，减少突起 */
   transition: none; /* 移除默认transition，避免翻页后的额外动画 */
   cursor: grab;
   user-select: none;
@@ -580,7 +602,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 30px; /* 从40px调小到30px，更紧凑 */
   box-sizing: border-box;
   border-radius: 16px;
   overflow: hidden;
@@ -610,28 +632,28 @@ export default {
 
 /* 时间标签 */
 .timeline-year {
-  font-size: 72px;
+  font-size: 56px; /* 从72px调小到56px */
   font-weight: 900;
   color: transparent;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* 从20px调小到16px */
   letter-spacing: -2px;
   line-height: 1;
 }
 
 .back-year {
-  font-size: 48px;
-  margin-bottom: 30px;
+  font-size: 38px; /* 从48px调小到38px */
+  margin-bottom: 24px; /* 从30px调小到24px */
 }
 
 /* 事件标题 */
 .event-title {
-  font-size: 36px;
+  font-size: 28px; /* 从36px调小到28px */
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0; /* 从20px调小到16px */
   line-height: 1.3;
 }
 
@@ -640,13 +662,13 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 6px 14px; /* 从8px 16px调小到6px 14px */
   background: rgba(102, 126, 234, 0.1);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px; /* 从14px调小到13px */
   font-weight: 600;
   color: #667eea;
-  margin-bottom: 24px;
+  margin-bottom: 18px; /* 从24px调小到18px */
   width: fit-content;
 }
 
@@ -657,10 +679,10 @@ export default {
 /* 描述内容 */
 .event-description {
   flex: 1;
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 16px; /* 从18px调小到16px */
+  line-height: 1.7; /* 从1.8调小到1.7 */
   color: #444;
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* 从20px调小到16px */
 }
 
 .event-description p {
@@ -908,7 +930,7 @@ export default {
 /* 操作提示 */
 .hint-panel {
   position: absolute;
-  bottom: 30px;
+  bottom: 80px; /* 从30px改为80px，往上移动50px */
   left: 50%;
   transform: translateX(-50%);
   display: flex;

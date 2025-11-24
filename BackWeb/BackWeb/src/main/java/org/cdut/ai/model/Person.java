@@ -38,6 +38,9 @@ public class Person {
     @TableField("is_visible")
     private Boolean isVisible; // 是否显示人物信息：true-显示，false-不显示
     
+    @TableField("display_order")
+    private Integer displayOrder; // 显示顺序（数字越小优先级越高）
+    
     @TableField("data_status")
     private String dataStatus; // 数据状态：completed/pending/draft
     

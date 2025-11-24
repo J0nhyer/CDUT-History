@@ -81,28 +81,28 @@
               class="nav-link"
               :class="{ active: $route.path.startsWith('/persons') }"
             >
-              成理人物
+              杏坛群英
             </router-link>
             <router-link
               to="/digital-history"
               class="nav-link"
               :class="{ active: $route.path.startsWith('/digital-history') }"
             >
-              成理历史
+              流金岁月
             </router-link>
             <router-link
               to="/universe"
               class="nav-link"
               :class="{ active: $route.path.startsWith('/universe') }"
             >
-              学术星图
+              学科星河
             </router-link>
             <router-link
               to="/keyword-rain"
               class="nav-link"
               :class="{ active: $route.path.startsWith('/keyword-rain') }"
             >
-              倾听雨声
+              词林雨露
             </router-link>
             <router-link
               to="/draw-reveal"
@@ -200,53 +200,60 @@
             </div>
           </section>
 
-          <!-- 第 2 页：1956 首届开学典礼 -->
+          <!-- 第 2 页：人物卡片 -->
           <section class="page-section second-section">
-            <div class="second-inner">
-              <div class="second-text-block">
-                <div class="second-label-row">
-                  <div class="second-label-line"></div>
-                  <div class="second-label-text">
-                    <div class="second-label-top">1956 · 首届开学典礼</div>
-                    <div class="second-label-sub">成理办学的起点</div>
-                  </div>
-                </div>
-                <p class="second-description">
-                  1956 年，成都地质勘探学院在这里迎来了首届开学典礼。一代又一代成理学子由此走进校园、走向矿野与前线，在地质找矿、防灾减灾、能源资源等领域接续奋斗。
-                  这一刻，不只是办学历史的起点，也是“穷究于理，成就于工”精神在西南大地生根发芽的原点。
-                </p>
-              </div>
+            <div class="grid-container">
+              <router-link to="/person/xuqiang" class="grid-box person-card box-1">
+                <h3>许强</h3>
+                <p class="person-intro">察地表毫厘之变，守万家平安之门</p>
+              </router-link>
+              <router-link to="/person/xiongshengqing" class="grid-box person-card box-2">
+                <h3>熊盛青</h3>
+                <p class="person-intro">俯瞰九州寻地脉，翱翔万里探矿藏</p>
+              </router-link>
+              <router-link to="/person/zhangzhuoyuan" class="grid-box person-card box-3">
+                <h3>张倬元</h3>
+                <p class="person-intro">拓工程地质之学，筑成理基业之石</p>
+              </router-link>
+              <router-link to="/person/liubaojun" class="grid-box person-card box-4">
+                <h3>刘宝珺</h3>
+                <p class="person-intro">览古今沉积之痕，绘华夏地理之卷</p>
+              </router-link>
             </div>
           </section>
 
-          <!-- 第 3 页：成都地质勘探学院成立 -->
+          <!-- 第 3 页：学校发展历程 -->
           <section class="page-section third-section">
-            <div class="third-inner">
-              <div class="third-text-block">
-                <div class="third-label-row">
-                  <div class="third-label-line"></div>
-                  <div class="third-label-text">
-                    <div class="third-label-top">1956 · 成都地质勘探学院成立</div>
-                    <div class="third-label-sub">新中国地质高等教育的重要一笔</div>
-                  </div>
-                </div>
-                <p class="third-description">
-                  为服务新中国地质找矿和能源建设需要，成都地质勘探学院在西南腹地创立。
-                  自此，来自全国各地的青年学子汇聚于此，在板块构造、矿产勘查、地震地质等领域扎根钻研，将个人理想与国家需求紧紧相连。
-                  这所学院，也在时代的推进中逐步成长为今日的成都理工大学。
-                </p>
+            <div class="grid-container">
+              <div class="grid-box milestone-card milestone-1">
+                <div class="milestone-year">1956</div>
+                <h3>成都地质勘探学院成立</h3>
+                <p class="milestone-intro">以重庆大学地质系等为基础建校,开启成理历史新篇章</p>
+              </div>
+              <div class="grid-box milestone-card milestone-2">
+                <div class="milestone-year">1993</div>
+                <h3>更名成都理工学院</h3>
+                <p class="milestone-intro">由地质矿产部划归四川省管理,进入发展新阶段</p>
+              </div>
+              <div class="grid-box milestone-card milestone-3">
+                <div class="milestone-year">2001</div>
+                <h3>组建成都理工大学</h3>
+                <p class="milestone-intro">经教育部批准,成为以理工为主的多科性大学</p>
+              </div>
+              <div class="grid-box milestone-card milestone-4">
+                <div class="milestone-year">2017</div>
+                <h3>进入国家"双一流"建设</h3>
+                <p class="milestone-intro">地质学入选世界一流学科建设名单,开启新征程</p>
               </div>
             </div>
           </section>
 
-          <!-- 第 4 页：1990 实验室（使用独立组件，只做前景内容） -->
+          <!-- 第 4 页：空白 -->
           <section class="page-section fourth-section">
-            <HomeOilGasLab1990 />
           </section>
 
-          <!-- 第 5 页：1993 更名庆祝大会 -->
+          <!-- 第 5 页：空白 -->
           <section class="page-section rename1993-section">
-            <HomeRename1993 />
           </section>
 
         </div>
@@ -1612,7 +1619,7 @@ export default {
 .second-section {
   z-index: 1;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
@@ -1672,6 +1679,266 @@ export default {
   line-height: 1.9;
   text-align: left;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* 田字形布局 */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 30px;
+  width: 100%;
+  max-width: 1300px;
+  height: 80%;
+  max-height: 700px;
+  padding: 0;
+}
+
+.grid-box {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-height: 250px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.grid-box:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.grid-box h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ffffff, #c7d2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.grid-box p {
+  font-size: 1rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+/* 人物卡片样式 */
+.person-card {
+  gap: 12px;
+}
+
+/* 第一个方框的背景图 */
+.box-1 {
+  background-image: url('@/assets/mainpage/xuqiang.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+}
+
+.box-1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  z-index: 0;
+  transition: background 0.3s ease;
+}
+
+.box-1:hover::before {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.box-1 > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 第二个方框的背景图 */
+.box-2 {
+  background-image: url('@/assets/mainpage/xiongshengqing.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+}
+
+.box-2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  z-index: 0;
+  transition: background 0.3s ease;
+}
+
+.box-2:hover::before {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.box-2 > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 第三个方框的背景图 */
+.box-3 {
+  background-image: url('@/assets/mainpage/zhangzhuoyuan.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+}
+
+.box-3::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  z-index: 0;
+  transition: background 0.3s ease;
+}
+
+.box-3:hover::before {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.box-3 > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 第四个方框的背景图 */
+.box-4 {
+  background-image: url('@/assets/mainpage/liubaojun.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+}
+
+.box-4::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  z-index: 0;
+  transition: background 0.3s ease;
+}
+
+.box-4:hover::before {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.box-4 > * {
+  position: relative;
+  z-index: 1;
+}
+
+.person-card h3 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.person-intro {
+  font-size: 1.1rem !important;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9) !important;
+  line-height: 1.8 !important;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* 里程碑卡片样式 */
+.milestone-card {
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.milestone-year {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+}
+
+.milestone-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.milestone-intro {
+  font-size: 0.95rem !important;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85) !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0.3px;
+}
+
+/* 里程碑卡片背景渐变 */
+.milestone-1 {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.15));
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.milestone-1:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(59, 130, 246, 0.25));
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.milestone-2 {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.15));
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.milestone-2:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(168, 85, 247, 0.25));
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.milestone-3 {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(219, 39, 119, 0.15));
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.milestone-3:hover {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(219, 39, 119, 0.25));
+  border-color: rgba(236, 72, 153, 0.5);
+}
+
+.milestone-4 {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.15));
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.milestone-4:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(16, 185, 129, 0.25));
+  border-color: rgba(34, 197, 94, 0.5);
 }
 
 /* 第三页内容（左下角） */
@@ -2228,6 +2495,47 @@ export default {
   .ai-popup {
     width: 92vw;
     max-height: 70vh;
+  }
+
+  .grid-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+    max-height: none;
+  }
+
+  .grid-box {
+    min-height: 180px;
+    padding: 30px 20px;
+  }
+
+  .grid-box h3 {
+    font-size: 1.5rem;
+  }
+
+  .grid-box p {
+    font-size: 0.9rem;
+  }
+
+  .person-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .person-intro {
+    font-size: 0.95rem !important;
+  }
+
+  .milestone-year {
+    font-size: 2rem;
+  }
+
+  .milestone-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .milestone-intro {
+    font-size: 0.85rem !important;
   }
 }
 </style>

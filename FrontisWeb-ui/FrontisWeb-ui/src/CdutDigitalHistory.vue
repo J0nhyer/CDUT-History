@@ -24,7 +24,7 @@
         }"
       ></div>
       
-      <!-- 多个弹跳的不规则变换线条图形（物理引擎 + 混沌系统控制） -->
+      <!-- 多个弹跳的流动有机形状（物理引擎 + 波动系统） -->
       <svg 
         v-for="shape in shapes"
         :key="shape.id"
@@ -38,9 +38,32 @@
           transform: `translate(-50%, -50%) rotate(${shape.rotation}deg) scale(${shape.scale})`,
           opacity: shape.opacity
         }">
+        <!-- 定义渐变 -->
+        <defs>
+          <linearGradient :id="shape.gradientId" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" :style="{ stopColor: shape.color.start }" />
+            <stop offset="100%" :style="{ stopColor: shape.color.end }" />
+          </linearGradient>
+          <filter :id="`glow-${shape.id}`" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- 发光背景层 -->
+        <path class="glow-path"
+              :d="shape.path" 
+              :fill="shape.color.glow"
+              :filter="`url(#glow-${shape.id})`"
+              opacity="0.4" />
+        <!-- 主形状 -->
         <path class="morphing-path"
               :d="shape.path" 
-              fill="transparent" 
+              fill="transparent"
+              :stroke="`url(#${shape.gradientId})`"
+              stroke-width="3"
               stroke-linecap="round"
               stroke-linejoin="round" />
       </svg>
@@ -667,12 +690,12 @@ const preloadAllImages = async () => {
   }
 }
 
-// 创建单个图形对象
+// 创建单个图形对象 - 有机曲线形状
 const createShape = (x = null, y = null) => {
   const vw = window.innerWidth
   const vh = window.innerHeight
   
-  // 随机位置（如果没有指定）
+  // 随机位置
   const posX = x !== null ? x : Math.random() * (vw - shapeSize) + shapeSize / 2
   const posY = y !== null ? y : Math.random() * (vh - shapeSize) + shapeSize / 2
   
@@ -680,23 +703,31 @@ const createShape = (x = null, y = null) => {
   const speed = 1.5 + Math.random() * 2
   const angle = Math.random() * Math.PI * 2
   
-  const numPoints = 3 + Math.floor(Math.random() * 10) // 3-12个顶点
+  // 灰色系
+  const colorOptions = [
+    { start: 'rgba(180, 180, 180, 0.6)', end: 'rgba(120, 120, 120, 0.3)', glow: 'rgba(160, 160, 160, 0.4)' }, // 浅灰
+    { start: 'rgba(160, 160, 160, 0.6)', end: 'rgba(100, 100, 100, 0.3)', glow: 'rgba(140, 140, 140, 0.4)' }, // 中灰
+    { start: 'rgba(140, 140, 140, 0.6)', end: 'rgba(80, 80, 80, 0.3)', glow: 'rgba(120, 120, 120, 0.4)' }, // 深灰
+    { start: 'rgba(200, 200, 200, 0.6)', end: 'rgba(140, 140, 140, 0.3)', glow: 'rgba(180, 180, 180, 0.4)' }, // 亮灰
+    { start: 'rgba(150, 150, 150, 0.6)', end: 'rgba(90, 90, 90, 0.3)', glow: 'rgba(130, 130, 130, 0.4)' }, // 暗灰
+  ]
+  const color = colorOptions[Math.floor(Math.random() * colorOptions.length)]
+  
+  const numPoints = 5 + Math.floor(Math.random() * 4) // 5-8个控制点
   const points = []
   const phases = []
   
   for (let i = 0; i < numPoints; i++) {
     const pointAngle = (i / numPoints) * Math.PI * 2
-    const radius = 50 + Math.random() * 20
+    const radius = 40 + Math.random() * 25
     points.push({
       angle: pointAngle,
       radius: radius,
       baseRadius: radius,
-      radiusSpeed: 0.3 + Math.random() * 0.5,
-      angleSpeed: 0.01 + Math.random() * 0.02,
-      chaosX: Math.random() * 10 - 5,
-      chaosY: Math.random() * 10 - 5,
-      chaosSpeedX: (Math.random() - 0.5) * 0.3,
-      chaosSpeedY: (Math.random() - 0.5) * 0.3
+      radiusSpeed: 0.4 + Math.random() * 0.6,
+      angleSpeed: 0.015 + Math.random() * 0.025,
+      waveAmplitude: 10 + Math.random() * 15, // 波动幅度
+      waveFrequency: 0.02 + Math.random() * 0.03 // 波动频率
     })
     phases.push(Math.random() * Math.PI * 2)
   }
@@ -708,69 +739,57 @@ const createShape = (x = null, y = null) => {
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed,
     rotation: Math.random() * 360,
-    rotationSpeed: 1 + Math.random() * 2,
-    scale: 0.8 + Math.random() * 0.5,
-    scaleSpeed: 0.005 + Math.random() * 0.01,
-    opacity: 0.5 + Math.random() * 0.3,
+    rotationSpeed: 0.8 + Math.random() * 1.5,
+    scale: 0.9 + Math.random() * 0.4,
+    scaleSpeed: 0.006 + Math.random() * 0.01,
+    opacity: 0.6 + Math.random() * 0.3,
+    color: color,
     numPoints: numPoints,
     points: points,
     phases: phases,
     path: '',
-    lifetime: 10000 + Math.random() * 20000, // 10-30秒生命周期
+    gradientId: `gradient-${Date.now()}-${Math.random()}`,
+    lifetime: 10000 + Math.random() * 20000,
     createdAt: Date.now()
   }
 }
 
-// 更新单个图形的路径 - 混沌变化
+// 更新单个图形的路径 - 流动的有机曲线
 const updateShapePath = (shape) => {
   const centerX = 75
   const centerY = 75
   
-  // 更新每个点的位置（混沌变化）
+  // 更新每个点的位置（流动波动）
   shape.points.forEach((point, i) => {
     // 相位更新
-    shape.phases[i] += point.angleSpeed
+    shape.phases[i] += point.waveFrequency
     
-    // 半径振荡（类似摆动）
-    point.radius = point.baseRadius + Math.sin(shape.phases[i]) * 15
+    // 半径流动变化
+    const wave1 = Math.sin(shape.phases[i]) * point.waveAmplitude
+    const wave2 = Math.cos(shape.phases[i] * 1.5) * (point.waveAmplitude * 0.5)
+    point.radius = point.baseRadius + wave1 + wave2
     
-    // 角度微调（产生扭曲）
-    point.angle += point.angleSpeed * 0.5
-    
-    // 混沌偏移更新
-    point.chaosX += point.chaosSpeedX
-    point.chaosY += point.chaosSpeedY
-    
-    // 混沌偏移边界（避免偏移太大）
-    if (Math.abs(point.chaosX) > 15) point.chaosSpeedX *= -1
-    if (Math.abs(point.chaosY) > 15) point.chaosSpeedY *= -1
-    
-    // 随机扰动（增加混沌感）
-    if (Math.random() > 0.98) {
-      point.chaosSpeedX += (Math.random() - 0.5) * 0.2
-      point.chaosSpeedY += (Math.random() - 0.5) * 0.2
-    }
+    // 角度缓慢旋转
+    point.angle += point.angleSpeed * 0.3
   })
   
-  // 随机改变顶点数量（3到12之间）
-  if (Math.random() > 0.995) {
-    const newNumPoints = 3 + Math.floor(Math.random() * 10)
+  // 偶尔改变形状复杂度
+  if (Math.random() > 0.997) {
+    const newNumPoints = 5 + Math.floor(Math.random() * 4)
     const newPoints = []
     const newPhases = []
     
     for (let i = 0; i < newNumPoints; i++) {
       const pointAngle = (i / newNumPoints) * Math.PI * 2
-      const radius = 50 + Math.random() * 20
+      const radius = 40 + Math.random() * 25
       newPoints.push({
         angle: pointAngle,
         radius: radius,
         baseRadius: radius,
-        radiusSpeed: 0.3 + Math.random() * 0.5,
-        angleSpeed: 0.01 + Math.random() * 0.02,
-        chaosX: Math.random() * 10 - 5,
-        chaosY: Math.random() * 10 - 5,
-        chaosSpeedX: (Math.random() - 0.5) * 0.3,
-        chaosSpeedY: (Math.random() - 0.5) * 0.3
+        radiusSpeed: 0.4 + Math.random() * 0.6,
+        angleSpeed: 0.015 + Math.random() * 0.025,
+        waveAmplitude: 10 + Math.random() * 15,
+        waveFrequency: 0.02 + Math.random() * 0.03
       })
       newPhases.push(Math.random() * Math.PI * 2)
     }
@@ -780,19 +799,41 @@ const updateShapePath = (shape) => {
     shape.phases = newPhases
   }
   
-  // 生成SVG路径
+  // 生成流畅的贝塞尔曲线路径
+  const n = shape.points.length
   let path = ''
-  shape.points.forEach((point, i) => {
-    const x = centerX + Math.cos(point.angle) * point.radius + point.chaosX
-    const y = centerY + Math.sin(point.angle) * point.radius + point.chaosY
+  const coords = []
+  
+  // 计算所有点的坐标
+  shape.points.forEach((point) => {
+    const x = centerX + Math.cos(point.angle) * point.radius
+    const y = centerY + Math.sin(point.angle) * point.radius
+    coords.push({ x, y })
+  })
+  
+  // 使用二次贝塞尔曲线连接点，创建流畅形状
+  for (let i = 0; i < n; i++) {
+    const curr = coords[i]
+    const next = coords[(i + 1) % n]
     
     if (i === 0) {
-      path += `M ${x},${y}`
-    } else {
-      path += ` L ${x},${y}`
+      path += `M ${curr.x},${curr.y}`
     }
-  })
-  path += ' Z' // 闭合路径
+    
+    // 控制点在当前点和下一点之间
+    const cpX = (curr.x + next.x) / 2
+    const cpY = (curr.y + next.y) / 2
+    
+    path += ` Q ${curr.x},${curr.y} ${cpX},${cpY}`
+  }
+  
+  // 闭合曲线
+  const first = coords[0]
+  const cpX = (coords[n-1].x + first.x) / 2
+  const cpY = (coords[n-1].y + first.y) / 2
+  path += ` Q ${coords[n-1].x},${coords[n-1].y} ${cpX},${cpY}`
+  path += ` Q ${first.x},${first.y} ${first.x},${first.y}`
+  path += ' Z'
   
   shape.path = path
 }
@@ -939,7 +980,7 @@ onUnmounted(() => {
 .history-container {
   position: relative;
   min-height: 100vh;
-  background: #000000; /* 黑色背景 */
+  background: #1a1a1a; /* 深灰色背景 */
   font-family: 'Arial', sans-serif;
   overflow-x: hidden;
   overflow-y: auto;
@@ -980,7 +1021,7 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: #000000; /* 黑色底色 */
+  background-color: #1a1a1a; /* 深灰色底色 */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -988,9 +1029,9 @@ onUnmounted(() => {
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
-  /* 轻微模糊 + 大幅降低亮度 + 保留色彩 */
-  filter: brightness(0.3) blur(1px) saturate(0.6);
-  opacity: 0.6;
+  /* 大幅降低亮度 + 轻微模糊 + 降低饱和度 + 灰色调 */
+  filter: brightness(0.2) blur(1px) saturate(0.4) grayscale(0.3);
+  opacity: 0.5;
 }
 
 .background-layer-1 {
@@ -1745,52 +1786,24 @@ onUnmounted(() => {
   word-break: break-word;
 }
 
-/* 弹跳的不规则变换线条图形（物理引擎控制） */
+/* 弹跳的流动有机形状（物理引擎控制） */
 .bouncing-shape {
   position: fixed;
   width: 150px;
   height: 150px;
   z-index: 1;
   pointer-events: none;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-  transition: none; /* 移除过渡，物理引擎直接控制 */
+  transition: none;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
 }
 
-/* 添加线条宽度和透明度随机变化 */
+/* 发光路径 */
+.glow-path {
+  transition: all 0.3s ease;
+}
+
+/* 主形状路径 */
 .morphing-path {
-  stroke: rgba(0, 0, 0, 0.6);
-  stroke-width: 3px;
-  animation: stroke-variations 7s ease-in-out infinite;
-}
-
-@keyframes stroke-variations {
-  0%, 100% { 
-    stroke-width: 3px; 
-    stroke: rgba(0, 0, 0, 0.6); 
-  }
-  15% { 
-    stroke-width: 2px; 
-    stroke: rgba(0, 0, 0, 0.7); 
-  }
-  30% { 
-    stroke-width: 4px; 
-    stroke: rgba(0, 0, 0, 0.5); 
-  }
-  45% { 
-    stroke-width: 2.5px; 
-    stroke: rgba(0, 0, 0, 0.8); 
-  }
-  60% { 
-    stroke-width: 3.5px; 
-    stroke: rgba(0, 0, 0, 0.55); 
-  }
-  75% { 
-    stroke-width: 2.8px; 
-    stroke: rgba(0, 0, 0, 0.65); 
-  }
-  90% { 
-    stroke-width: 3.2px; 
-    stroke: rgba(0, 0, 0, 0.7); 
-  }
+  transition: stroke-width 0.3s ease;
 }
 </style>

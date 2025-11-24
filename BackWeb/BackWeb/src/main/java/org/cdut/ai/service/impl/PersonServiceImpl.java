@@ -58,9 +58,11 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
 
     @Override
     public List<Person> getAllPersons() {
-        // 只查询is_visible为true的人物
+        // 只查询is_visible为true的人物，并按display_order排序
         LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Person::getIsVisible, true);
+        wrapper.eq(Person::getIsVisible, true)
+               .orderByAsc(Person::getDisplayOrder)  // 按display_order升序排序
+               .orderByAsc(Person::getName);         // display_order相同时按姓名排序
         List<Person> persons = list(wrapper);
         // 解析keyTags JSON字符串为List
         persons.forEach(this::parseKeyTags);
@@ -259,9 +261,11 @@ public class PersonServiceImpl extends ServiceImpl<PersonMapper, Person> impleme
     @Override
     public Map<String, Object> getAllAdvancedProfiles() {
         try {
-            // 只查询is_visible为true的人物
+            // 只查询is_visible为true的人物，并按display_order排序
             LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Person::getIsVisible, true);
+            wrapper.eq(Person::getIsVisible, true)
+                   .orderByAsc(Person::getDisplayOrder)  // 按display_order升序排序
+                   .orderByAsc(Person::getName);         // display_order相同时按姓名排序
             List<Person> persons = list(wrapper);
 
             Map<String, Object> result = new LinkedHashMap<>();

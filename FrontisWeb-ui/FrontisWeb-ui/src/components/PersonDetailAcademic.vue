@@ -1298,9 +1298,9 @@ export default {
   position: relative;
   display: block;
   margin: 0;
-  padding: 40px 20px 20px 20px;
+  padding: 0; /* 移除padding，让TimelineFlipBook完全填充 */
   border: none;
-  background: #f9f9f9;
+  background: none; /* 移除背景，使用子组件TimelineFlipBook的黑色背景 */
   clear: both;
   overflow-y: auto;
 }
@@ -3136,7 +3136,7 @@ export default {
 .timeline-section-fullwidth {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: none; /* 移除背景，使用子组件TimelineFlipBook的黑色背景 */
   display: flex;
   align-items: center;
   justify-content: center;
