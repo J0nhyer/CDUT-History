@@ -111,19 +111,10 @@ public class EnhancedAiAssistantService {
      * 构建系统提示词
      */
     private String buildSystemPrompt(String knowledgeContext) {
-        return String.format("""
-                你是成都理工大学的AI校史助手，专门回答关于学校历史、人物、事件等问题。
-                
-                请参考以下知识库资料回答用户问题：
-                %s
-                
-                回答要求：
-                1. 基于知识库内容回答，确保信息准确
-                2. 如果知识库中没有相关信息，请明确告知用户
-                3. 回答要简洁清晰，重点突出
-                4. 可以结合上下文进行连续对话
-                5. 对于人物、事件等可以提供更多背景信息
-                """, knowledgeContext);
+        if (knowledgeContext != null && !knowledgeContext.trim().isEmpty()) {
+            return knowledgeContext;
+        }
+        return "你是一个智能AI助手，负责回答用户的问题。";
     }
 
     /**

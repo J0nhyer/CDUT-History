@@ -596,7 +596,7 @@ export default {
         // 从倾听雨声来的，返回倾听雨声
         this.$router.push('/keyword-rain');
       } else if (from === 'draw-reveal') {
-        // 从涂鸦揭秘来的，返回涂鸦揭秘
+        // 从像素岁月来的，返回像素岁月
         this.$router.push('/draw-reveal');
       } else if (from === 'persons') {
         // 从人物列表来的，返回人物列表
@@ -1724,24 +1724,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FF6B6B 0%, #FF5252 20%, #F44336 40%, #E53935 60%, #F44336 80%, #FF6B6B 100%);
   box-shadow: 
-    0 0 45px rgba(244, 67, 54, 0.8),
-    0 0 80px rgba(244, 67, 54, 0.5),
-    0 15px 50px rgba(244, 67, 54, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(211, 47, 47, 0.4);
 }
 
 .showcase-medal.type-S .medal-body::before {
   border-color: rgba(255, 107, 107, 0.8);
-  box-shadow: 
-    0 0 35px rgba(244, 67, 54, 0.5),
-    inset 0 0 35px rgba(244, 67, 54, 0.3);
 }
 
 .showcase-medal.type-S .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(244, 67, 54, 0.9));
-  animation: icon-shine-red 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* A类型 - 🟠 橙色 */
@@ -1751,24 +1743,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 153, 51, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FFA726 0%, #FF9800 20%, #FB8C00 40%, #F57C00 60%, #FB8C00 80%, #FFA726 100%);
   box-shadow: 
-    0 0 45px rgba(255, 152, 0, 0.8),
-    0 0 80px rgba(255, 152, 0, 0.5),
-    0 15px 50px rgba(255, 152, 0, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(239, 108, 0, 0.4);
 }
 
 .showcase-medal.type-A .medal-body::before {
   border-color: rgba(255, 152, 0, 0.8);
-  box-shadow: 
-    0 0 35px rgba(255, 152, 0, 0.5),
-    inset 0 0 35px rgba(255, 152, 0, 0.3);
 }
 
 .showcase-medal.type-A .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(255, 152, 0, 0.9));
-  animation: icon-shine-orange 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* B类型 - 🟡 黄色 */
@@ -1778,24 +1762,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 238, 88, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FFEB3B 0%, #FDD835 20%, #FBC02D 40%, #F9A825 60%, #FBC02D 80%, #FFEB3B 100%);
   box-shadow: 
-    0 0 45px rgba(253, 216, 53, 0.8),
-    0 0 80px rgba(253, 216, 53, 0.5),
-    0 15px 50px rgba(253, 216, 53, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(249, 168, 37, 0.4);
 }
 
 .showcase-medal.type-B .medal-body::before {
   border-color: rgba(255, 238, 88, 0.8);
-  box-shadow: 
-    0 0 35px rgba(253, 216, 53, 0.5),
-    inset 0 0 35px rgba(253, 216, 53, 0.3);
 }
 
 .showcase-medal.type-B .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(253, 216, 53, 0.9));
-  animation: icon-shine-yellow 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* C类型 - 🟢 绿色 */
@@ -1805,24 +1781,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(76, 175, 80, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #66BB6A 0%, #4CAF50 20%, #43A047 40%, #388E3C 60%, #43A047 80%, #66BB6A 100%);
   box-shadow: 
-    0 0 45px rgba(76, 175, 80, 0.8),
-    0 0 80px rgba(76, 175, 80, 0.5),
-    0 15px 50px rgba(76, 175, 80, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(56, 142, 60, 0.4);
 }
 
 .showcase-medal.type-C .medal-body::before {
   border-color: rgba(76, 175, 80, 0.8);
-  box-shadow: 
-    0 0 35px rgba(76, 175, 80, 0.5),
-    inset 0 0 35px rgba(76, 175, 80, 0.3);
 }
 
 .showcase-medal.type-C .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(76, 175, 80, 0.9));
-  animation: icon-shine-green 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* D类型 - 🔵 青色 */
@@ -1832,24 +1800,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(0, 188, 212, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #26C6DA 0%, #00BCD4 20%, #00ACC1 40%, #0097A7 60%, #00ACC1 80%, #26C6DA 100%);
   box-shadow: 
-    0 0 45px rgba(0, 188, 212, 0.8),
-    0 0 80px rgba(0, 188, 212, 0.5),
-    0 15px 50px rgba(0, 188, 212, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(0, 151, 167, 0.4);
 }
 
 .showcase-medal.type-D .medal-body::before {
   border-color: rgba(38, 198, 218, 0.8);
-  box-shadow: 
-    0 0 35px rgba(0, 188, 212, 0.5),
-    inset 0 0 35px rgba(0, 188, 212, 0.3);
 }
 
 .showcase-medal.type-D .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(0, 188, 212, 0.9));
-  animation: icon-shine-cyan 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* E类型 - 🔵 蓝色 */
@@ -1859,24 +1819,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(33, 150, 243, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #42A5F5 0%, #2196F3 20%, #1E88E5 40%, #1976D2 60%, #1E88E5 80%, #42A5F5 100%);
   box-shadow: 
-    0 0 45px rgba(33, 150, 243, 0.8),
-    0 0 80px rgba(33, 150, 243, 0.5),
-    0 15px 50px rgba(33, 150, 243, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(25, 118, 210, 0.4);
 }
 
 .showcase-medal.type-E .medal-body::before {
   border-color: rgba(66, 165, 245, 0.8);
-  box-shadow: 
-    0 0 35px rgba(33, 150, 243, 0.5),
-    inset 0 0 35px rgba(33, 150, 243, 0.3);
 }
 
 .showcase-medal.type-E .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(33, 150, 243, 0.9));
-  animation: icon-shine-blue 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* F类型 - 🟣 紫色 */
@@ -1886,24 +1838,16 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(156, 39, 176, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #AB47BC 0%, #9C27B0 20%, #8E24AA 40%, #7B1FA2 60%, #8E24AA 80%, #AB47BC 100%);
   box-shadow: 
-    0 0 45px rgba(156, 39, 176, 0.8),
-    0 0 80px rgba(156, 39, 176, 0.5),
-    0 15px 50px rgba(156, 39, 176, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(123, 31, 162, 0.4);
 }
 
 .showcase-medal.type-F .medal-body::before {
   border-color: rgba(171, 71, 188, 0.8);
-  box-shadow: 
-    0 0 35px rgba(156, 39, 176, 0.5),
-    inset 0 0 35px rgba(156, 39, 176, 0.3);
 }
 
 .showcase-medal.type-F .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(156, 39, 176, 0.9));
-  animation: icon-shine-purple 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .showcase-info {
@@ -1992,9 +1936,6 @@ export default {
   bottom: -12px;
   border-radius: 50%;
   border: 4px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 
-    0 0 30px rgba(255, 255, 255, 0.4),
-    inset 0 0 30px rgba(255, 255, 255, 0.2);
   animation: rotate-slow 20s linear infinite;
 }
 
@@ -2018,18 +1959,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FF6B6B 0%, #FF5252 20%, #F44336 40%, #E53935 60%, #F44336 80%, #FF6B6B 100%);
   box-shadow: 
-    0 0 45px rgba(244, 67, 54, 0.8),
-    0 0 80px rgba(244, 67, 54, 0.5),
-    0 15px 50px rgba(244, 67, 54, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(211, 47, 47, 0.4);
 }
 
 .medal-item.type-S .medal-body::before {
   border-color: rgba(255, 107, 107, 0.8);
-  box-shadow: 
-    0 0 35px rgba(244, 67, 54, 0.5),
-    inset 0 0 35px rgba(244, 67, 54, 0.3);
 }
 
 /* A级 - 🟠 橙色勋章 - 国家级奖项 */
@@ -2039,18 +1974,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 153, 51, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FFA726 0%, #FF9800 20%, #FB8C00 40%, #F57C00 60%, #FB8C00 80%, #FFA726 100%);
   box-shadow: 
-    0 0 45px rgba(255, 152, 0, 0.8),
-    0 0 80px rgba(255, 152, 0, 0.5),
-    0 15px 50px rgba(255, 152, 0, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(239, 108, 0, 0.4);
 }
 
 .medal-item.type-A .medal-body::before {
   border-color: rgba(255, 152, 0, 0.8);
-  box-shadow: 
-    0 0 35px rgba(255, 152, 0, 0.5),
-    inset 0 0 35px rgba(255, 152, 0, 0.3);
 }
 
 /* B级 - 🟡 黄色勋章 - 省部级奖项 */
@@ -2060,18 +1989,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(255, 238, 88, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #FFEB3B 0%, #FDD835 20%, #FBC02D 40%, #F9A825 60%, #FBC02D 80%, #FFEB3B 100%);
   box-shadow: 
-    0 0 45px rgba(253, 216, 53, 0.8),
-    0 0 80px rgba(253, 216, 53, 0.5),
-    0 15px 50px rgba(253, 216, 53, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(249, 168, 37, 0.4);
 }
 
 .medal-item.type-B .medal-body::before {
   border-color: rgba(255, 238, 88, 0.8);
-  box-shadow: 
-    0 0 35px rgba(253, 216, 53, 0.5),
-    inset 0 0 35px rgba(253, 216, 53, 0.3);
 }
 
 /* C级 - 🟢 绿色勋章 - 人才计划 */
@@ -2081,18 +2004,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(76, 175, 80, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #66BB6A 0%, #4CAF50 20%, #43A047 40%, #388E3C 60%, #43A047 80%, #66BB6A 100%);
   box-shadow: 
-    0 0 45px rgba(76, 175, 80, 0.8),
-    0 0 80px rgba(76, 175, 80, 0.5),
-    0 15px 50px rgba(76, 175, 80, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(56, 142, 60, 0.4);
 }
 
 .medal-item.type-C .medal-body::before {
   border-color: rgba(76, 175, 80, 0.8);
-  box-shadow: 
-    0 0 35px rgba(76, 175, 80, 0.5),
-    inset 0 0 35px rgba(76, 175, 80, 0.3);
 }
 
 /* D级 - 🔵 青色勋章 - 学术职务 */
@@ -2102,18 +2019,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(0, 188, 212, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #26C6DA 0%, #00BCD4 20%, #00ACC1 40%, #0097A7 60%, #00ACC1 80%, #26C6DA 100%);
   box-shadow: 
-    0 0 45px rgba(0, 188, 212, 0.8),
-    0 0 80px rgba(0, 188, 212, 0.5),
-    0 15px 50px rgba(0, 188, 212, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(0, 151, 167, 0.4);
 }
 
 .medal-item.type-D .medal-body::before {
   border-color: rgba(38, 198, 218, 0.8);
-  box-shadow: 
-    0 0 35px rgba(0, 188, 212, 0.5),
-    inset 0 0 35px rgba(0, 188, 212, 0.3);
 }
 
 /* E级 - 🔵 蓝色勋章 - 教学荣誉 */
@@ -2123,18 +2034,12 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(33, 150, 243, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #42A5F5 0%, #2196F3 20%, #1E88E5 40%, #1976D2 60%, #1E88E5 80%, #42A5F5 100%);
   box-shadow: 
-    0 0 45px rgba(33, 150, 243, 0.8),
-    0 0 80px rgba(33, 150, 243, 0.5),
-    0 15px 50px rgba(33, 150, 243, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(25, 118, 210, 0.4);
 }
 
 .medal-item.type-E .medal-body::before {
   border-color: rgba(66, 165, 245, 0.8);
-  box-shadow: 
-    0 0 35px rgba(33, 150, 243, 0.5),
-    inset 0 0 35px rgba(33, 150, 243, 0.3);
 }
 
 /* F级 - 🟣 紫色勋章 - 其他荣誉 */
@@ -2144,37 +2049,17 @@ export default {
     radial-gradient(circle at 72% 72%, rgba(156, 39, 176, 0.3) 0%, transparent 50%),
     linear-gradient(135deg, #AB47BC 0%, #9C27B0 20%, #8E24AA 40%, #7B1FA2 60%, #8E24AA 80%, #AB47BC 100%);
   box-shadow: 
-    0 0 45px rgba(156, 39, 176, 0.8),
-    0 0 80px rgba(156, 39, 176, 0.5),
-    0 15px 50px rgba(156, 39, 176, 0.6),
     inset 0 4px 20px rgba(255, 255, 255, 0.7),
     inset 0 -4px 15px rgba(123, 31, 162, 0.4);
 }
 
 .medal-item.type-F .medal-body::before {
   border-color: rgba(171, 71, 188, 0.8);
-  box-shadow: 
-    0 0 35px rgba(156, 39, 176, 0.5),
-    inset 0 0 35px rgba(156, 39, 176, 0.3);
 }
 
-/* 统一光晕效果 - 更大更明显 */
+/* 统一光晕效果 - 已禁用 */
 .medal-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  filter: blur(25px);
-}
-
-.medal-item:hover .medal-glow {
-  opacity: 1;
+  display: none;
 }
 
 /* 统一动画周期为2s，彩虹色 */
@@ -2238,47 +2123,33 @@ export default {
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* 统一图标闪光效果，彩虹色，动画周期统一为3.5s */
+/* 统一图标闪光效果 - 已禁用 */
 .medal-item.type-S .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(244, 67, 54, 0.9));
-  animation: icon-shine-red 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-A .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(255, 152, 0, 0.9));
-  animation: icon-shine-orange 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-B .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(253, 216, 53, 0.9));
-  animation: icon-shine-yellow 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-C .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(76, 175, 80, 0.9));
-  animation: icon-shine-green 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-D .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(0, 188, 212, 0.9));
-  animation: icon-shine-cyan 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-E .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(33, 150, 243, 0.9));
-  animation: icon-shine-blue 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 .medal-item.type-F .medal-icon i {
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 25px rgba(156, 39, 176, 0.9));
-  animation: icon-shine-purple 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
 /* 彩虹色图标闪光动画 - 7种颜色 */
@@ -2458,9 +2329,7 @@ export default {
 
 .medal-item:hover .medal-name {
   text-shadow: 
-    0 3px 8px rgba(0, 0, 0, 0.8),
-    0 0 25px rgba(255, 255, 255, 0.9),
-    0 0 40px rgba(255, 255, 255, 0.6);
+    0 3px 8px rgba(0, 0, 0, 0.8);
   transform: scale(1.08);
 }
 

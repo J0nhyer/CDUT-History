@@ -9,6 +9,7 @@ import StarMapKnowledgeGraph from './StarMapKnowledgeGraph.vue'
 import DinoGameMain from './DinoGameMain.vue'
 import DinoCampus3D from './DinoCampus3D.vue'
 import KeywordRain from './KeywordRain.vue'
+import KeywordRain3D from './KeywordRain3D.vue'
 import DrawReveal from './DrawReveal.vue'
 
 const routes = [
@@ -120,6 +121,11 @@ const routes = [
     path: '/keyword-rain',
     name: 'KeywordRain',
     component: KeywordRain
+  },
+  {
+    path: '/keyword-rain-3d',
+    name: 'KeywordRain3D',
+    component: KeywordRain3D
   },
   {
     path: '/draw-reveal',

@@ -28,13 +28,13 @@
         <div class="second-bg-gradient"></div>
       </div>
 
-      <!-- 第三页：成都地质勘探学院成立 固定背景 -->
+      <!-- 第三页：历史时钟 苏式建筑背景 -->
       <div
         v-else-if="currentPage === 2"
         class="background-static third-bg"
-        :style="{ backgroundImage: `url(${foundingImage})` }"
+        :class="{ 'bg-active': currentPage === 2 }"
+        :style="{ backgroundImage: `url(${sovietBuilding1Image})` }"
       >
-        <div class="second-bg-gradient"></div>
       </div>
 
       <!-- 第四页：1990年油气藏重点实验室获批建设 固定背景 -->
@@ -100,7 +100,7 @@
             <router-link
               to="/keyword-rain"
               class="nav-link"
-              :class="{ active: $route.path.startsWith('/keyword-rain') }"
+              :class="{ active: $route.path === '/keyword-rain' }"
             >
               词林雨露
             </router-link>
@@ -109,7 +109,7 @@
               class="nav-link"
               :class="{ active: $route.path.startsWith('/draw-reveal') }"
             >
-              涂鸦画板
+              像素岁月
             </router-link>
           </nav>
           <!-- 用户认证区域 -->
@@ -169,6 +169,7 @@
           <!-- 第 1 页：Hero -->
           <section
             class="page-section hero-section"
+            :class="{ 'page-active': currentPage === 0 }"
             ref="heroSection"
             @mousemove="handleHeroMouseMove"
           >
@@ -201,7 +202,7 @@
           </section>
 
           <!-- 第 2 页：人物卡片 -->
-          <section class="page-section second-section">
+          <section class="page-section second-section" :class="{ 'page-active': currentPage === 1 }">
             <div class="grid-container">
               <router-link to="/person/xuqiang" class="grid-box person-card box-1">
                 <h3>许强</h3>
@@ -223,12 +224,83 @@
           </section>
 
           <!-- 第 3 页：历史时钟 -->
-          <section class="page-section third-section">
-            <HistoryClock />
+          <section class="page-section third-section" :class="{ 'page-active': currentPage === 2 }">
+            <!-- 城堡背景装饰 -->
+            <div class="castle-background">
+              <!-- 欧式建筑主体 -->
+              <div class="brick-building">
+                <!-- 人字形屋顶 -->
+                <div class="roof-gable">
+                  <div class="roof-triangle"></div>
+                  <div class="roof-trim"></div>
+                  <!-- 屋顶窗户 -->
+                  <div class="roof-windows">
+                    <div class="roof-window"></div>
+                    <div class="roof-window"></div>
+                    <div class="roof-window"></div>
+                  </div>
+                </div>
+                
+                <!-- 红砖墙体 -->
+                <div class="brick-wall">
+                  <!-- 门廊装饰 -->
+                  <div class="portico">
+                    <div class="portico-top"></div>
+                    <div class="column column-left"></div>
+                    <div class="column column-right"></div>
+                  </div>
+                  
+                  <!-- 三个拱形门 -->
+                  <div class="arched-doors">
+                    <div class="arched-door">
+                      <div class="door-arch"></div>
+                      <div class="door-panel"></div>
+                    </div>
+                    <div class="arched-door">
+                      <div class="door-arch"></div>
+                      <div class="door-panel"></div>
+                    </div>
+                    <div class="arched-door">
+                      <div class="door-arch"></div>
+                      <div class="door-panel"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 底部栏杆 -->
+                <div class="balustrade">
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                  <div class="baluster"></div>
+                </div>
+                
+                <!-- 台阶 -->
+                <div class="steps">
+                  <div class="step step-1"></div>
+                  <div class="step step-2"></div>
+                  <div class="step step-3"></div>
+                </div>
+              </div>
+              
+              <!-- 底部渐变 -->
+              <div class="castle-foundation"></div>
+            </div>
+            
+            <!-- 历史时钟（在城堡之上） -->
+            <div class="history-clock-wrapper">
+              <HistoryClock />
+            </div>
           </section>
 
           <!-- 第 4 页：斜线分割 -->
-          <section class="page-section fourth-section">
+          <section class="page-section fourth-section" :class="{ 'page-active': currentPage === 3 }">
             <div class="split-container">
               <!-- 左侧部分 -->
               <router-link to="/universe" class="split-section left-section">
@@ -248,7 +320,7 @@
           </section>
 
           <!-- 第 5 页：空白 -->
-          <section class="page-section rename1993-section">
+          <section class="page-section rename1993-section" :class="{ 'page-active': currentPage === 4 }">
           </section>
 
         </div>
@@ -323,6 +395,19 @@
 
           <div class="ai-popup-body">
             <div class="ai-messages" ref="aiMessagesContainer">
+              <!-- 快速问题建议 -->
+              <div v-if="aiMessages.length === 0 && !aiLoading" class="ai-quick-questions">
+                <div class="quick-question-title">你可能想问：</div>
+                <button 
+                  v-for="(question, idx) in quickQuestions" 
+                  :key="idx"
+                  class="quick-question-btn"
+                  @click="handleQuickQuestion(question)"
+                >
+                  {{ question }}
+                </button>
+              </div>
+
               <div
                 v-for="(msg, index) in aiMessages"
                 :key="index"
@@ -352,11 +437,43 @@
                   <span class="ai-message-meta">
                     {{ msg.time }}
                   </span>
+                  <!-- AI消息的满意度反馈 -->
+                  <div v-if="msg.role === 'assistant'" class="ai-message-feedback">
+                    <button 
+                      class="feedback-btn" 
+                      :class="{ active: msg.feedback === 'like' }"
+                      @click="handleFeedback(index, 'like')"
+                      title="这个回答有帮助"
+                    >
+                      <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <button 
+                      class="feedback-btn" 
+                      :class="{ active: msg.feedback === 'dislike' }"
+                      @click="handleFeedback(index, 'dislike')"
+                      title="这个回答需要改进"
+                    >
+                      <i class="fas fa-thumbs-down"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div v-if="aiLoading" class="ai-typing-indicator">
                 <span></span><span></span><span></span>
+              </div>
+
+              <!-- 相关问题推荐 -->
+              <div v-if="relatedQuestions.length > 0 && !aiLoading" class="ai-related-questions">
+                <div class="related-title">您还可以问：</div>
+                <button 
+                  v-for="(question, idx) in relatedQuestions" 
+                  :key="idx"
+                  class="related-question-btn"
+                  @click="handleQuickQuestion(question)"
+                >
+                  {{ question }}
+                </button>
               </div>
             </div>
           </div>
@@ -425,6 +542,7 @@ import openingCeremonyImageSrc from '@/assets/events/1956年首届开学典礼.j
 import foundingImageSrc from '@/assets/events/1956_01_成都地质勘探学院成立.png'
 import lab1990ImageSrc from '@/assets/events/1990年油气藏重点实验室获批建设.jpg'
 import rename1993ImageSrc from '@/assets/events/1993年学校更名庆祝大会.jpg'
+import sovietBuilding1ImageSrc from '@/assets/mainpage/苏式建筑1.jpg'
 import aiSitVideoSrc from '@/assets/ai/sit.webm'
 import aiStandVideoSrc from '@/assets/ai/stand.webm'
 import aiBgImage from '@/assets/ai/bg.png'
@@ -463,6 +581,7 @@ export default {
       foundingImage: foundingImageSrc,
       lab1990Image: lab1990ImageSrc,
       rename1993Image: rename1993ImageSrc,
+      sovietBuilding1Image: sovietBuilding1ImageSrc,
 
       backgroundImages: [libraryImageSrc, buildingImageSrc],
       currentBackgroundIndex: 0,
@@ -492,11 +611,19 @@ export default {
       mediaList: [],
       mediaIndex: 0,
 
-      aiWindowOpen: false,
+      aiMessages: [],
       aiInput: '',
       aiLoading: false,
+      aiWindowOpen: false,
+      quickQuestions: [
+        '学校是哪一年建立的？',
+        '现任校长是谁？',
+        '校史馆收录了多少人物？',
+        '学校有几位院士？',
+        '五大学科奠基人是谁？'
+      ],
+      relatedQuestions: [],
       aiVideoSrc: aiSitVideoSrc,
-      aiMessages: [],
       aiAbortController: null,
       aiStreamingIndex: null,
 
@@ -752,6 +879,14 @@ export default {
     toggleAIWindow() {
       this.aiWindowOpen = !this.aiWindowOpen
       if (this.aiWindowOpen) {
+        // 如果是第一次打开，添加欢迎消息
+        if (this.aiMessages.length === 0) {
+          this.aiMessages.push({
+            role: 'assistant',
+            content: '你好！我是成都理工大学的AI校史助手，很高兴为你服务。我专门回答关于学校历史、人物、事件等问题。如果您有关于我校发展历程、重要人物或校园文化等方面的问题，欢迎随时向我提问！',
+            time: this.formatTime()
+          })
+        }
         this.$nextTick(() => {
           this.scrollAIMessagesToBottom()
         })
@@ -770,6 +905,36 @@ export default {
       this.aiWindowOpen = false
       this.aiVideoSrc = aiSitVideoSrc
       this.cancelAIStream()
+    },
+    handleQuickQuestion(question) {
+      this.aiInput = question
+      this.handleAISend()
+    },
+    handleFeedback(index, type) {
+      if (this.aiMessages[index].feedback === type) {
+        this.aiMessages[index].feedback = null
+      } else {
+        this.aiMessages[index].feedback = type
+      }
+      console.log(`用户对第${index}条消息的反馈：${type}`)
+    },
+    updateRelatedQuestions(lastResponse) {
+      // 根据AI回答内容智能推荐相关问题
+      const relatedMap = {
+        '院士': ['五大学科奠基人有哪些？', '介绍一下许强校长'],
+        '建校': ['学校的校训是什么？', '学校有哪些优势学科？'],
+        '校长': ['党委书记是谁？', '许强有什么成就？'],
+        '人物': ['介绍一下刘宝珺院士', '八大教授是谁？'],
+        '学科': ['地质学专业怎么样？', '学校有哪些学院？']
+      }
+      
+      this.relatedQuestions = []
+      for (const [keyword, questions] of Object.entries(relatedMap)) {
+        if (lastResponse.includes(keyword)) {
+          this.relatedQuestions = questions.slice(0, 2)
+          break
+        }
+      }
     },
     handleAISend() {
       const text = this.aiInput.trim()
@@ -883,6 +1048,10 @@ export default {
       } finally {
         this.aiLoading = false
         this.aiAbortController = null
+        // 更新相关问题推荐
+        if (this.aiStreamingIndex != null && this.aiMessages[this.aiStreamingIndex]) {
+          this.updateRelatedQuestions(this.aiMessages[this.aiStreamingIndex].content)
+        }
         this.aiStreamingIndex = null
         this.scrollAIMessagesToBottom()
       }
@@ -1163,6 +1332,21 @@ export default {
   transition: transform 0.9s ease-out;
 }
 
+/* 第三页苏式建筑背景 */
+.background-static.third-bg {
+  background-color: #000000;
+  animation: bgFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes bgFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .second-bg-gradient {
   position: absolute;
   inset: 0;
@@ -1426,6 +1610,14 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none;
+}
+
+.page-section.page-active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Hero 区 */
@@ -1435,6 +1627,33 @@ export default {
   justify-content: center;
   overflow: hidden;
   z-index: 1;
+}
+
+.hero-section .hero-content > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.hero-section.page-active .hero-content > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-section.page-active .hero-kicker {
+  transition-delay: 0.2s;
+}
+
+.hero-section.page-active .hero-title {
+  transition-delay: 0.3s;
+}
+
+.hero-section.page-active .hero-subtitle {
+  transition-delay: 0.4s;
+}
+
+.hero-section.page-active .hero-meta {
+  transition-delay: 0.5s;
 }
 
 .hero-overlay {
@@ -1650,6 +1869,33 @@ export default {
   padding: 0;
 }
 
+.second-section .grid-box {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.second-section.page-active .grid-box {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.second-section.page-active .box-1 {
+  transition-delay: 0.1s;
+}
+
+.second-section.page-active .box-2 {
+  transition-delay: 0.2s;
+}
+
+.second-section.page-active .box-3 {
+  transition-delay: 0.3s;
+}
+
+.second-section.page-active .box-4 {
+  transition-delay: 0.4s;
+}
+
 .grid-box {
   position: relative;
   background-color: rgba(255, 255, 255, 0.05);
@@ -1669,8 +1915,8 @@ export default {
   cursor: pointer;
 }
 
-.grid-box:hover {
-  transform: translateY(-5px);
+.second-section.page-active .grid-box:hover {
+  transform: translateY(-5px) scale(1);
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
@@ -1969,6 +2215,425 @@ export default {
   overflow: hidden;
 }
 
+/* 城堡背景容器 */
+.castle-background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 红砖欧式建筑 */
+.brick-building {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 80px;
+}
+
+/* 人字形屋顶 */
+.roof-gable {
+  position: relative;
+  margin-bottom: -2px;
+  z-index: 3;
+}
+
+.roof-triangle {
+  width: 0;
+  height: 0;
+  border-left: 585px solid transparent;
+  border-right: 585px solid transparent;
+  border-bottom: 234px solid #8b4513;
+  filter: drop-shadow(0 -5px 15px rgba(0, 0, 0, 0.5));
+}
+
+.roof-trim {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px;
+  height: 24px;
+  background: linear-gradient(to right,
+    #d4a76a,
+    #c9a362,
+    #d4a76a
+  );
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 屋顶窗户 */
+.roof-windows {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 120px;
+}
+
+.roof-window {
+  width: 90px;
+  height: 105px;
+  background: radial-gradient(ellipse at center,
+    rgba(255, 240, 200, 0.5),
+    rgba(139, 115, 85, 0.3)
+  );
+  border: 3px solid #8b4513;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 240, 200, 0.2);
+}
+
+.roof-window::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  background: #8b4513;
+}
+
+/* 红砖墙体 */
+.brick-wall {
+  position: relative;
+  width: 1130px;
+  height: 400px;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      #b85450 0px,
+      #b85450 16px,
+      #9a4542 16px,
+      #9a4542 20px,
+      #a84a47 20px,
+      #a84a47 36px,
+      #9a4542 36px,
+      #9a4542 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #b85450 0px,
+      #b85450 115px,
+      #9a4542 115px,
+      #9a4542 120px
+    );
+  box-shadow: 
+    inset 0 0 40px rgba(0, 0, 0, 0.2),
+    inset 0 20px 30px rgba(255, 255, 255, 0.05),
+    0 15px 40px rgba(0, 0, 0, 0.6);
+  border-left: 6px solid #8b4513;
+  border-right: 6px solid #8b4513;
+}
+
+/* 门廊 */
+.portico {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 780px;
+  height: 280px;
+}
+
+.portico-top {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 58px;
+  background: linear-gradient(to bottom,
+    #e8dcc8,
+    #d4c4a8
+  );
+  box-shadow: 
+    0 3px 10px rgba(0, 0, 0, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.3);
+}
+
+.portico-top::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom,
+    #d4c4a8,
+    #c4b498
+  );
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.column {
+  position: absolute;
+  top: 78px;
+  width: 78px;
+  height: 202px;
+  background: linear-gradient(to right,
+    #f5f0e8,
+    #e8dcc8,
+    #f5f0e8
+  );
+  box-shadow: 
+    inset -3px 0 8px rgba(0, 0, 0, 0.15),
+    inset 3px 0 8px rgba(255, 255, 255, 0.2),
+    3px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.column-left {
+  left: 32px;
+}
+
+.column-right {
+  right: 32px;
+}
+
+.column::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  right: -10px;
+  height: 28px;
+  background: linear-gradient(to bottom,
+    #f5f0e8,
+    #e8dcc8
+  );
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.column::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: -10px;
+  right: -10px;
+  height: 28px;
+  background: linear-gradient(to bottom,
+    #e8dcc8,
+    #d4c4a8
+  );
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 三个拱形门 */
+.arched-doors {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 40px;
+}
+
+.arched-door {
+  position: relative;
+  width: 215px;
+  height: 280px;
+}
+
+.door-arch {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    rgba(200, 200, 200, 0.3),
+    rgba(150, 150, 150, 0.4)
+  );
+  border: 8px solid #d4c4a8;
+  border-bottom: none;
+  border-radius: 107px 107px 0 0;
+  box-shadow: 
+    inset 0 5px 15px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.door-panel {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 88%;
+  height: 92%;
+  background: linear-gradient(to bottom,
+    #5c3a29,
+    #4a2f22,
+    #3a251b
+  );
+  border: 6px solid #2a1810;
+  border-bottom: none;
+  border-radius: 98px 98px 0 0;
+  box-shadow: 
+    inset 0 3px 12px rgba(0, 0, 0, 0.7),
+    inset 0 -5px 10px rgba(139, 115, 85, 0.1);
+}
+
+.door-panel::before,
+.door-panel::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle,
+    #c9a362,
+    #8b6914
+  );
+  border: 2px solid #2a1810;
+  border-radius: 50%;
+  top: 50%;
+  box-shadow: 
+    0 0 8px rgba(201, 163, 98, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.door-panel::before {
+  left: 15%;
+}
+
+.door-panel::after {
+  right: 15%;
+}
+
+/* 底部栏杆 */
+.balustrade {
+  position: absolute;
+  bottom: -78px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 28px;
+  padding: 0 40px;
+  height: 85px;
+  align-items: flex-end;
+}
+
+.baluster {
+  width: 50px;
+  height: 78px;
+  background: linear-gradient(to right,
+    #e8dcc8,
+    #d4c4a8,
+    #e8dcc8
+  );
+  box-shadow: 
+    inset -2px 0 4px rgba(0, 0, 0, 0.1),
+    inset 2px 0 4px rgba(255, 255, 255, 0.2),
+    2px 3px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.baluster::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: -6px;
+  right: -6px;
+  height: 16px;
+  background: linear-gradient(to bottom,
+    #f5f0e8,
+    #e8dcc8
+  );
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.balustrade::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: linear-gradient(to bottom,
+    #f5f0e8,
+    #e8dcc8
+  );
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 台阶 */
+.steps {
+  position: absolute;
+  bottom: -156px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.step {
+  width: 100%;
+  height: 28px;
+  background: linear-gradient(to bottom,
+    #9a9a9a,
+    #808080
+  );
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.2);
+  border-top: 2px solid #707070;
+}
+
+.step-1 {
+  width: 1015px;
+}
+
+.step-2 {
+  width: 1090px;
+}
+
+.step-3 {
+  width: 1170px;
+}
+
+/* 城堡地基 */
+.castle-foundation {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(to bottom,
+    transparent,
+    rgba(139, 115, 85, 0.08) 20%,
+    rgba(30, 30, 35, 0.5) 40%,
+    rgba(20, 20, 25, 0.75) 65%,
+    rgba(10, 10, 15, 0.9) 85%,
+    rgba(0, 0, 0, 1)
+  );
+  box-shadow: 
+    0 -15px 40px rgba(139, 115, 85, 0.15),
+    0 -5px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* 历史时钟包装器 */
+.history-clock-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
 /* 第四页内容 - 斜线分割 */
 .fourth-section {
   z-index: 1;
@@ -2019,8 +2684,13 @@ a.split-section {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: brightness(0.85) blur(3px);
+  filter: brightness(0.85) blur(3px) grayscale(1);
   z-index: -1;
+  transition: filter 0.5s ease;
+}
+
+.left-section:hover::after {
+  filter: brightness(0.85) blur(3px) grayscale(0);
 }
 
 /* 右侧区域 */
@@ -2037,8 +2707,13 @@ a.split-section {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: brightness(0.85) blur(3px);
+  filter: brightness(0.85) blur(3px) grayscale(1);
   z-index: -1;
+  transition: filter 0.5s ease;
+}
+
+.right-section:hover::after {
+  filter: brightness(0.85) blur(3px) grayscale(0);
 }
 
 /* 斜线分割线 */
@@ -2115,6 +2790,14 @@ a.split-section {
   z-index: 2;
   position: relative;
   transition: all 0.4s ease;
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fourth-section.page-active .split-content {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.7s ease-out 0.3s, transform 0.7s ease-out 0.3s, all 0.4s ease;
 }
 
 /* 左侧内容在左半边的1/4位置 */
@@ -2129,8 +2812,8 @@ a.split-section {
   margin-right: -25%;
 }
 
-.split-section:hover .split-content {
-  transform: scale(1.1);
+.fourth-section.page-active .split-section:hover .split-content {
+  transform: scale(1.1) !important;
 }
 
 .split-content h2 {
@@ -2278,7 +2961,7 @@ a.split-section {
 /* 聊天窗口 */
 .ai-popup {
   width: 400px;
-  height: 350px;
+  height: 500px;
   max-height: 600px;
   background-image: url('@/assets/ai/bg.png');
   background-size: cover;
@@ -2340,6 +3023,7 @@ a.split-section {
   border: none;
   background: rgba(255, 255, 255, 0.09);
   color: #fff;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2456,6 +3140,112 @@ a.split-section {
 .ai-message-meta {
   font-size: 10px;
   opacity: 0.78;
+}
+
+/* 满意度反馈按钮 */
+.ai-message-feedback {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feedback-btn {
+  padding: 4px 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.feedback-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.feedback-btn.active {
+  background: rgba(166, 116, 71, 0.5);
+  color: #fff;
+}
+
+.feedback-btn i {
+  font-size: 12px;
+}
+
+/* 快速问题建议 */
+.ai-quick-questions {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-question-title {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.quick-question-btn {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.4), rgba(200, 168, 130, 0.35));
+  border: 1px solid rgba(200, 168, 130, 0.5);
+  color: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.quick-question-btn:hover {
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.55), rgba(200, 168, 130, 0.5));
+  border-color: rgba(200, 168, 130, 0.7);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(166, 116, 71, 0.3);
+}
+
+/* 相关问题推荐 */
+.ai-related-questions {
+  padding: 12px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(100, 75, 50, 0.35), rgba(80, 60, 45, 0.3));
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.related-title {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.related-question-btn {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.3), rgba(200, 168, 130, 0.25));
+  border: 1px solid rgba(200, 168, 130, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.related-question-btn:hover {
+  background: linear-gradient(135deg, rgba(166, 116, 71, 0.45), rgba(200, 168, 130, 0.4));
+  border-color: rgba(200, 168, 130, 0.6);
+  color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 10px rgba(166, 116, 71, 0.25);
 }
 
 /* 打字指示器 */
@@ -2723,6 +3513,16 @@ a.split-section {
 
   .milestone-intro {
     font-size: 0.85rem !important;
+  }
+
+  /* 红砖建筑响应式调整 */
+  .brick-building {
+    transform: scale(0.45);
+    margin-bottom: 0px;
+  }
+
+  .castle-foundation {
+    height: 80px;
   }
 }
 </style>

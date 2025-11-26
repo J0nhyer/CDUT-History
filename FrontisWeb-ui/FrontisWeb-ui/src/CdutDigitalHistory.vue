@@ -24,50 +24,6 @@
         }"
       ></div>
       
-      <!-- 多个弹跳的流动有机形状（物理引擎 + 波动系统） -->
-      <svg 
-        v-for="shape in shapes"
-        :key="shape.id"
-        class="bouncing-shape" 
-        width="150" 
-        height="150" 
-        viewBox="0 0 150 150"
-        :style="{
-          left: shape.x + 'px',
-          top: shape.y + 'px',
-          transform: `translate(-50%, -50%) rotate(${shape.rotation}deg) scale(${shape.scale})`,
-          opacity: shape.opacity
-        }">
-        <!-- 定义渐变 -->
-        <defs>
-          <linearGradient :id="shape.gradientId" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" :style="{ stopColor: shape.color.start }" />
-            <stop offset="100%" :style="{ stopColor: shape.color.end }" />
-          </linearGradient>
-          <filter :id="`glow-${shape.id}`" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        <!-- 发光背景层 -->
-        <path class="glow-path"
-              :d="shape.path" 
-              :fill="shape.color.glow"
-              :filter="`url(#glow-${shape.id})`"
-              opacity="0.4" />
-        <!-- 主形状 -->
-        <path class="morphing-path"
-              :d="shape.path" 
-              fill="transparent"
-              :stroke="`url(#${shape.gradientId})`"
-              stroke-width="3"
-              stroke-linecap="round"
-              stroke-linejoin="round" />
-      </svg>
-      
       <!-- 顶部Logo和标题 -->
       <div class="header">
       <div class="logo-section">
@@ -204,12 +160,6 @@ const backgroundOpacity = ref(1) // layer-1的透明度
 const backgroundTimer = ref(null)
 const SLIDE_INTERVAL = 6000 // 每张图片显示6秒（包括过渡时间）
 
-// 物理引擎 - 多个弹跳图形
-const shapes = ref([]) // 存储多个图形
-const minShapes = 3 // 最少保持3个图形
-const maxShapes = 6 // 最多6个图形
-const shapeSize = 150 // 图形尺寸
-const bounceAnimationId = ref(null)
 
 // 图片映射配置（前端本地资源）
 const imageMapping = {
@@ -690,249 +640,6 @@ const preloadAllImages = async () => {
   }
 }
 
-// 创建单个图形对象 - 有机曲线形状
-const createShape = (x = null, y = null) => {
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-  
-  // 随机位置
-  const posX = x !== null ? x : Math.random() * (vw - shapeSize) + shapeSize / 2
-  const posY = y !== null ? y : Math.random() * (vh - shapeSize) + shapeSize / 2
-  
-  // 随机速度
-  const speed = 1.5 + Math.random() * 2
-  const angle = Math.random() * Math.PI * 2
-  
-  // 灰色系
-  const colorOptions = [
-    { start: 'rgba(180, 180, 180, 0.6)', end: 'rgba(120, 120, 120, 0.3)', glow: 'rgba(160, 160, 160, 0.4)' }, // 浅灰
-    { start: 'rgba(160, 160, 160, 0.6)', end: 'rgba(100, 100, 100, 0.3)', glow: 'rgba(140, 140, 140, 0.4)' }, // 中灰
-    { start: 'rgba(140, 140, 140, 0.6)', end: 'rgba(80, 80, 80, 0.3)', glow: 'rgba(120, 120, 120, 0.4)' }, // 深灰
-    { start: 'rgba(200, 200, 200, 0.6)', end: 'rgba(140, 140, 140, 0.3)', glow: 'rgba(180, 180, 180, 0.4)' }, // 亮灰
-    { start: 'rgba(150, 150, 150, 0.6)', end: 'rgba(90, 90, 90, 0.3)', glow: 'rgba(130, 130, 130, 0.4)' }, // 暗灰
-  ]
-  const color = colorOptions[Math.floor(Math.random() * colorOptions.length)]
-  
-  const numPoints = 5 + Math.floor(Math.random() * 4) // 5-8个控制点
-  const points = []
-  const phases = []
-  
-  for (let i = 0; i < numPoints; i++) {
-    const pointAngle = (i / numPoints) * Math.PI * 2
-    const radius = 40 + Math.random() * 25
-    points.push({
-      angle: pointAngle,
-      radius: radius,
-      baseRadius: radius,
-      radiusSpeed: 0.4 + Math.random() * 0.6,
-      angleSpeed: 0.015 + Math.random() * 0.025,
-      waveAmplitude: 10 + Math.random() * 15, // 波动幅度
-      waveFrequency: 0.02 + Math.random() * 0.03 // 波动频率
-    })
-    phases.push(Math.random() * Math.PI * 2)
-  }
-  
-  return {
-    id: Date.now() + Math.random(),
-    x: posX,
-    y: posY,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-    rotation: Math.random() * 360,
-    rotationSpeed: 0.8 + Math.random() * 1.5,
-    scale: 0.9 + Math.random() * 0.4,
-    scaleSpeed: 0.006 + Math.random() * 0.01,
-    opacity: 0.6 + Math.random() * 0.3,
-    color: color,
-    numPoints: numPoints,
-    points: points,
-    phases: phases,
-    path: '',
-    gradientId: `gradient-${Date.now()}-${Math.random()}`,
-    lifetime: 10000 + Math.random() * 20000,
-    createdAt: Date.now()
-  }
-}
-
-// 更新单个图形的路径 - 流动的有机曲线
-const updateShapePath = (shape) => {
-  const centerX = 75
-  const centerY = 75
-  
-  // 更新每个点的位置（流动波动）
-  shape.points.forEach((point, i) => {
-    // 相位更新
-    shape.phases[i] += point.waveFrequency
-    
-    // 半径流动变化
-    const wave1 = Math.sin(shape.phases[i]) * point.waveAmplitude
-    const wave2 = Math.cos(shape.phases[i] * 1.5) * (point.waveAmplitude * 0.5)
-    point.radius = point.baseRadius + wave1 + wave2
-    
-    // 角度缓慢旋转
-    point.angle += point.angleSpeed * 0.3
-  })
-  
-  // 偶尔改变形状复杂度
-  if (Math.random() > 0.997) {
-    const newNumPoints = 5 + Math.floor(Math.random() * 4)
-    const newPoints = []
-    const newPhases = []
-    
-    for (let i = 0; i < newNumPoints; i++) {
-      const pointAngle = (i / newNumPoints) * Math.PI * 2
-      const radius = 40 + Math.random() * 25
-      newPoints.push({
-        angle: pointAngle,
-        radius: radius,
-        baseRadius: radius,
-        radiusSpeed: 0.4 + Math.random() * 0.6,
-        angleSpeed: 0.015 + Math.random() * 0.025,
-        waveAmplitude: 10 + Math.random() * 15,
-        waveFrequency: 0.02 + Math.random() * 0.03
-      })
-      newPhases.push(Math.random() * Math.PI * 2)
-    }
-    
-    shape.numPoints = newNumPoints
-    shape.points = newPoints
-    shape.phases = newPhases
-  }
-  
-  // 生成流畅的贝塞尔曲线路径
-  const n = shape.points.length
-  let path = ''
-  const coords = []
-  
-  // 计算所有点的坐标
-  shape.points.forEach((point) => {
-    const x = centerX + Math.cos(point.angle) * point.radius
-    const y = centerY + Math.sin(point.angle) * point.radius
-    coords.push({ x, y })
-  })
-  
-  // 使用二次贝塞尔曲线连接点，创建流畅形状
-  for (let i = 0; i < n; i++) {
-    const curr = coords[i]
-    const next = coords[(i + 1) % n]
-    
-    if (i === 0) {
-      path += `M ${curr.x},${curr.y}`
-    }
-    
-    // 控制点在当前点和下一点之间
-    const cpX = (curr.x + next.x) / 2
-    const cpY = (curr.y + next.y) / 2
-    
-    path += ` Q ${curr.x},${curr.y} ${cpX},${cpY}`
-  }
-  
-  // 闭合曲线
-  const first = coords[0]
-  const cpX = (coords[n-1].x + first.x) / 2
-  const cpY = (coords[n-1].y + first.y) / 2
-  path += ` Q ${coords[n-1].x},${coords[n-1].y} ${cpX},${cpY}`
-  path += ` Q ${first.x},${first.y} ${first.x},${first.y}`
-  path += ' Z'
-  
-  shape.path = path
-}
-
-// 物理引擎 - 更新所有弹跳图形
-const updateBouncingShape = () => {
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-  const now = Date.now()
-  const halfSize = shapeSize / 2
-  
-  // 更新每个图形
-  shapes.value.forEach((shape) => {
-    // 更新位置
-    shape.x += shape.vx
-    shape.y += shape.vy
-    
-    // 左右边界反弹
-    if (shape.x - halfSize <= 0) {
-      shape.x = halfSize
-      shape.vx = Math.abs(shape.vx)
-      shape.rotationSpeed *= -1
-    } else if (shape.x + halfSize >= vw) {
-      shape.x = vw - halfSize
-      shape.vx = -Math.abs(shape.vx)
-      shape.rotationSpeed *= -1
-    }
-    
-    // 上下边界反弹
-    if (shape.y - halfSize <= 0) {
-      shape.y = halfSize
-      shape.vy = Math.abs(shape.vy)
-      shape.rotationSpeed *= -1
-    } else if (shape.y + halfSize >= vh) {
-      shape.y = vh - halfSize
-      shape.vy = -Math.abs(shape.vy)
-      shape.rotationSpeed *= -1
-    }
-    
-    // 更新旋转
-    shape.rotation += shape.rotationSpeed
-    
-    // 更新缩放
-    shape.scale += shape.scaleSpeed
-    if (shape.scale >= 1.3 || shape.scale <= 0.7) {
-      shape.scaleSpeed *= -1
-    }
-    
-    // 更新透明度
-    if (Math.random() > 0.95) {
-      shape.opacity = 0.5 + Math.random() * 0.3
-    }
-    
-    // 更新形状路径
-    updateShapePath(shape)
-  })
-  
-  // 管理图形数量：移除过期的图形
-  shapes.value = shapes.value.filter(shape => {
-    const age = now - shape.createdAt
-    return age < shape.lifetime
-  })
-  
-  // 确保至少有minShapes个图形
-  while (shapes.value.length < minShapes) {
-    shapes.value.push(createShape())
-  }
-  
-  // 随机添加新图形（如果少于maxShapes）
-  if (shapes.value.length < maxShapes && Math.random() > 0.99) {
-    shapes.value.push(createShape())
-  }
-  
-  // 继续动画
-  bounceAnimationId.value = requestAnimationFrame(updateBouncingShape)
-}
-
-// 启动物理引擎
-const startBounceAnimation = () => {
-  if (bounceAnimationId.value) {
-    cancelAnimationFrame(bounceAnimationId.value)
-  }
-  
-  // 初始化最少数量的图形
-  shapes.value = []
-  for (let i = 0; i < minShapes; i++) {
-    shapes.value.push(createShape())
-  }
-  
-  updateBouncingShape()
-}
-
-// 停止物理引擎
-const stopBounceAnimation = () => {
-  if (bounceAnimationId.value) {
-    cancelAnimationFrame(bounceAnimationId.value)
-    bounceAnimationId.value = null
-  }
-}
 
 // 窗口大小变化处理
 let resizeHandler = null
@@ -952,15 +659,11 @@ onMounted(async () => {
   
   // 然后预加载所有图片
   preloadAllImages()
-  
-  // 启动物理引擎
-  startBounceAnimation()
 })
 
 onUnmounted(() => {
   stopAutoScroll()
   stopBackgroundSlide()
-  stopBounceAnimation()
   // 清理窗口大小监听
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler)
@@ -1784,26 +1487,5 @@ onUnmounted(() => {
   overflow-wrap: break-word;
   white-space: normal;
   word-break: break-word;
-}
-
-/* 弹跳的流动有机形状（物理引擎控制） */
-.bouncing-shape {
-  position: fixed;
-  width: 150px;
-  height: 150px;
-  z-index: 1;
-  pointer-events: none;
-  transition: none;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-}
-
-/* 发光路径 */
-.glow-path {
-  transition: all 0.3s ease;
-}
-
-/* 主形状路径 */
-.morphing-path {
-  transition: stroke-width 0.3s ease;
 }
 </style>

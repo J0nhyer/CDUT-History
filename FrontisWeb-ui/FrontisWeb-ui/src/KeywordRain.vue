@@ -5,6 +5,13 @@
       <i class="fas fa-arrow-left"></i>
     </button>
 
+    <!-- 3D入口按钮 -->
+    <button class="enter-3d-button" @click="enter3D">
+      <i class="fas fa-cube"></i>
+      <span>进入3D世界</span>
+      <div class="button-glow"></div>
+    </button>
+
     <!-- 标题区域 -->
     <div class="rain-header">
       <h1 class="rain-title">倾听雨声</h1>
@@ -36,6 +43,30 @@
       <i class="fas fa-hand-pointer"></i>
       移动鼠标到关键词上并点击，即可接住并查看详情
     </div>
+
+    <!-- 学院信息弹窗 -->
+    <div class="institute-modal" v-if="selectedInstitute" @click="closeInstitute">
+      <div class="modal-content" @click.stop>
+        <button class="close-btn" @click="closeInstitute">×</button>
+        <div class="institute-info">
+          <h2>{{ selectedInstitute.name }}</h2>
+          <p class="title" v-if="selectedInstitute.title">{{ selectedInstitute.title }}</p>
+          <div class="description" v-if="selectedInstitute.description">{{ selectedInstitute.description }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 专业信息弹窗 -->
+    <div class="major-modal" v-if="selectedMajor" @click="closeMajor">
+      <div class="modal-content" @click.stop>
+        <button class="close-btn" @click="closeMajor">×</button>
+        <div class="major-info">
+          <h2>{{ selectedMajor.name }}</h2>
+          <p class="major-level" v-if="selectedMajor.level">层次：{{ selectedMajor.level }}</p>
+          <div class="description" v-if="selectedMajor.description">{{ selectedMajor.description }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -48,6 +79,8 @@ export default {
     return {
       keywords: [],          // 所有关键词数据（包含人物、事件、学院、专业）
       availableKeywords: [], // 可用的关键词池（用于避免重复）
+      selectedInstitute: null, // 选中的学院信息
+      selectedMajor: null, // 选中的专业信息
       activeKeywords: [],    // 当前显示的关键词
       maxKeywords: 30,       // 同时显示的最大关键词数
       caughtKeywords: new Set(), // 已接住的关键词ID
@@ -281,34 +314,27 @@ export default {
     },
 
     catchKeyword(keyword) {
-      // 标记为接住状态
       keyword.isCatching = true;
       
-      // 记录接住（使用原始ID）
       if (!this.caughtKeywords.has(keyword.originalId)) {
         this.caughtKeywords.add(keyword.originalId);
         this.caughtCount++;
       }
 
-      // 延迟后跳转并移除关键词
       setTimeout(() => {
-        // 从数组中移除
-        const index = this.activeKeywords.findIndex(k => k.id === keyword.id);
+        const index = this.activeKeywords.indexOf(keyword);
         if (index > -1) {
           this.activeKeywords.splice(index, 1);
-          
-          // 将关键词放回池中
-          const originalKeyword = this.keywords.find(k => k.id === keyword.originalId);
-          if (originalKeyword) {
-            this.availableKeywords.push(originalKeyword);
-          }
         }
-        
-        // 根据类型添加来源参数
-        if (keyword.type === 'person') {
+
+        if (keyword.type === 'institute') {
+          this.showInstituteDetail(keyword);
+        } else if (keyword.type === 'major') {
+          this.showMajorDetail(keyword);
+        } else if (keyword.type === 'person') {
           this.$router.push({
             path: keyword.route,
-            query: { from: 'keyword-rain' }
+            query: { from: 'keyword-rain', personId: keyword.originalId.replace('person-', '') }
           });
         } else if (keyword.type === 'event') {
           this.$router.push({
@@ -319,6 +345,36 @@ export default {
           this.$router.push(keyword.route);
         }
       }, 300);
+    },
+
+    async showInstituteDetail(keyword) {
+      try {
+        const nodeId = keyword.originalId.replace('node-', '');
+        const response = await axios.get(`/api/academic-universe/nodes/${nodeId}`);
+        this.selectedInstitute = response.data;
+      } catch (error) {
+        console.error('获取学院详情失败:', error);
+        this.$router.push(keyword.route);
+      }
+    },
+
+    closeInstitute() {
+      this.selectedInstitute = null;
+    },
+
+    async showMajorDetail(keyword) {
+      try {
+        const majorId = keyword.originalId.replace('major-', '');
+        const response = await axios.get(`/api/academic-universe/majors/${majorId}`);
+        this.selectedMajor = response.data;
+      } catch (error) {
+        console.error('获取专业详情失败:', error);
+        this.$router.push(keyword.route);
+      }
+    },
+
+    closeMajor() {
+      this.selectedMajor = null;
     },
 
     adjustMaxKeywords() {
@@ -334,6 +390,10 @@ export default {
 
     goBack() {
       this.$router.back();
+    },
+
+    enter3D() {
+      this.$router.push('/keyword-rain-3d');
     }
   }
 };
@@ -374,6 +434,48 @@ export default {
 .back-button:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateX(-5px);
+}
+
+/* 3D入口按钮 */
+.enter-3d-button {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 1000;
+  padding: 12px 24px;
+  background: rgba(100, 120, 200, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  font-weight: normal;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.enter-3d-button i {
+  font-size: 18px;
+}
+
+.enter-3d-button:hover {
+  background: rgba(100, 120, 200, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+.enter-3d-button:active {
+  transform: translateY(0);
+}
+
+.button-glow {
+  display: none;
 }
 
 /* 标题区域 */
@@ -499,6 +601,128 @@ export default {
   50% {
     opacity: 0.6;
   }
+}
+
+/* 学院信息弹窗 */
+.institute-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  position: relative;
+  background: linear-gradient(135deg, #1a2847 0%, #0a1428 100%);
+  border-radius: 20px;
+  border: 2px solid rgba(135, 206, 235, 0.5);
+  padding: 40px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.institute-info h2 {
+  color: #87ceeb;
+  font-size: 28px;
+  margin: 0 0 10px 0;
+}
+
+.institute-info .title {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  margin: 0 0 20px 0;
+}
+
+.institute-info .description {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 25px;
+}
+
+/* 专业信息弹窗 */
+.major-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.major-info h2 {
+  color: #98fb98;
+  font-size: 28px;
+  margin: 0 0 10px 0;
+}
+
+.major-info .major-level {
+  color: #ffd700;
+  font-size: 16px;
+  margin: 0 0 20px 0;
+  font-weight: bold;
+}
+
+.major-info .description {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  margin-bottom: 25px;
 }
 
 /* 响应式设计 */
