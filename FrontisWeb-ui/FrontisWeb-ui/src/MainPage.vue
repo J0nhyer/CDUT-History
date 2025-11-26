@@ -299,13 +299,19 @@
             </div>
           </section>
 
-          <!-- 第 4 页：斜线分割 -->
+          <!-- 第 4 页：三分斜线分割 -->
           <section class="page-section fourth-section" :class="{ 'page-active': currentPage === 3 }">
             <div class="split-container">
               <!-- 左侧部分 -->
               <router-link to="/universe" class="split-section left-section">
                 <div class="split-content">
                   <h2>学科星河</h2>
+                </div>
+              </router-link>
+              <!-- 中间部分 -->
+              <router-link to="/draw-reveal" class="split-section middle-section">
+                <div class="split-content">
+                  <h2>像素岁月</h2>
                 </div>
               </router-link>
               <!-- 右侧部分 -->
@@ -2672,7 +2678,7 @@ a.split-section {
 
 /* 左侧区域 - 使用clip-path创建斜线分割 */
 .left-section {
-  clip-path: polygon(0 0, 60% 0, 40% 100%, 0 100%);
+  clip-path: polygon(0 0, 38% 0, 28% 100%, 0 100%);
 }
 
 /* 左侧背景图层（使用伪元素避免文字模糊） */
@@ -2693,9 +2699,32 @@ a.split-section {
   filter: brightness(0.85) blur(3px) grayscale(0);
 }
 
+/* 中间背景图层 - 暂时使用渐变背景，可以替换为像素风格的图片 */
+.middle-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0.85) blur(3px) grayscale(1);
+  z-index: -1;
+  transition: filter 0.5s ease;
+}
+
+.middle-section:hover::after {
+  filter: brightness(0.85) blur(3px) grayscale(0);
+}
+
+/* 中间区域 */
+.middle-section {
+  clip-path: polygon(38% 0, 72% 0, 62% 100%, 28% 100%);
+}
+
 /* 右侧区域 */
 .right-section {
-  clip-path: polygon(60% 0, 100% 0, 100% 100%, 40% 100%);
+  clip-path: polygon(72% 0, 100% 0, 100% 100%, 62% 100%);
 }
 
 /* 右侧背景图层（使用伪元素避免文字模糊） */
@@ -2736,6 +2765,14 @@ a.split-section {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
+/* 悬停效果 - 中间 */
+.middle-section:hover {
+  z-index: 5;
+  backdrop-filter: blur(0px);
+  transform: scale(1.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
 /* 悬停效果 - 右侧 */
 .right-section:hover {
   z-index: 5;
@@ -2744,19 +2781,36 @@ a.split-section {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
-/* 当左侧悬停时，虚化右侧 */
+/* 当左侧悬停时，虚化中间和右侧 */
+.split-container:has(.left-section:hover) .middle-section,
 .split-container:has(.left-section:hover) .right-section {
   backdrop-filter: blur(8px);
-  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* 当右侧悬停时，虚化左侧 */
-.split-container:has(.right-section:hover) .left-section {
+/* 当中间悬停时，虚化左右两侧 */
+.split-container:has(.middle-section:hover) .left-section,
+.split-container:has(.middle-section:hover) .right-section {
+  backdrop-filter: blur(8px);
+}
+
+/* 当右侧悬停时，虚化左侧和中间 */
+.split-container:has(.right-section:hover) .left-section,
+.split-container:has(.right-section:hover) .middle-section {
   backdrop-filter: blur(8px);
 }
 
 /* 左侧添加遮罩层用于虚化效果 */
 .left-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* 中间添加遮罩层 */
+.middle-section::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -2775,11 +2829,18 @@ a.split-section {
   pointer-events: none;
 }
 
-.split-container:has(.right-section:hover) .left-section::before {
+.split-container:has(.left-section:hover) .middle-section::before,
+.split-container:has(.left-section:hover) .right-section::before {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.split-container:has(.left-section:hover) .right-section::before {
+.split-container:has(.middle-section:hover) .left-section::before,
+.split-container:has(.middle-section:hover) .right-section::before {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.split-container:has(.right-section:hover) .left-section::before,
+.split-container:has(.right-section:hover) .middle-section::before {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -2800,16 +2861,21 @@ a.split-section {
   transition: opacity 0.7s ease-out 0.3s, transform 0.7s ease-out 0.3s, all 0.4s ease;
 }
 
-/* 左侧内容在左半边的1/4位置 */
+/* 左侧内容居中 */
 .left-section .split-content {
-  margin-right: 25%;
-  margin-left: -25%;
+  margin-right: 50%;
+  margin-left: -18%;
 }
 
-/* 右侧内容在右半边的1/4位置 */
+/* 中间内容居中 */
+.middle-section .split-content {
+  margin: 0;
+}
+
+/* 右侧内容居中 */
 .right-section .split-content {
-  margin-left: 25%;
-  margin-right: -25%;
+  margin-left: 50%;
+  margin-right: -18%;
 }
 
 .fourth-section.page-active .split-section:hover .split-content {
