@@ -529,7 +529,6 @@ import HistoryClock from '@/components/HistoryClock.vue'
 import { getAllPersonProfiles } from '@/services/personDataService'
 import { getPersonImage } from '@/utils/imageLoader'
 import HomeOilGasLab1990 from '@/components/home/HomeOilGasLab1990.vue'
-import HomeRename1993 from '@/components/home/HomeRename1993.vue'
 
 // 背景图片
 import libraryImageSrc from '@/assets/mainbg/新图书馆.jpg'
@@ -537,7 +536,6 @@ import buildingImageSrc from '@/assets/mainbg/东区教学楼.jpg'
 import openingCeremonyImageSrc from '@/assets/events/1956年首届开学典礼.jpg'
 import foundingImageSrc from '@/assets/events/1956_01_成都地质勘探学院成立.png'
 import lab1990ImageSrc from '@/assets/events/1990年油气藏重点实验室获批建设.jpg'
-import rename1993ImageSrc from '@/assets/events/1993年学校更名庆祝大会.jpg'
 import sovietBuilding1ImageSrc from '@/assets/mainpage/苏式建筑1.jpg'
 import aiSitVideoSrc from '@/assets/ai/sit.webm'
 import aiStandVideoSrc from '@/assets/ai/stand.webm'
@@ -565,8 +563,7 @@ export default {
     AuthModal,
     MediaLightbox,
     HistoryClock,
-    HomeOilGasLab1990,
-    HomeRename1993
+    HomeOilGasLab1990
   },
   data() {
     return {
@@ -578,7 +575,6 @@ export default {
       openingCeremonyImage: openingCeremonyImageSrc,
       foundingImage: foundingImageSrc,
       lab1990Image: lab1990ImageSrc,
-      rename1993Image: rename1993ImageSrc,
       sovietBuilding1Image: sovietBuilding1ImageSrc,
 
       backgroundImages: [libraryImageSrc, buildingImageSrc],
@@ -1315,12 +1311,10 @@ export default {
   background: linear-gradient(to top, rgba(4, 6, 20, 0.98), rgba(4, 6, 20, 0.3), transparent);
 }
 
-/* 固定背景页（2~6） */
+/* 固定背景页（2~4） */
 .background-static.second-bg,
 .background-static.third-bg,
-.background-static.fourth-bg,
-.background-static.rename1993-bg,
-.background-static.sixth-bg {
+.background-static.fourth-bg {
   position: absolute;
   inset: 0;
   background-size: cover;
