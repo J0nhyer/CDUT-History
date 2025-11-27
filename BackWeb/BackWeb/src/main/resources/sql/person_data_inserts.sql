@@ -83,8 +83,7 @@ INSERT INTO `person_biography` (`person_id`, `title`, `content`, `tags`, `media_
 <li><strong>学术荣誉：</strong>国家科技进步一等奖、国家教学成果二等奖、五一劳动奖章、李四光地质科学奖，国务院学位委员会学科评议组成员、中国地质学会工程地质专业委员会主任委员</li>
 </ul>', '["成就"]', NULL, NULL, 0, 2),
   
-  -- huangrunqiu (暂无biography数据)
-  -- wangchengshan (暂无biography数据)
+  -- huangrunqiu、wangchengshan (使用单独的biography记录)
   
   -- duoji
   ('duoji', '详细介绍', '<p>多吉（1953-），中国工程院院士，藏族，中国工程院第一位藏族院士，成都理工大学杰出校友，著名的地热地质和矿产地质专家。多吉院士1974年进入成都地质学院（现成都理工大学）学习，毕业后长期在西藏从事地质勘探工作，为西藏的矿产开发和地热资源利用做出了突出贡献。</p>
@@ -483,10 +482,9 @@ INSERT INTO `person_relationship` (`person_id`, `related_person_id`, `related_pe
   ('xuqiang', 'zhangzhuoyuan', '张倬元', '师生', '师生', NULL, 0, 0),
   ('xuqiang', 'huangrunqiu', '黄润秋', '学术合作', '学术合作', NULL, 0, 1),
   ('xuqiang', 'cuipeng', '崔鹏', '学术合作', '学术合作', NULL, 0, 2),
-  ('zhangzhuoyuan', 'huangrunqiu', '黄润秋', '师生', '师生', NULL, 0, 0),
-  ('zhangzhuoyuan', 'xuqiang', 'xuqiang', '师生', '师生', NULL, 0, 1),
-  ('zhangzhuoyuan', 'changlongqing', '常隆庆', '学术传承', '学术传承', NULL, 0, 2),
-  ('zhouyong', 'tangchuan', '唐川', '学术合作', '学术合作', NULL, 0, 1)
+  ('zhangzhuoyuan', 'huangrunqiu', '黄润秋', '师生', '学生', NULL, 0, 0),
+  ('zhangzhuoyuan', 'xuqiang', '许强', '师生', '学生', NULL, 0, 1),
+  ('zhangzhuoyuan', 'changlongqing', '常隆庆', '学术合作', '同事', NULL, 0, 2)
 ON DUPLICATE KEY UPDATE
   `related_person_name` = VALUES(`related_person_name`),
   `relation_type` = VALUES(`relation_type`),
@@ -774,18 +772,7 @@ REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `ti
 ('person-lichengsan-mineral', 'lichengsan', '李承三', '研究成果', '发现重要矿床', '发现莱子沟铁矿、松潘漳腊冰川式砂金矿等重要矿床', 'achievement', 'high', '["李承三"]', '人物时间轴', 19450101),
 ('person-lichengsan-1967', 'lichengsan', '李承三', '1967', '逝世', '因病逝世，终年六十八岁。成理慧园建承三亭纪念', 'death', 'high', '["李承三"]', '人物时间轴', 19670101);
 
--- 许强 (xuqiang): 10个事件
-REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES
-('person-xuqiang-1968', 'xuqiang', '许强', '1968', '出生', '1968年6月出生于四川南江', 'birth', 'medium', '["许强"]', '人物时间轴', 19680101),
-('person-xuqiang-1988_1992', 'xuqiang', '许强', '1988-1992', '本科学习', '在成都地质学院水文地质与工程地质专业攻读本科', 'education', 'high', '["许强"]', '人物时间轴', 19880101),
-('person-xuqiang-1992_1994', 'xuqiang', '许强', '1992-1994', '硕士学习', '在成都理工学院工程地质专业攻读硕士研究生', 'education', 'high', '["许强"]', '人物时间轴', 19920101),
-('person-xuqiang-1994_1997', 'xuqiang', '许强', '1994-1997', '博士学习', '在成都理工学院水文地质与工程地质专业攻读博士研究生', 'education', 'high', '["许强"]', '人物时间轴', 19940101),
-('person-xuqiang-1997', 'xuqiang', '许强', '1997', '任教', '在成都理工学院任教，开始从事地质灾害防治的教学和科研工作', 'career', 'high', '["许强"]', '人物时间轴', 19970101),
-('person-xuqiang-2002_2004', 'xuqiang', '许强', '2002-2004', '担任副院长', '担任成都理工大学环境与土木工程学院副院长（主持工作）', 'career', 'high', '["许强"]', '人物时间轴', 20020101),
-('person-xuqiang-2004_2014', 'xuqiang', '许强', '2004-2014', '担任院长', '担任成都理工大学环境与土木工程学院院长', 'career', 'high', '["许强"]', '人物时间轴', 20040101),
-('person-xuqiang-2014_2019', 'xuqiang', '许强', '2014-2019', '国家重点实验室常务副主任', '担任地质灾害防治与地质环境保护国家重点实验室常务副主任', 'career', 'high', '["许强"]', '人物时间轴', 20140101),
-('person-xuqiang-2019', 'xuqiang', '许强', '2019', '担任副校长', '担任成都理工大学副校长', 'career', 'high', '["许强"]', '人物时间轴', 20190101),
-('person-xuqiang-2023', 'xuqiang', '许强', '2023', '担任校长', '2023年10月任成都理工大学校长', 'career', 'high', '["许强"]', '人物时间轴', 20230101);
+-- 许强数据已合并到后续统一的事件记录中
 
 -- 李天斌 (litianbin): 1个事件
 REPLACE INTO `person_event` (`event_id`, `person_id`, `person_name`, `year`, `title`, `description`, `event_category`, `importance`, `tags`, `source`, `sort_order`) VALUES

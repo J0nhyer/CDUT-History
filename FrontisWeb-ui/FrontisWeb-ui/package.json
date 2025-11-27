@@ -4,10 +4,16 @@
   "version": "1.0.0",
   "description": "张倬元教授人物介绍界面 - 成都理工大学数字记忆平台",
   "type": "module",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "vite --port 3000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "install:all": "npm install",
+    "postinstall": "echo 依赖安装完成"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

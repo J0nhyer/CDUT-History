@@ -5,7 +5,6 @@ import PersonDetailAdvancedPage from './views/PersonDetailAdvancedPage.vue'
 import CdutDigitalHistory from './CdutDigitalHistory.vue'
 import AcademicUniverse from './AcademicUniverse2.vue'
 import DinoExplorer from './DinoExplorer.vue'
-import StarMapKnowledgeGraph from './StarMapKnowledgeGraph.vue'
 import DinoGameMain from './DinoGameMain.vue'
 import DinoCampus3D from './DinoCampus3D.vue'
 import KeywordRain from './KeywordRain.vue'
@@ -86,21 +85,6 @@ const routes = [
     path: '/explore',
     name: 'DinoExplorer',
     component: DinoExplorer
-  },
-  {
-    path: '/history-graph',
-    name: 'UniversityHistoryGraph',
-    component: () => import('./KnowledgeGraphPage.vue')
-  },
-  {
-    path: '/star-map',
-    name: 'StarMapKnowledgeGraph',
-    component: StarMapKnowledgeGraph
-  },
-  {
-    path: '/kg-advanced',
-    name: 'KnowledgeGraphAdvanced',
-    redirect: '/history-graph'
   },
   {
     path: '/dino-game',
