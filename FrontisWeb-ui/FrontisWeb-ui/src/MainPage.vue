@@ -63,12 +63,10 @@
         <div class="header-content">
           <div class="logo-section">
             <div class="logo-container">
-              <div class="logo-circle">
-                <img :src="cdutLogo" alt="成都理工大学" class="university-logo" />
-              </div>
+              <img :src="cdutLogo" alt="成都理工大学" class="university-logo" />
               <div class="logo-text">
-                <div class="logo-kicker">CHENGDU UNIVERSITY OF TECHNOLOGY</div>
-                <h1 class="main-logo">成都理工大学数字校史馆</h1>
+                <img :src="cdutEnglishName" alt="Chengdu University of Technology" class="english-name-image" />
+                <img :src="cdutChineseName" alt="成都理工大学" class="chinese-name-image" />
               </div>
             </div>
           </div>
@@ -171,18 +169,19 @@
             class="page-section hero-section"
             :class="{ 'page-active': currentPage === 0 }"
             ref="heroSection"
-            @mousemove="handleHeroMouseMove"
           >
             <div class="hero-overlay"></div>
 
             <div class="hero-inner">
-              <div class="hero-content" :style="heroContentStyle">
+              <img 
+                src="@/assets/mainpage/11学校校训反白(横式).png" 
+                alt="穷究于理 成就于工" 
+                class="hero-title-image"
+              />
+              <div class="hero-content">
                 <div class="hero-kicker">
                   成都理工大学 · 数字校史馆
                 </div>
-                <h1 class="hero-title">
-                  穷究于理 · 成就于工
-                </h1>
                 <p class="hero-subtitle">
                   以影像与档案，串联起成理从建校肇始到今日的每一段时光。
                 </p>
@@ -531,7 +530,9 @@
 </template>
 
 <script>
-import cdutLogo from '@/assets/CDUT.png'
+import cdutLogo from '@/assets/mainpage/01标示标准彩色图形反白.png'
+import cdutChineseName from '@/assets/mainpage/02中文校名规范01反白横.png'
+import cdutEnglishName from '@/assets/mainpage/03英文校名规范01反白横.png'
 import defaultAvatar from '@/assets/default-avatar.png'
 import AuthModal from '@/components/AuthModal.vue'
 import MediaLightbox from '@/components/MediaLightbox.vue'
@@ -581,6 +582,8 @@ export default {
   data() {
     return {
       cdutLogo,
+      cdutChineseName,
+      cdutEnglishName,
       defaultAvatar,
       libraryImage: libraryImageSrc || cdutLogo,
       openingCeremonyImage: openingCeremonyImageSrc,
@@ -1373,9 +1376,17 @@ export default {
 
 .header-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 14px 40px;
+  padding: 28px 40px;
+  position: relative;
+}
+
+.logo-section {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: visible;
 }
 
 .logo-container {
@@ -1384,32 +1395,48 @@ export default {
   gap: 16px;
 }
 
-.logo-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  padding: 2px;
-  background: radial-gradient(circle at 0% 0%, #ffffff, #9fb3ff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.5),
-    0 10px 25px rgba(0, 0, 0, 0.35);
-}
-
 .university-logo {
-  width: 58px;
-  height: 58px;
+  position: fixed;
+  top: 16px;
+  left: 40px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
-  border-radius: 50%;
-  background: #ffffff;
+  z-index: 9999;
+  transition: all 0.3s ease;
 }
 
 .logo-text {
+  position: fixed;
+  top: 23px;
+  left: 130px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.title-image {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 16px rgba(0, 0, 0, 0.45));
+}
+
+.chinese-name-image {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 16px rgba(0, 0, 0, 0.45));
+}
+
+.english-name-image {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 16px rgba(0, 0, 0, 0.45));
+  margin-bottom: 5px;
 }
 
 .logo-kicker {
@@ -1433,7 +1460,6 @@ export default {
 .main-nav {
   display: flex;
   gap: 18px;
-  margin-left: 80px;
 }
 
 .nav-link {
@@ -1467,7 +1493,8 @@ export default {
 .auth-section {
   display: flex;
   align-items: center;
-  margin-left: auto;
+  position: absolute;
+  right: 80px;
 }
 
 .auth-buttons {
@@ -1673,14 +1700,13 @@ export default {
   height: 100%;
   max-width: 1180px;
   padding: 0 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
 }
 
 .hero-content {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 64px;
+  transform: translateY(-50%);
   z-index: 2;
   text-align: left;
   color: white;
@@ -1692,7 +1718,7 @@ export default {
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  margin-bottom: 14px;
+  margin-bottom: 100px;
   border-radius: 999px;
   border: 1px solid rgba(220, 228, 255, 0.4);
   background: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.16), rgba(3, 6, 24, 0.85));
@@ -1712,6 +1738,26 @@ export default {
   text-shadow:
     0 10px 30px rgba(0, 0, 0, 0.6),
     0 0 40px rgba(12, 19, 56, 0.8);
+}
+
+.hero-title-image {
+  position: absolute;
+  top: 50%;
+  left: 64px;
+  transform: translateY(-80%);
+  max-width: 600px;
+  width: auto;
+  height: auto;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(12, 19, 56, 0.8));
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  pointer-events: none;
+}
+
+.hero-section.page-active .hero-title-image {
+  opacity: 1;
+  transition-delay: 0.3s;
 }
 
 .hero-subtitle {
@@ -3468,17 +3514,28 @@ a.split-section {
     align-items: flex-start;
   }
 
-  .logo-circle {
-    width: 54px;
-    height: 54px;
-  }
   .university-logo {
-    width: 48px;
-    height: 48px;
+    top: 12px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
   }
 
-  .main-logo {
-    font-size: 1.2rem;
+  .logo-text {
+    top: 17px;
+    left: 85px;
+  }
+
+  .title-image {
+    height: 32px;
+  }
+  
+  .chinese-name-image {
+    height: 20px;
+  }
+
+  .english-name-image {
+    height: 13px;
   }
 
   .main-nav {
@@ -3498,6 +3555,15 @@ a.split-section {
 
   .hero-title {
     font-size: 2.4rem;
+  }
+
+  .hero-kicker {
+    margin-bottom: 30px;
+  }
+
+  .hero-title-image {
+    max-width: 80%;
+    left: 20px;
   }
 
   .hero-subtitle {

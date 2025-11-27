@@ -141,299 +141,13 @@
     </section>
 
 
-    <!-- 荣誉成就区域 - 勋章墙式展示 -->
+    <!-- 荣誉成就区域 - 3D珠峰 -->
     <section class="achievements-section-fullwidth" id="achievements-section" v-if="activeSection === 'achievements'">
-      <div class="medal-wall-container">
-        <!-- 顶部统计区 -->
-        <div class="statistics-area" data-aos="fade-down">
-          <div class="stat-card">
-            <div class="stat-number" :data-count="getTotalCount()">{{ animatedTotalCount }}</div>
-            <div class="stat-label">荣誉总数</div>
-          </div>
-        </div>
-
-        <!-- 筛选栏 -->
-        <div class="filter-bar" data-aos="fade-up" data-aos-delay="200">
-          <div class="filter-group">
-            <button 
-              v-for="type in achievementTypes" 
-              :key="type.id"
-              :class="['filter-btn', { active: selectedType === type.id }]"
-              @click="filterByType(type.id)"
-            >
-              <i :class="type.icon"></i>
-              <span>{{ type.name }}</span>
-              <span class="count" v-if="getCountByType(type.id) > 0">({{ getCountByType(type.id) }})</span>
-            </button>
-          </div>
-          <div class="sort-controls">
-            <select v-model="sortBy" class="sort-select">
-              <option value="type">按类型</option>
-              <option value="time-desc">时间从新到旧</option>
-              <option value="time-asc">时间从旧到新</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 勋章墙主体 -->
-        <div class="medal-wall-main" v-if="processedAchievements.length > 0">
-          <transition-group 
-            name="medal" 
-            tag="div" 
-            class="medal-grid"
-          >
-            <div 
-              v-for="(achievement, index) in filteredAndSortedAchievements" 
-              :key="achievement.awardId || index"
-              :class="['medal-item', `type-${getTypeClass(achievement.awardType)}`, { hovered: hoveredMedal === achievement.awardId }]"
-              :style="getMedalStyle(achievement)"
-              @mouseenter="onMedalHover(achievement)"
-              @mouseleave="onMedalLeave()"
-              @click="openMedalDetail(achievement)"
-              data-aos="zoom-in"
-              :data-aos-delay="index * 50"
-            >
-              <!-- 勋章外框 -->
-              <div class="medal-frame">
-                <!-- 光晕效果 -->
-                <div class="medal-glow" :class="`glow-${getTypeClass(achievement.awardType)}`"></div>
-                
-                <!-- 勋章主体 -->
-                <div class="medal-body">
-                  <!-- 图标 -->
-                  <div class="medal-icon">
-                    <i :class="getMedalIcon(achievement)"></i>
-                  </div>
-                  
-                  <!-- 绸带装饰(所有等级都有) -->
-                  <div class="medal-ribbon">
-                    <div class="ribbon-left"></div>
-                    <div class="ribbon-right"></div>
-                  </div>
-                </div>
-                
-                <!-- 勋章名称 -->
-                <div class="medal-name">{{ achievement.awardName }}</div>
-              </div>
-
-              <!-- 悬浮提示卡片 -->
-              <transition name="tooltip">
-                <div 
-                  v-if="hoveredMedal === achievement.awardId" 
-                  class="medal-tooltip"
-                  :style="getTooltipPosition(index)"
-                >
-                  <h4 class="tooltip-title">{{ achievement.awardName }}</h4>
-                  <p class="tooltip-desc">{{ achievement.awardDescription || '暂无描述' }}</p>
-                  <div class="tooltip-meta">
-                    <span v-if="achievement.awardYear"><i class="fas fa-calendar"></i> {{ achievement.awardYear }}年</span>
-                    <span v-if="achievement.awardingOrganization"><i class="fas fa-building"></i> {{ achievement.awardingOrganization }}</span>
-                  </div>
-                </div>
-              </transition>
-            </div>
-          </transition-group>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-else class="empty-state">
-          <i class="fas fa-medal"></i>
-          <p>{{ selectedType === 'all' ? '暂无荣誉成就数据' : '该类型暂无荣誉' }}</p>
-          <button v-if="selectedType !== 'all'" @click="filterByType('all')" class="clear-filter-btn">
-            查看全部荣誉
-          </button>
-        </div>
-
-        <!-- 勋章类型展示区 - 7种类型 -->
-        <div class="medal-types-showcase" data-aos="fade-up" data-aos-delay="300">
-          <h3 class="showcase-title">
-            <i class="fas fa-info-circle"></i>
-            勋章类型图例
-          </h3>
-          <div class="showcase-grid">
-            <!-- S级 - 🔴 红色勋章 - 院士 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-S">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-crown"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">院士</div>
-                <div class="showcase-description">中国科学院/工程院院士</div>
-              </div>
-            </div>
-
-            <!-- A级 - 🟠 橙色勋章 - 国家级奖项 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-A">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-trophy"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">国家级奖项</div>
-                <div class="showcase-description">国家科技进步奖等</div>
-              </div>
-            </div>
-
-            <!-- B级 - 🟡 黄色勋章 - 省部级奖项 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-B">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-medal"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">省部级奖项</div>
-                <div class="showcase-description">省部级科技进步奖等</div>
-              </div>
-            </div>
-
-            <!-- C级 - 🟢 绿色勋章 - 人才计划 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-C">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-user-graduate"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">人才计划</div>
-                <div class="showcase-description">国家杰青、长江学者等</div>
-              </div>
-            </div>
-
-            <!-- D级 - 🔵 青色勋章 - 学术职务 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-D">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-users"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">学术职务</div>
-                <div class="showcase-description">学会理事、期刊编委等</div>
-              </div>
-            </div>
-
-            <!-- E级 - 🔵 蓝色勋章 - 教学荣誉 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-E">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-chalkboard-teacher"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">教学荣誉</div>
-                <div class="showcase-description">教学成果奖、名师等</div>
-              </div>
-            </div>
-
-            <!-- F级 - 🟣 紫色勋章 - 其他荣誉 -->
-            <div class="showcase-item">
-              <div class="showcase-medal type-F">
-                <div class="medal-frame">
-                  <div class="medal-body">
-                    <div class="medal-icon">
-                      <i class="fas fa-star"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="showcase-info">
-                <div class="showcase-type-name">其他荣誉</div>
-                <div class="showcase-description">其他学术荣誉</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 详情模态框 -->
-      <transition name="modal">
-        <div v-if="selectedMedal" class="medal-modal-overlay" @click="closeMedalDetail">
-          <div class="medal-modal" @click.stop>
-            <button class="modal-close-btn" @click="closeMedalDetail">
-              <i class="fas fa-times"></i>
-            </button>
-            
-            <!-- 模态框头部 -->
-            <div class="modal-header" :class="`header-${getTypeClass(selectedMedal.awardType)}`">
-              <div class="modal-medal-icon">
-                <i :class="getMedalIcon(selectedMedal)"></i>
-              </div>
-              <div class="modal-title-group">
-                <h3 class="modal-title">{{ selectedMedal.awardName }}</h3>
-                <span class="modal-level-badge" :class="`badge-${getTypeClass(selectedMedal.awardType)}`">
-                  {{ selectedMedal.awardType }}
-                </span>
-              </div>
-            </div>
-            
-            <!-- 模态框内容 -->
-            <div class="modal-body">
-              <div class="modal-description">
-                <p>{{ selectedMedal.awardDescription || '暂无详细描述' }}</p>
-              </div>
-              
-              <div class="modal-info-cards">
-                <div class="info-card" v-if="selectedMedal.awardYear">
-                  <i class="fas fa-calendar-alt"></i>
-                  <div>
-                    <div class="card-label">获得时间</div>
-                    <div class="card-value">{{ selectedMedal.awardYear }}年</div>
-                  </div>
-                </div>
-                <div class="info-card" v-if="selectedMedal.awardingOrganization">
-                  <i class="fas fa-building"></i>
-                  <div>
-                    <div class="card-label">颁发机构</div>
-                    <div class="card-value">{{ selectedMedal.awardingOrganization }}</div>
-                  </div>
-                </div>
-                <div class="info-card" v-if="selectedMedal.awardRank">
-                  <i class="fas fa-award"></i>
-                  <div>
-                    <div class="card-label">奖项等级</div>
-                    <div class="card-value">{{ selectedMedal.awardRank }}</div>
-                  </div>
-                </div>
-                <div class="info-card" v-if="selectedMedal.awardLevel">
-                  <i class="fas fa-layer-group"></i>
-                  <div>
-                    <div class="card-label">荣誉级别</div>
-                    <div class="card-value">{{ selectedMedal.awardLevel }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </transition>
+      <EverestAchievement 
+        v-if="personData && personData.id"
+        :personId="personData.id"
+        :achievements="personData.awards || []"
+      />
     </section>
 
     <!-- 生平时间线区域 -->
@@ -458,6 +172,7 @@
 <script>
 import RelationshipGraph from './RelationshipGraph.vue'
 import TimelineFlipBook from './TimelineFlipBook.vue'
+import EverestAchievement from './EverestAchievement.vue'
 import { getPersonImage, getUnknownImage } from '@/utils/imageLoader'
 
 const unknownImg = getUnknownImage()
@@ -466,7 +181,8 @@ export default {
   name: 'PersonDetailAcademic',
   components: {
     RelationshipGraph,
-    TimelineFlipBook
+    TimelineFlipBook,
+    EverestAchievement
   },
   props: {
     personData: {
@@ -479,23 +195,7 @@ export default {
       imageLoaded: false,
       // 当前激活的标签
       activeSection: 'knowledge', // 'knowledge' | 'relationship' | 'achievements' | 'timeline'
-      unknownImg: unknownImg,
-      // 荣誉成就相关
-      achievementTypes: [
-        { id: 'all', name: '全部', icon: 'fas fa-list' },
-        { id: '院士', name: '院士', icon: 'fas fa-crown' },           // 红色
-        { id: '国家级奖项', name: '国家级奖项', icon: 'fas fa-trophy' },  // 橙色
-        { id: '省部级奖项', name: '省部级奖项', icon: 'fas fa-medal' },   // 黄色
-        { id: '人才计划', name: '人才计划', icon: 'fas fa-user-graduate' }, // 绿色
-        { id: '学术职务', name: '学术职务', icon: 'fas fa-users' },      // 青色
-        { id: '教学荣誉', name: '教学荣誉', icon: 'fas fa-chalkboard-teacher' }, // 蓝色
-        { id: '其他荣誉', name: '其他', icon: 'fas fa-star' }          // 紫色
-      ],
-      selectedType: 'all',
-      sortBy: 'type',
-      hoveredMedal: null,
-      selectedMedal: null,
-      animatedTotalCount: 0
+      unknownImg: unknownImg
     }
   },
   computed: {
@@ -522,54 +222,10 @@ export default {
         return []
       }
       
-      // 直接返回awards数据
-      return this.personData.awards
-    },
-    
-    // 筛选和排序后的荣誉
-    filteredAndSortedAchievements() {
-      // 创建副本避免修改原数组
-      let filtered = [...this.processedAchievements]
-      
-      // 按类型筛选
-      if (this.selectedType !== 'all') {
-        filtered = filtered.filter(a => a.awardType === this.selectedType)
-      }
-      
-      // 排序 - 红橙黄绿青蓝紫顺序 (1-7)
-      const typeOrder = { 
-        '院士': 1,        // 1. 红色
-        '国家级奖项': 2,  // 2. 橙色
-        '省部级奖项': 3,  // 3. 黄色
-        '人才计划': 4,    // 4. 绿色
-        '学术职务': 5,    // 5. 青色
-        '教学荣誉': 6,    // 6. 蓝色
-        '其他荣誉': 7     // 7. 紫色
-      }
-      
-      if (this.sortBy === 'type') {
-        // 按类型排序
-        filtered = filtered.sort((a, b) => {
-          const orderA = typeOrder[a.awardType] || 999
-          const orderB = typeOrder[b.awardType] || 999
-          return orderA - orderB
-        })
-      } else if (this.sortBy === 'time-desc') {
-        filtered = filtered.sort((a, b) => (b.awardYear || 0) - (a.awardYear || 0))
-      } else if (this.sortBy === 'time-asc') {
-        filtered = filtered.sort((a, b) => (a.awardYear || 0) - (b.awardYear || 0))
-      }
-      
-      return filtered
-    }
-  },
-  watch: {
-    activeSection(newVal) {
-      if (newVal === 'achievements') {
-        this.$nextTick(() => {
-          this.animateCount()
-        })
-      }
+      // 按年份排序，早期成就在前
+      return [...this.personData.awards].sort((a, b) => {
+        return (a.awardYear || 0) - (b.awardYear || 0)
+      })
     }
   },
   async mounted() {
@@ -644,14 +300,21 @@ export default {
         return
       }
       
+      // 荣誉成就视图 - 3D珠峰
+      if (section === 'achievements') {
+        this.$nextTick(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          })
+        })
+        return
+      }
+      
       // 其他区域需要滚动
       let targetElement = null
       if (section === 'knowledge') {
         targetElement = document.getElementById('introduction-section')
-      } else if (section === 'achievements') {
-        // 荣誉成就 - 切换到荣誉成就视图
-        this.activeSection = 'achievements'
-        return
       }
       
       if (targetElement) {
@@ -750,123 +413,6 @@ export default {
       // 否则包装成段落
       return `<p>${text}</p>`
     },
-    
-    // ========== 荣誉成就相关方法 ==========
-    
-    // 获取类型css类名 - 7种不同类型（彩虹色顺序）
-    getTypeClass(awardType) {
-      const typeClassMap = {
-        '院士': 'S',           // 红色
-        '国家级奖项': 'A',      // 橙色
-        '省部级奖项': 'B',      // 黄色
-        '人才计划': 'C',        // 绿色
-        '学术职务': 'D',        // 青色
-        '教学荣誉': 'E',        // 蓝色
-        '其他荣誉': 'F'         // 紫色
-      }
-      return typeClassMap[awardType] || 'F'
-    },
-    
-    // 获取勋章图标
-    getMedalIcon(achievement) {
-      const icons = {
-        '院士': 'fas fa-crown',
-        '国家级奖项': 'fas fa-trophy',
-        '省部级奖项': 'fas fa-medal',
-        '学术职务': 'fas fa-users',
-        '教学荣誉': 'fas fa-chalkboard-teacher',
-        '人才计划': 'fas fa-user-graduate',
-        '其他荣誉': 'fas fa-star'
-      }
-      return icons[achievement.awardType] || 'fas fa-award'
-    },
-    
-    // 获取勋章样式
-    getMedalStyle(achievement) {
-      // 可以根据需要添加自定义样式
-      return {}
-    },
-    
-    // 获取提示框位置
-    getTooltipPosition(index) {
-      // 简单的定位逻辑，可以根据实际情况优化
-      return {
-        // 默认在右侧显示
-      }
-    },
-    
-    // 统计相关方法
-    getTotalCount() {
-      return this.processedAchievements.length
-    },
-    
-    getHighestLevel() {
-      const types = this.processedAchievements.map(a => a.awardType)
-      if (types.includes('院士')) return '院士'
-      if (types.includes('国家级奖项')) return '国家级'
-      if (types.includes('省部级奖项')) return '省部级'
-      return '校级'
-    },
-    
-    getYearSpan() {
-      const years = this.processedAchievements
-        .map(a => a.awardYear)
-        .filter(y => y && y > 0)
-      
-      if (years.length === 0) return '-'
-      if (years.length === 1) return years[0] + '年'
-      
-      const minYear = Math.min(...years)
-      const maxYear = Math.max(...years)
-      const span = maxYear - minYear
-      return span > 0 ? `${span}年` : '同年'
-    },
-    
-    getCountByType(typeId) {
-      if (typeId === 'all') return this.processedAchievements.length
-      return this.processedAchievements.filter(a => a.awardType === typeId).length
-    },
-    
-    // 筛选方法
-    filterByType(typeId) {
-      this.selectedType = typeId
-    },
-    
-    // 交互方法
-    onMedalHover(achievement) {
-      this.hoveredMedal = achievement.awardId
-    },
-    
-    onMedalLeave() {
-      this.hoveredMedal = null
-    },
-    
-    openMedalDetail(achievement) {
-      this.selectedMedal = achievement
-    },
-    
-    closeMedalDetail() {
-      this.selectedMedal = null
-    },
-    
-    // 数字动画
-    animateCount() {
-      const target = this.getTotalCount()
-      const duration = 1500
-      const steps = 60
-      const increment = target / steps
-      let current = 0
-      
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= target) {
-          this.animatedTotalCount = target
-          clearInterval(timer)
-        } else {
-          this.animatedTotalCount = Math.floor(current)
-        }
-      }, duration / steps)
-    }
   }
 }
 </script>
@@ -1415,280 +961,33 @@ export default {
   font-size: 18px;
 }
 
-/* ========== 荣誉成就 - 勋章墙样式 ========== */
+/* ========== 荣誉成就 - 3D登山轨迹 ========== */
 .achievements-section-fullwidth {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+/* 时间轴占位区域 */
+.timeline-section-fullwidth {
+  width: 100%;
   min-height: 100vh;
-  padding: 60px 20px 80px;
-  background: 
-    radial-gradient(ellipse at 20% 30%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(220, 20, 60, 0.15) 0%, transparent 50%),
-    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 动态背景效果 */
-.achievements-section-fullwidth::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(123, 104, 238, 0.1) 0%, transparent 40%);
-  animation: bg-pulse 10s ease-in-out infinite;
-  pointer-events: none;
-}
-
-/* 星光粒子背景 */
-.achievements-section-fullwidth::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(2px 2px at 20% 30%, white, transparent),
-    radial-gradient(2px 2px at 60% 70%, white, transparent),
-    radial-gradient(1px 1px at 50% 50%, white, transparent),
-    radial-gradient(1px 1px at 80% 10%, white, transparent),
-    radial-gradient(2px 2px at 90% 60%, white, transparent),
-    radial-gradient(1px 1px at 33% 80%, white, transparent),
-    radial-gradient(1px 1px at 15% 90%, white, transparent);
-  background-size: 200% 200%;
-  animation: stars-twinkle 20s linear infinite;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.medal-wall-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-/* 顶部统计区 */
-.statistics-area {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 50px;
-  flex-wrap: wrap;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  padding: 30px 40px;
-  min-width: 180px;
-  text-align: center;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  transform: rotate(45deg);
-  animation: shine 3s infinite;
-}
-
-.stat-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  transform: translateY(-10px) scale(1.05);
-  box-shadow: 
-    0 15px 50px rgba(255, 215, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-color: rgba(255, 215, 0, 0.6);
-}
-
-.stat-number {
-  font-size: 56px;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 8px;
-  font-family: 'Arial', sans-serif;
-  text-shadow: 
-    0 0 20px rgba(255, 215, 0, 0.8),
-    0 0 40px rgba(255, 215, 0, 0.4),
-    0 4px 8px rgba(0, 0, 0, 0.5);
-  animation: number-glow 2s ease-in-out infinite;
-}
-
-.stat-number.highlight {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* 筛选栏 */
-.filter-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.filter-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-btn {
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.filter-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
-}
-
-.filter-btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.filter-btn.active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #1a1a1a;
-  border-color: #FFD700;
-  box-shadow: 
-    0 0 20px rgba(255, 215, 0, 0.6),
-    0 5px 20px rgba(255, 215, 0, 0.3);
-  font-weight: 600;
-}
-
-.filter-btn.active i {
-  animation: icon-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes icon-pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-}
-
-.filter-btn .count {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.sort-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sort-select {
-  padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  outline: none;
-}
-
-/* 勋章类型展示区 */
-.medal-types-showcase {
-  margin: 40px 0;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.showcase-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  text-align: center;
-  margin: 0 0 30px 0;
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.showcase-title i {
-  font-size: 24px;
-  color: rgba(255, 215, 0, 0.9);
+/* 时间轴占位符样式 */
+.timeline-placeholder {
+  text-align: center;
+  color: white;
+  padding: 60px 40px;
 }
 
-.showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 30px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.showcase-item {
+.timeline-placeholder i {
   display: flex;
   flex-direction: column;
   align-items: center;

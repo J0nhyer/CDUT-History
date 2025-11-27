@@ -1,4 +1,4 @@
-许强照片爬虫 - 使用说明
+成都理工大学历史人物照片爬虫 - 使用说明
 ===================================
 
 1. 安装依赖
@@ -12,7 +12,27 @@ pip install requests beautifulsoup4 lxml
 
 2. 运行爬虫
 -----------
-python crawl_xuqiang_images.py
+首先进入python目录：
+cd python
+
+【单个人物爬虫】
+python crawl_xuqiang_images.py      # 许强
+python crawl_liuqingyou_images.py   # 刘清友
+python crawl_hubing_images.py       # 胡兵
+python crawl_tangqingli_images.py   # 唐清利
+python crawl_liubaojun_images.py    # 刘宝珺
+python crawl_houmingcai_images.py   # 侯明才
+python crawl_junengpan_images.py    # 巨能攀
+python crawl_zhouzhongli_images.py  # 周仲礼
+python crawl_zengguoqiang_images.py # 曾国强
+python crawl_guoqiang_images.py     # 郭强
+
+【批量运行所有爬虫】
+python run_all_crawlers.py          # 自动运行所有人物爬虫
+
+【清空图片文件夹】
+python clear_images.py              # 清空所有人物的图片文件夹
+python clear_images.py --delete-all # 删除整个images目录（需输入DELETE确认）
 
 
 3. 功能说明
@@ -27,7 +47,17 @@ python crawl_xuqiang_images.py
 
 4. 输出结果
 -----------
-所有下载的图片将保存在 "xuqiang_images" 文件夹中（位于crawler目录下）
+所有下载的图片将统一保存在 "images" 文件夹中，每个人物有独立的子文件夹：
+- images/xuqiang        (许强)
+- images/liuqingyou     (刘清友)
+- images/hubing         (胡兵)
+- images/tangqingli     (唐清利)
+- images/liubaojun      (刘宝珺)
+- images/houmingcai     (侯明才)
+- images/junengpan      (巨能攀)
+- images/zhouzhongli    (周仲礼)
+- images/zengguoqiang   (曾国强)
+- images/guoqiang       (郭强)
 
 
 5. 注意事项
@@ -38,7 +68,23 @@ python crawl_xuqiang_images.py
 - 部分网站可能需要登录或有访问限制
 
 
-6. 自定义设置
+6. 目录结构
+-----------
+crawler/
+├── python/          # 所有爬虫Python脚本
+│   ├── crawl_xuqiang_images.py
+│   ├── crawl_liuqingyou_images.py
+│   ├── ...其他爬虫文件
+│   └── run_all_crawlers.py
+├── images/          # 爬取的图片（自动创建）
+│   ├── xuqiang/
+│   ├── liuqingyou/
+│   └── ...其他人物文件夹
+├── requirements.txt
+└── 使用说明.txt
+
+
+7. 自定义设置
 -----------
 可在代码中修改以下参数：
 - max_images: 最大图片数量

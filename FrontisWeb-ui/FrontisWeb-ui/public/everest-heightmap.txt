@@ -1,0 +1,49 @@
+# 珠穆朗玛峰真实地形数据获取方案
+
+## 方案1：使用NASA高程数据（推荐）
+
+### 数据来源
+- **NASA SRTM**（Shuttle Radar Topography Mission）
+- 分辨率：30米/像素
+- 覆盖范围：珠峰及周边地区
+- 坐标：27.9881°N, 86.9250°E
+
+### 在线工具获取
+1. **Tangram Heightmapper**
+   网址：https://tangrams.github.io/heightmapper/
+   操作步骤：
+   - 搜索 "Mount Everest" 或输入坐标 27.9881, 86.9250
+   - 调整缩放级别到合适范围（建议Zoom 13-14）
+   - 点击 "Export" 下载PNG高度图
+   - 下载后重命名为 everest-heightmap.png
+
+2. **Terrain.party**
+   网址：http://terrain.party/
+   操作步骤：
+   - 输入珠峰坐标
+   - 选择区域大小（建议5-10km范围）
+   - 下载16位PNG高度图
+
+## 方案2：使用现成的珠峰3D模型
+
+### GLB/GLTF格式模型
+推荐网站：
+- **Sketchfab**: https://sketchfab.com/search?q=mount+everest&type=models
+- **Free3D**: https://free3d.com/3d-models/mount-everest
+- **CGTrader**: https://www.cgtrader.com/3d-models/mount-everest
+
+搜索关键词：
+- "Mount Everest 3D model"
+- "Himalaya terrain"
+- "珠穆朗玛峰模型"
+
+## 方案3：使用Google Earth Studio数据
+
+Google Earth Studio可以导出珠峰的真实3D数据
+网址：https://earth.google.com/studio/
+
+## 真实数据参数
+- 海拔高度：8,848.86米
+- 山体跨度：约10公里
+- 地理坐标：27°59'16"N 86°55'30"E
+- 山体形态：金字塔状，北坡较陡
