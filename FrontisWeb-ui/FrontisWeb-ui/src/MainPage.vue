@@ -46,14 +46,6 @@
         <div class="second-bg-gradient"></div>
       </div>
 
-      <!-- 第五页：1993年学校更名庆祝大会 固定背景 -->
-      <div
-        v-else-if="currentPage === 4"
-        class="background-static rename1993-bg"
-        :style="{ backgroundImage: `url(${rename1993Image})` }"
-      >
-        <div class="second-bg-gradient"></div>
-      </div>
 
     </div>
 
@@ -324,9 +316,6 @@
             </div>
           </section>
 
-          <!-- 第 5 页：空白 -->
-          <section class="page-section rename1993-section" :class="{ 'page-active': currentPage === 4 }">
-          </section>
 
         </div>
 
@@ -643,7 +632,7 @@ export default {
       apiBase: API_BASE,
 
       currentPage: 0,
-      totalPages: 5, // 五页：Hero + 3 静态 + 2 组件
+      totalPages: 4, // 四页：Hero + 3 静态
       isPageAnimating: false,
       touchStartY: 0,
       touchDeltaY: 0,
